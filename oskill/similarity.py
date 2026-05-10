@@ -81,10 +81,16 @@ def historical_analogy_search(
             # Cosine requires same length
             query_len = len(query)
             same_len = [i for i, h in enumerate(db_list) if len(h) == query_len]
-            if len(same_len) < n_db:
+            excluded = [i for i in range(n_db) if i not in same_len]
+            if excluded:
                 warnings.warn(
-                    f"cosine: {n_db - len(same_len)} series have different length, skipped",
+                    f"cosine: indices {excluded} have different length than query "
+                    f"({query_len}), excluded from ranking",
                     stacklevel=2,
+                )
+            if not same_len:
+                raise ValueError(
+                    f"cosine: all series have different length than query ({query_len})"
                 )
             if same_len:
                 db_matrix = np.array([db_list[i] for i in same_len])
@@ -95,6 +101,13 @@ def historical_analogy_search(
         elif method == "euclidean":
             query_len = len(query)
             same_len = [i for i, h in enumerate(db_list) if len(h) == query_len]
+            excluded = [i for i in range(n_db) if i not in same_len]
+            if excluded:
+                warnings.warn(
+                    f"euclidean: indices {excluded} have different length than query "
+                    f"({query_len}), excluded from ranking",
+                    stacklevel=2,
+                )
             if same_len:
                 db_matrix = np.array([db_list[i] for i in same_len])
                 dist_matrix = oprim.euclidean_distance_matrix(
@@ -105,21 +118,24 @@ def historical_analogy_search(
 
         distances[method] = dists
 
-    # Compute ranks per method (1 = closest)
+    # Compute ranks per method with tie handling (average rank for ties)
     ranks: dict[str, np.ndarray] = {}
     for method, dists in distances.items():
-        order = np.argsort(dists)
-        r = np.empty(n_db, dtype=int)
-        r[order] = np.arange(1, n_db + 1)
+        from scipy.stats import rankdata
+        # rankdata handles ties with 'average' method; inf gets highest rank
+        r = rankdata(dists, method="average")
         ranks[method] = r
 
     # Ensemble scoring
     if ensemble == "mean_rank":
         scores = np.mean([ranks[m] for m in methods], axis=0)
     elif ensemble == "borda":
-        # Borda: n - rank (higher = better), then negate for sorting
-        borda_scores = np.sum([n_db - ranks[m] for m in methods], axis=0)
-        scores = -borda_scores.astype(float)  # Negate so lower = better
+        # Proper Borda count: each method awards (n_db - rank) points
+        # With tie handling via average ranks, fractional points are possible
+        borda_points = np.zeros(n_db, dtype=float)
+        for m in methods:
+            borda_points += (n_db + 1) - ranks[m]  # higher = better
+        scores = -borda_points  # Negate so lower = better for sorting
     elif ensemble == "weighted":
         w = weights or {}
         scores = np.zeros(n_db)

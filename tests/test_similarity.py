@@ -97,11 +97,11 @@ class TestHistoricalAnalogySearch:
         assert len(results) == 3
 
     def test_variable_length_cosine_warning(self):
-        """Cosine with variable-length series warns."""
+        """Cosine with variable-length series warns with indices."""
         rng = np.random.default_rng(42)
         query = rng.normal(0, 1, 20)
         db = [rng.normal(0, 1, 15), rng.normal(0, 1, 20), rng.normal(0, 1, 25)]
-        with pytest.warns(UserWarning, match="different length"):
+        with pytest.warns(UserWarning, match="indices.*excluded"):
             historical_analogy_search(query, db, methods=["cosine"], top_k=3)
 
     def test_integration_mock_dtw(self, mocker):

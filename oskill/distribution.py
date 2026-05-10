@@ -86,11 +86,16 @@ def distribution_shift_test(
             n_bins = min(50, max(10, int(np.sqrt(min(len(sample_a), len(sample_b))))))
             all_data = np.concatenate([sample_a, sample_b])
             bins = np.linspace(all_data.min(), all_data.max(), n_bins + 1)
-            hist_a, _ = np.histogram(sample_a, bins=bins, density=True)
-            hist_b, _ = np.histogram(sample_b, bins=bins, density=True)
+            hist_a, _ = np.histogram(sample_a, bins=bins)
+            hist_b, _ = np.histogram(sample_b, bins=bins)
+            # Remove bins where both are zero to avoid degenerate JSD
+            nonzero = (hist_a > 0) | (hist_b > 0)
+            hist_a = hist_a[nonzero].astype(np.float64)
+            hist_b = hist_b[nonzero].astype(np.float64)
             # Normalize to probability distributions
-            hist_a = hist_a / (hist_a.sum() + 1e-12)
-            hist_b = hist_b / (hist_b.sum() + 1e-12)
+            hist_a = hist_a / hist_a.sum()
+            hist_b = hist_b / hist_b.sum()
+            # Let oprim handle epsilon internally
             jsd_val = oprim.symmetric_kl_divergence(hist_a, hist_b, mode="js")
             detected = jsd_val > jsd_threshold
             votes["jsd"] = detected
@@ -301,20 +306,34 @@ def bootstrap_distribution(
     # Point estimate
     point_estimate = float(statistic(valid))
 
-    # Use oprim.bootstrap_ci for CI
-    ci_result = oprim.bootstrap_ci(
-        valid,
-        statistic_fn=statistic,
-        n_bootstrap=n_bootstrap,
-        confidence_level=confidence_level,
-        method=method,
-        random_state=random_state,
-    )
-
-    # Generate samples for distribution
+    # Single bootstrap pass: generate samples and compute CI from them
     rng = np.random.default_rng(random_state)
     indices = rng.integers(0, len(valid), size=(n_bootstrap, len(valid)))
     samples = np.array([statistic(valid[idx]) for idx in indices])
+
+    # Compute CI from bootstrap samples
+    if method == "percentile":
+        alpha = 1 - confidence_level
+        ci_low = float(np.percentile(samples, 100 * alpha / 2))
+        ci_high = float(np.percentile(samples, 100 * (1 - alpha / 2)))
+    elif method == "basic":
+        alpha = 1 - confidence_level
+        q_low = np.percentile(samples, 100 * alpha / 2)
+        q_high = np.percentile(samples, 100 * (1 - alpha / 2))
+        ci_low = float(2 * point_estimate - q_high)
+        ci_high = float(2 * point_estimate - q_low)
+    else:
+        # BCa requires jackknife - delegate to oprim.bootstrap_ci
+        ci_result = oprim.bootstrap_ci(
+            valid,
+            statistic_fn=statistic,
+            n_bootstrap=n_bootstrap,
+            confidence_level=confidence_level,
+            method=method,
+            random_state=random_state,
+        )
+        ci_low = float(ci_result["ci_lower"])
+        ci_high = float(ci_result["ci_upper"])
 
     # Use oprim.distribution_summary
     summary = oprim.distribution_summary(samples)
@@ -328,8 +347,8 @@ def bootstrap_distribution(
     return {
         "point_estimate": point_estimate,
         "samples": samples,
-        "ci_low": float(ci_result["ci_lower"]),
-        "ci_high": float(ci_result["ci_upper"]),
+        "ci_low": ci_low,
+        "ci_high": ci_high,
         "confidence_level": confidence_level,
         "method": method,
         "summary": summary,

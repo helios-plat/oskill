@@ -109,6 +109,20 @@ class TestDistributionShiftTest:
         with pytest.warns(UserWarning, match="Sample size < 20"):
             distribution_shift_test(a, b)
 
+    def test_wasserstein_threshold_ratio(self):
+        """wasserstein_threshold_ratio controls detection sensitivity."""
+        rng = np.random.default_rng(42)
+        a = rng.normal(0, 1, 200)
+        b = rng.normal(0.2, 1, 200)  # slight shift
+        # Loose threshold → no detection
+        r_loose = distribution_shift_test(a, b, methods=["wasserstein"],
+                                          wasserstein_threshold_ratio=1.0)
+        # Tight threshold → detection
+        r_tight = distribution_shift_test(a, b, methods=["wasserstein"],
+                                          wasserstein_threshold_ratio=0.01)
+        assert r_loose["votes"]["wasserstein"] is False or not r_loose["votes"]["wasserstein"]
+        assert r_tight["votes"]["wasserstein"] is True or r_tight["votes"]["wasserstein"]
+
     def test_empty_raises(self):
         """Empty sample raises."""
         with pytest.raises(ValueError):
@@ -337,14 +351,14 @@ class TestBootstrapDistribution:
             bootstrap_distribution(np.array([]), np.mean)
 
     def test_integration_mock_bootstrap_ci(self, mocker):
-        """Integration: oprim.bootstrap_ci called."""
+        """Integration: oprim.bootstrap_ci called for bca method."""
         mock_ci = mocker.patch("oskill.distribution.oprim.bootstrap_ci", return_value={
             "point_estimate": 0.0, "ci_lower": -0.5, "ci_upper": 0.5,
-            "se": 0.1, "n_bootstrap": 200, "method": "percentile",
+            "se": 0.1, "n_bootstrap": 200, "method": "bca",
         })
         mocker.patch("oskill.distribution.oprim.distribution_summary", return_value={"mean": 0})
         data = np.random.default_rng(42).normal(0, 1, 100)
-        bootstrap_distribution(data, np.mean, n_bootstrap=200, random_state=42)
+        bootstrap_distribution(data, np.mean, n_bootstrap=200, method="bca", random_state=42)
         mock_ci.assert_called_once()
 
     def test_integration_mock_distribution_summary(self, mocker):

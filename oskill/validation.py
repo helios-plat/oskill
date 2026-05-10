@@ -140,7 +140,7 @@ def cpcv_pipeline(
     """Combinatorial Purged Cross-Validation pipeline.
 
     Calls:
-        oprim.purge_embargo_split, oprim.bootstrap_ci, oprim.distribution_summary
+        oprim.bootstrap_ci, oprim.distribution_summary
 
     Args:
         n_total: Total number of observations.
@@ -159,6 +159,11 @@ def cpcv_pipeline(
 
     References:
         López de Prado 2018 Ch. 12.
+
+    Note:
+        Purge/embargo logic is implemented directly using fold boundary arithmetic
+        rather than calling oprim.purge_embargo_split, since CPCV requires combinatorial
+        fold selection which differs from the sequential split that oprim provides.
     """
     if n_folds < 2:
         raise ValueError(f"n_folds must be >= 2, got {n_folds}")
@@ -175,18 +180,13 @@ def cpcv_pipeline(
         end = (i + 1) * fold_size if i < n_folds - 1 else n_total
         fold_boundaries.append((start, end))
 
-    # Use oprim.purge_embargo_split for purge/embargo reference
-    times = pd.date_range("2000-01-01", periods=n_total, freq="D")
-    _purge_ref = oprim.purge_embargo_split(
-        times, n_splits=n_folds, embargo_pct=embargo_pct, label_horizon=label_horizon
-    )
-
     # Generate all C(n_folds, n_test_groups) combinations
     test_combos = list(combinations(range(n_folds), n_test_groups))
     n_combinations = len(test_combos)
 
-    # Number of paths
-    n_paths = n_combinations * n_test_groups // n_folds
+    # Number of paths per LdP: C(n_folds-1, n_test_groups-1)
+    from math import comb
+    n_paths = comb(n_folds - 1, n_test_groups - 1)
 
     embargo_size = max(1, int(n_total * embargo_pct))
 
@@ -234,34 +234,60 @@ def cpcv_pipeline(
 
     # Run backtest if provided
     if backtest_fn is not None:
-        combo_returns = []
-        for split in splits:
+        # Store returns per combo, per fold (fix: track which fold each return belongs to)
+        combo_fold_returns: dict[int, dict[int, np.ndarray]] = {}
+        for combo_id, split in enumerate(splits):
+            test_folds_for_combo = test_combos[combo_id]
             ret = backtest_fn(split["train_idx"], split["test_idx"])
-            combo_returns.append(ret)
+            # Split returns by fold (test_idx is concatenation of fold indices in order)
+            combo_fold_returns[combo_id] = {}
+            offset = 0
+            for f in test_folds_for_combo:
+                fold_len = fold_boundaries[f][1] - fold_boundaries[f][0]
+                combo_fold_returns[combo_id][f] = ret[offset:offset + fold_len]
+                offset += fold_len
 
-        # Path reconstruction: assign each fold's test returns from different combos
-        # Each path covers all folds sequentially
+        # Path reconstruction per LdP Ch.12:
+        # Each fold appears in C(n_folds-1, n_test_groups-1) combos as test.
+        # A path assigns each fold to exactly one combo, such that no combo is
+        # used more than once across folds within the same path.
         paths_sharpe = []
         if n_paths > 0 and compute_path_statistics:
-            # Simple path reconstruction: for each path, pick one combo per test fold
-            # that covers that fold
+            # Build fold_to_combos: for each fold, which combos test it
             fold_to_combos: dict[int, list[int]] = {f: [] for f in range(n_folds)}
-            for combo_id, test_folds in enumerate(test_combos):
-                for f in test_folds:
+            for combo_id, test_folds_tuple in enumerate(test_combos):
+                for f in test_folds_tuple:
                     fold_to_combos[f].append(combo_id)
 
-            # Generate paths by cycling through available combos per fold
+            # Generate paths: each path picks one combo per fold such that
+            # the assignment is consistent (greedy column-wise from the
+            # fold-to-combo matrix, cycling through available combos)
+            used_per_path: list[dict[int, int]] = []  # path_id -> {fold: combo}
+            combo_usage_count: dict[int, int] = {c: 0 for c in range(n_combinations)}
+
             for path_id in range(n_paths):
-                path_returns = []
+                assignment: dict[int, int] = {}
                 for fold_id in range(n_folds):
                     available = fold_to_combos[fold_id]
-                    combo_idx = available[path_id % len(available)]
-                    fold_start, fold_end = fold_boundaries[fold_id]
-                    ret = combo_returns[combo_idx]
-                    # Extract returns for this fold's test period
-                    fold_len = fold_end - fold_start
-                    path_returns.extend(ret[:fold_len] if len(ret) >= fold_len else ret)
+                    # Pick the combo with lowest usage count that hasn't been
+                    # assigned to another fold in this path
+                    used_in_path = set(assignment.values())
+                    candidates = [c for c in available if c not in used_in_path]
+                    if not candidates:
+                        candidates = available  # fallback
+                    # Pick least-used
+                    chosen = min(candidates, key=lambda c: combo_usage_count[c])
+                    assignment[fold_id] = chosen
+                    combo_usage_count[chosen] += 1
+                used_per_path.append(assignment)
 
+            # Compute path Sharpe ratios
+            for assignment in used_per_path:
+                path_returns = []
+                for fold_id in range(n_folds):
+                    combo_id = assignment[fold_id]
+                    if fold_id in combo_fold_returns[combo_id]:
+                        path_returns.extend(combo_fold_returns[combo_id][fold_id])
                 path_arr = np.array(path_returns, dtype=np.float64)
                 if len(path_arr) > 0:
                     sr = oprim.sharpe_ratio(pd.Series(path_arr))

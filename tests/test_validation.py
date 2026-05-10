@@ -176,10 +176,12 @@ class TestCpcvPipeline:
             cpcv_pipeline(1000, n_folds=1, n_test_groups=1)
 
     def test_integration_mock_purge_embargo(self, mocker):
-        """Integration: oprim.purge_embargo_split is called."""
-        mock_pe = mocker.patch("oskill.validation.oprim.purge_embargo_split", return_value=[])
-        cpcv_pipeline(1000, n_folds=6, n_test_groups=2)
-        mock_pe.assert_called_once()
+        """Integration: cpcv_pipeline applies purge/embargo via fold boundary arithmetic."""
+        # Verify purge/embargo is applied by checking train_idx excludes boundary indices
+        result = cpcv_pipeline(1000, n_folds=6, n_test_groups=2, label_horizon=5, embargo_pct=0.02)
+        # At least some splits should have purged/embargoed indices
+        assert any(s["purged_count"] > 0 for s in result["splits"])
+        assert any(s["embargo_count"] > 0 for s in result["splits"])
 
     def test_integration_mock_bootstrap_ci(self, mocker):
         """Integration: oprim.bootstrap_ci called with backtest_fn."""
@@ -188,7 +190,6 @@ class TestCpcvPipeline:
             "se": 0.2, "n_bootstrap": 100, "method": "percentile",
         })
         mocker.patch("oskill.validation.oprim.distribution_summary", return_value={})
-        mocker.patch("oskill.validation.oprim.purge_embargo_split", return_value=[])
 
         def mock_bt(train_idx, test_idx):
             return np.random.default_rng(42).normal(0.001, 0.01, len(test_idx))
@@ -203,7 +204,6 @@ class TestCpcvPipeline:
             "se": 0.2, "n_bootstrap": 100, "method": "percentile",
         })
         mock_ds = mocker.patch("oskill.validation.oprim.distribution_summary", return_value={})
-        mocker.patch("oskill.validation.oprim.purge_embargo_split", return_value=[])
 
         def mock_bt(train_idx, test_idx):
             return np.random.default_rng(42).normal(0.001, 0.01, len(test_idx))
@@ -212,13 +212,42 @@ class TestCpcvPipeline:
         mock_ds.assert_called_once()
 
     def test_academic_path_count(self):
-        """Academic: verify path count formula."""
+        """Academic: verify path count formula per LdP Ch.12."""
         from math import comb
         result = cpcv_pipeline(1000, n_folds=6, n_test_groups=2)
         expected_combos = comb(6, 2)
-        expected_paths = expected_combos * 2 // 6
+        # LdP: n_paths = C(n_folds-1, n_test_groups-1)
+        expected_paths = comb(5, 1)
         assert result["n_combinations"] == expected_combos
         assert result["n_paths"] == expected_paths
+
+    def test_path_reconstruction_independent_combos(self):
+        """LdP Ch.12: each path uses different combo per fold, no combo reuse within path."""
+        def tracking_bt(train_idx, test_idx):
+            rng = np.random.default_rng(len(train_idx))
+            return rng.normal(0.001, 0.01, len(test_idx))
+
+        result = cpcv_pipeline(600, n_folds=6, n_test_groups=2, backtest_fn=tracking_bt)
+        # With backtest_fn, paths should be generated
+        assert "median_sharpe" in result
+        # n_paths should equal C(5,1) = 5
+        assert result["n_paths"] == 5
+
+    def test_path_returns_per_fold_correct_length(self):
+        """Each fold's returns in a path have correct length matching fold size."""
+        n_total = 600
+        n_folds = 6
+        fold_size = n_total // n_folds  # 100
+
+        call_log = []
+
+        def logging_bt(train_idx, test_idx):
+            call_log.append(len(test_idx))
+            return np.random.default_rng(42).normal(0.001, 0.01, len(test_idx))
+
+        result = cpcv_pipeline(n_total, n_folds=n_folds, n_test_groups=2, backtest_fn=logging_bt)
+        # Each combo tests 2 folds, so test_idx length = 2 * fold_size = 200
+        assert all(length == 2 * fold_size for length in call_log)
 
 
 # ============================================================

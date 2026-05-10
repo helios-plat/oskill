@@ -32,3 +32,9 @@
 - CI workflow (lint + test + coverage gate ≥ 90%)
 - Layer 2 discipline enforcement (no internal imports, must use oprim)
 - 181 tests, 95.77% coverage
+
+### Fixed (pre-release review)
+- cpcv_pipeline path reconstruction rewritten per LdP Ch.12
+- bootstrap_distribution single bootstrap pass (no double sampling)
+- historical_analogy_search reports excluded indices, proper Borda count
+- distribution_shift_test JSD zero-bin handling
