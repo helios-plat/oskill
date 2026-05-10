@@ -7,6 +7,11 @@ from oskill.performance import (
     psr_dsr,
     regime_aware_performance,
 )
+from oskill.validation import (
+    cpcv_pipeline,
+    regime_aware_rolling,
+    walk_forward_optimization,
+)
 
 __all__ = [
     "__version__",
@@ -15,4 +20,8 @@ __all__ = [
     "psr_dsr",
     "factor_attribution",
     "regime_aware_performance",
+    # Group 2: Validation
+    "walk_forward_optimization",
+    "cpcv_pipeline",
+    "regime_aware_rolling",
 ]
