@@ -1,6 +1,11 @@
 """oskill — Composite financial analysis workflows built on oprim atomic operations."""
 
 from oskill._version import __version__
+from oskill.distribution import (
+    bootstrap_distribution,
+    detect_outliers_robust,
+    distribution_shift_test,
+)
 from oskill.performance import (
     bootstrap_sharpe,
     factor_attribution,
@@ -24,4 +29,8 @@ __all__ = [
     "walk_forward_optimization",
     "cpcv_pipeline",
     "regime_aware_rolling",
+    # Group 3: Distribution
+    "distribution_shift_test",
+    "detect_outliers_robust",
+    "bootstrap_distribution",
 ]
