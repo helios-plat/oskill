@@ -245,3 +245,139 @@ def regime_transition_analysis(
         "half_life": half_life,
         "data_summary_per_regime": data_summary,
     }
+
+
+def commodity_ratio_analytics(
+    numerator: pd.Series,
+    denominator: pd.Series,
+    *,
+    benchmark_window: int = 252,
+) -> dict:
+    """Analyze commodity price ratio with regime classification.
+
+    Calls:
+        oprim.percentile_rank, oprim.zscore_normalize
+
+    Args:
+        numerator: Price series of numerator asset.
+        denominator: Price series of denominator asset.
+        benchmark_window: Rolling window for percentile/zscore.
+
+    Returns:
+        Dict with ratio_series, current_ratio, percentile_rank, zscore, regime.
+    """
+    if not isinstance(numerator, pd.Series):
+        numerator = pd.Series(numerator)
+    if not isinstance(denominator, pd.Series):
+        denominator = pd.Series(denominator)
+    if len(numerator) != len(denominator):
+        raise ValueError("numerator and denominator must have same length")
+    if (denominator == 0).any():
+        raise ValueError("denominator must not contain zeros")
+
+    ratio = numerator / denominator
+    ratio_series = ratio.dropna()
+
+    if len(ratio_series) < 20:
+        raise ValueError("Need at least 20 data points")
+
+    current = float(ratio_series.iloc[-1])
+
+    # Use oprim for percentile and zscore
+    prank = oprim.percentile_rank(ratio_series, method="expanding")
+    current_pct = float(prank.iloc[-1]) if not np.isnan(prank.iloc[-1]) else 0.5
+
+    zscores = oprim.zscore_normalize(ratio_series, window=benchmark_window, min_periods=20)
+    current_z = float(zscores.iloc[-1]) if not np.isnan(zscores.iloc[-1]) else 0.0
+
+    # Regime classification
+    if current_pct > 0.95 or current_z > 2:
+        regime = "extreme_high"
+    elif current_pct > 0.75 or current_z > 1:
+        regime = "high"
+    elif current_pct < 0.05 or current_z < -2:
+        regime = "extreme_low"
+    elif current_pct < 0.25 or current_z < -1:
+        regime = "low"
+    else:
+        regime = "normal"
+
+    return {
+        "ratio_series": ratio_series,
+        "current_ratio": current,
+        "percentile_rank": current_pct,
+        "zscore": current_z,
+        "regime": regime,
+    }
+
+
+def geopolitical_risk_index(
+    events: pd.DataFrame,
+    *,
+    decay_half_life: int = 30,
+) -> dict:
+    """Compute geopolitical risk index from event data.
+
+    Calls:
+        oprim.ewma_smooth, oprim.percentile_rank, oprim.zscore_normalize
+
+    Args:
+        events: DataFrame with columns: timestamp, intensity, region, weight.
+        decay_half_life: Half-life in days for exponential decay.
+
+    Returns:
+        Dict with index_series, current_value, percentile_rank, regime, top_contributors.
+    """
+    required = {"timestamp", "intensity"}
+    if not required.issubset(events.columns):
+        raise ValueError(f"events must have columns: {required}")
+    if len(events) == 0:
+        raise ValueError("events must not be empty")
+
+    df = events.copy()
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df = df.sort_values("timestamp")
+
+    # Compute weighted intensity
+    weight_col = df["weight"].values if "weight" in df.columns else np.ones(len(df))
+    weighted_intensity = df["intensity"].values * weight_col
+
+    # Create daily time series
+    daily_idx = pd.date_range(df["timestamp"].min(), df["timestamp"].max(), freq="D")
+    daily_series = pd.Series(0.0, index=daily_idx)
+    for i, row in df.iterrows():
+        date = row["timestamp"].normalize()
+        if date in daily_series.index:
+            daily_series.loc[date] += weighted_intensity[df.index.get_loc(i)]
+
+    # Apply EWMA decay using oprim
+    index_series = oprim.ewma_smooth(daily_series, half_life=decay_half_life)
+
+    current_value = float(index_series.iloc[-1])
+
+    # Percentile and regime
+    prank = oprim.percentile_rank(index_series, method="expanding")
+    current_pct = float(prank.iloc[-1]) if len(prank) > 0 and not np.isnan(prank.iloc[-1]) else 0.5
+
+    if current_pct > 0.9:
+        regime = "extreme"
+    elif current_pct > 0.7:
+        regime = "elevated"
+    elif current_pct > 0.3:
+        regime = "normal"
+    else:
+        regime = "low"
+
+    # Top contributors (most recent events by intensity)
+    recent = df.tail(10).sort_values("intensity", ascending=False)
+    top_contributors = recent[["timestamp", "intensity"]].head(5).to_dict("records")
+    if "region" in df.columns:
+        top_contributors = recent[["timestamp", "intensity", "region"]].head(5).to_dict("records")
+
+    return {
+        "index_series": index_series,
+        "current_value": current_value,
+        "percentile_rank": current_pct,
+        "regime": regime,
+        "top_contributors": top_contributors,
+    }

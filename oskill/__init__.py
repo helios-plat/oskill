@@ -14,6 +14,8 @@ from oskill.performance import (
 )
 from oskill.prediction import calibration_analysis
 from oskill.similarity import (
+    commodity_ratio_analytics,
+    geopolitical_risk_index,
     historical_analogy_search,
     regime_transition_analysis,
 )
@@ -41,6 +43,8 @@ __all__ = [
     # Group 4: Similarity
     "historical_analogy_search",
     "regime_transition_analysis",
+    "commodity_ratio_analytics",
+    "geopolitical_risk_index",
     # Group 5: Prediction
     "calibration_analysis",
 ]
