@@ -12,6 +12,7 @@ from oskill.performance import (
     psr_dsr,
     regime_aware_performance,
 )
+from oskill.prediction import calibration_analysis
 from oskill.similarity import (
     historical_analogy_search,
     regime_transition_analysis,
@@ -40,4 +41,6 @@ __all__ = [
     # Group 4: Similarity
     "historical_analogy_search",
     "regime_transition_analysis",
+    # Group 5: Prediction
+    "calibration_analysis",
 ]
