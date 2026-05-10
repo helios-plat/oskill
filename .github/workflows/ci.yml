@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feat/**", "setup/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - run: ruff check oskill/ tests/
+      - name: Layer 2 discipline check - no internal imports
+        run: |
+          if grep -rn "from oskill\." oskill/*.py | grep -v "__init__" | grep -v "_version" | grep -v "_base"; then
+            echo "ERROR: Layer 2 discipline violated - oskill modules must not import each other"
+            exit 1
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pytest --cov=oskill --cov-report=term-missing --cov-fail-under=90
