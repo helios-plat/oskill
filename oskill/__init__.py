@@ -12,6 +12,10 @@ from oskill.performance import (
     psr_dsr,
     regime_aware_performance,
 )
+from oskill.similarity import (
+    historical_analogy_search,
+    regime_transition_analysis,
+)
 from oskill.validation import (
     cpcv_pipeline,
     regime_aware_rolling,
@@ -33,4 +37,7 @@ __all__ = [
     "distribution_shift_test",
     "detect_outliers_robust",
     "bootstrap_distribution",
+    # Group 4: Similarity
+    "historical_analogy_search",
+    "regime_transition_analysis",
 ]
