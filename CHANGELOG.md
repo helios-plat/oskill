@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0] - 2026-05-11
+
+### Added
+
+#### Group 4: Similarity Retrieval
+- `commodity_ratio_analytics` — Commodity price ratio analysis with regime classification (calls `percentile_rank`, `zscore_normalize`)
+- `geopolitical_risk_index` — Geopolitical risk index from event data with EWMA decay (calls `ewma_smooth`, `percentile_rank`)
+
+### Infrastructure
+- 27 new tests for the two new skills (211 total, up from 184)
+- Updated docs/INDEX.md with new skill entries
+
 ## [1.0.0] - 2026-05-10
 
 ### Added

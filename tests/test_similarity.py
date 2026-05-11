@@ -256,3 +256,276 @@ class TestRegimeTransitionAnalysis:
             if 0 < p_stay < 1:
                 expected_hl = np.log(0.5) / np.log(p_stay)
                 assert abs(result["half_life"][regime] - expected_hl) < 1e-10
+
+
+# ============================================================
+# commodity_ratio_analytics tests
+# ============================================================
+
+from oskill.similarity import commodity_ratio_analytics, geopolitical_risk_index
+
+
+class TestCommodityRatioAnalytics:
+    """Tests for commodity_ratio_analytics."""
+
+    def test_basic_ratio(self):
+        """Basic ratio computation returns expected keys."""
+        rng = np.random.default_rng(42)
+        num = pd.Series(rng.normal(100, 5, 60))
+        den = pd.Series(rng.normal(50, 2, 60))
+        result = commodity_ratio_analytics(num, den)
+        assert "ratio_series" in result
+        assert "current_ratio" in result
+        assert "percentile_rank" in result
+        assert "zscore" in result
+        assert "regime" in result
+
+    def test_current_ratio_value(self):
+        """current_ratio equals last value of ratio_series."""
+        num = pd.Series(np.linspace(100, 200, 30))
+        den = pd.Series(np.ones(30) * 50)
+        result = commodity_ratio_analytics(num, den)
+        assert result["current_ratio"] == pytest.approx(200.0 / 50.0)
+
+    def test_regime_normal(self):
+        """Stable ratio → normal regime."""
+        rng = np.random.default_rng(42)
+        # Constant ratio with tiny noise
+        num = pd.Series(100 + rng.normal(0, 0.01, 60))
+        den = pd.Series(np.ones(60) * 50)
+        result = commodity_ratio_analytics(num, den)
+        assert result["regime"] in ("normal", "high", "low")
+
+    def test_regime_extreme_high(self):
+        """Strongly increasing ratio → extreme_high regime."""
+        # Monotonically increasing ratio
+        num = pd.Series(np.linspace(50, 500, 60))
+        den = pd.Series(np.ones(60) * 50)
+        result = commodity_ratio_analytics(num, den)
+        assert result["regime"] in ("extreme_high", "high")
+
+    def test_regime_extreme_low(self):
+        """Strongly decreasing ratio → extreme_low regime."""
+        num = pd.Series(np.linspace(500, 50, 60))
+        den = pd.Series(np.ones(60) * 50)
+        result = commodity_ratio_analytics(num, den)
+        assert result["regime"] in ("extreme_low", "low")
+
+    def test_different_lengths_raises(self):
+        """Different length series raises ValueError."""
+        num = pd.Series(np.ones(30))
+        den = pd.Series(np.ones(20))
+        with pytest.raises(ValueError, match="same length"):
+            commodity_ratio_analytics(num, den)
+
+    def test_zero_denominator_raises(self):
+        """Zero in denominator raises ValueError."""
+        num = pd.Series(np.ones(30))
+        den = pd.Series(np.ones(30))
+        den.iloc[5] = 0
+        with pytest.raises(ValueError, match="zeros"):
+            commodity_ratio_analytics(num, den)
+
+    def test_too_short_raises(self):
+        """Less than 20 data points raises ValueError."""
+        num = pd.Series(np.ones(10))
+        den = pd.Series(np.ones(10) * 2)
+        with pytest.raises(ValueError, match="at least 20"):
+            commodity_ratio_analytics(num, den)
+
+    def test_accepts_numpy_arrays(self):
+        """Accepts numpy arrays (auto-converted to Series)."""
+        rng = np.random.default_rng(42)
+        num = rng.normal(100, 5, 60)
+        den = rng.normal(50, 2, 60)
+        result = commodity_ratio_analytics(num, den)
+        assert result["current_ratio"] > 0
+
+    def test_custom_benchmark_window(self):
+        """Custom benchmark_window is accepted."""
+        rng = np.random.default_rng(42)
+        num = pd.Series(rng.normal(100, 5, 60))
+        den = pd.Series(rng.normal(50, 2, 60))
+        result = commodity_ratio_analytics(num, den, benchmark_window=30)
+        assert "zscore" in result
+
+    def test_integration_mock_percentile_rank(self, mocker):
+        """Integration: oprim.percentile_rank called."""
+        mock_pr = mocker.patch(
+            "oskill.similarity.oprim.percentile_rank",
+            return_value=pd.Series(np.linspace(0, 1, 60)),
+        )
+        mocker.patch(
+            "oskill.similarity.oprim.zscore_normalize",
+            return_value=pd.Series(np.zeros(60)),
+        )
+        num = pd.Series(np.linspace(100, 200, 60))
+        den = pd.Series(np.ones(60) * 50)
+        commodity_ratio_analytics(num, den)
+        mock_pr.assert_called_once()
+
+    def test_integration_mock_zscore_normalize(self, mocker):
+        """Integration: oprim.zscore_normalize called with correct window."""
+        mocker.patch(
+            "oskill.similarity.oprim.percentile_rank",
+            return_value=pd.Series(np.linspace(0, 1, 60)),
+        )
+        mock_zn = mocker.patch(
+            "oskill.similarity.oprim.zscore_normalize",
+            return_value=pd.Series(np.zeros(60)),
+        )
+        num = pd.Series(np.linspace(100, 200, 60))
+        den = pd.Series(np.ones(60) * 50)
+        commodity_ratio_analytics(num, den, benchmark_window=100)
+        mock_zn.assert_called_once()
+        _, kwargs = mock_zn.call_args
+        assert kwargs["window"] == 100
+
+    def test_percentile_rank_in_range(self):
+        """percentile_rank is between 0 and 1."""
+        rng = np.random.default_rng(42)
+        num = pd.Series(rng.normal(100, 5, 60))
+        den = pd.Series(rng.normal(50, 2, 60))
+        result = commodity_ratio_analytics(num, den)
+        assert 0 <= result["percentile_rank"] <= 1
+
+
+# ============================================================
+# geopolitical_risk_index tests
+# ============================================================
+
+
+class TestGeopoliticalRiskIndex:
+    """Tests for geopolitical_risk_index."""
+
+    def _make_events(self, n=50, with_region=False, with_weight=False, rng=None):
+        """Helper to create event DataFrame."""
+        if rng is None:
+            rng = np.random.default_rng(42)
+        dates = pd.date_range("2024-01-01", periods=n, freq="D")
+        df = pd.DataFrame({
+            "timestamp": dates,
+            "intensity": rng.uniform(1, 10, n),
+        })
+        if with_region:
+            df["region"] = rng.choice(["US", "EU", "APAC"], n)
+        if with_weight:
+            df["weight"] = rng.uniform(0.5, 2.0, n)
+        return df
+
+    def test_basic_output_keys(self):
+        """Returns expected keys."""
+        events = self._make_events()
+        result = geopolitical_risk_index(events)
+        assert "index_series" in result
+        assert "current_value" in result
+        assert "percentile_rank" in result
+        assert "regime" in result
+        assert "top_contributors" in result
+
+    def test_current_value_positive(self):
+        """current_value is positive for positive intensity events."""
+        events = self._make_events()
+        result = geopolitical_risk_index(events)
+        assert result["current_value"] > 0
+
+    def test_regime_valid_values(self):
+        """regime is one of the valid values."""
+        events = self._make_events()
+        result = geopolitical_risk_index(events)
+        assert result["regime"] in ("extreme", "elevated", "normal", "low")
+
+    def test_high_intensity_spike(self):
+        """High intensity at end → elevated/extreme regime."""
+        rng = np.random.default_rng(42)
+        events = self._make_events(n=60, rng=rng)
+        # Add a massive spike at the end
+        spike = pd.DataFrame({
+            "timestamp": pd.date_range("2024-02-25", periods=5, freq="D"),
+            "intensity": [100, 100, 100, 100, 100],
+        })
+        events = pd.concat([events, spike], ignore_index=True)
+        result = geopolitical_risk_index(events)
+        assert result["regime"] in ("extreme", "elevated")
+
+    def test_with_weight_column(self):
+        """Weight column is used in computation."""
+        events = self._make_events(with_weight=True)
+        result = geopolitical_risk_index(events)
+        assert result["current_value"] > 0
+
+    def test_with_region_column(self):
+        """Region column included in top_contributors."""
+        events = self._make_events(with_region=True)
+        result = geopolitical_risk_index(events)
+        assert len(result["top_contributors"]) > 0
+        assert "region" in result["top_contributors"][0]
+
+    def test_without_region_column(self):
+        """Without region, top_contributors has timestamp+intensity only."""
+        events = self._make_events(with_region=False)
+        result = geopolitical_risk_index(events)
+        assert len(result["top_contributors"]) > 0
+        assert "region" not in result["top_contributors"][0]
+
+    def test_missing_columns_raises(self):
+        """Missing required columns raises ValueError."""
+        df = pd.DataFrame({"foo": [1, 2, 3]})
+        with pytest.raises(ValueError, match="columns"):
+            geopolitical_risk_index(df)
+
+    def test_empty_events_raises(self):
+        """Empty DataFrame raises ValueError."""
+        df = pd.DataFrame({"timestamp": [], "intensity": []})
+        with pytest.raises(ValueError, match="empty"):
+            geopolitical_risk_index(df)
+
+    def test_custom_decay_half_life(self):
+        """Custom decay_half_life is accepted."""
+        events = self._make_events()
+        r1 = geopolitical_risk_index(events, decay_half_life=5)
+        r2 = geopolitical_risk_index(events, decay_half_life=60)
+        # Shorter half-life → more recent events dominate → different value
+        assert r1["current_value"] != r2["current_value"]
+
+    def test_top_contributors_max_5(self):
+        """top_contributors has at most 5 entries."""
+        events = self._make_events(n=100)
+        result = geopolitical_risk_index(events)
+        assert len(result["top_contributors"]) <= 5
+
+    def test_percentile_rank_in_range(self):
+        """percentile_rank is between 0 and 1."""
+        events = self._make_events()
+        result = geopolitical_risk_index(events)
+        assert 0 <= result["percentile_rank"] <= 1
+
+    def test_integration_mock_ewma_smooth(self, mocker):
+        """Integration: oprim.ewma_smooth called with half_life."""
+        mock_ewma = mocker.patch(
+            "oskill.similarity.oprim.ewma_smooth",
+            return_value=pd.Series(np.ones(50), index=pd.date_range("2024-01-01", periods=50)),
+        )
+        mocker.patch(
+            "oskill.similarity.oprim.percentile_rank",
+            return_value=pd.Series(np.linspace(0, 1, 50)),
+        )
+        events = self._make_events()
+        geopolitical_risk_index(events, decay_half_life=15)
+        mock_ewma.assert_called_once()
+        _, kwargs = mock_ewma.call_args
+        assert kwargs["half_life"] == 15
+
+    def test_integration_mock_percentile_rank(self, mocker):
+        """Integration: oprim.percentile_rank called on index_series."""
+        mocker.patch(
+            "oskill.similarity.oprim.ewma_smooth",
+            return_value=pd.Series(np.ones(50), index=pd.date_range("2024-01-01", periods=50)),
+        )
+        mock_pr = mocker.patch(
+            "oskill.similarity.oprim.percentile_rank",
+            return_value=pd.Series(np.linspace(0, 1, 50)),
+        )
+        events = self._make_events()
+        geopolitical_risk_index(events)
+        mock_pr.assert_called_once()

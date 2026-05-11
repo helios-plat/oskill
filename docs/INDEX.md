@@ -31,6 +31,8 @@
 |-------|-------------|-------|
 | `historical_analogy_search` | Historical analogy ensemble search | `dtw_distance`, `wasserstein_distance`, `cosine_similarity_batch`, `euclidean_distance_matrix` |
 | `regime_transition_analysis` | Regime transition matrix + duration analysis | `regime_transition_matrix`, `regime_filter_data`, `distribution_summary` |
+| `commodity_ratio_analytics` | Commodity price ratio analysis + regime classification | `percentile_rank`, `zscore_normalize` |
+| `geopolitical_risk_index` | Geopolitical risk index from event data with EWMA decay | `ewma_smooth`, `percentile_rank` |
 
 ## Group 5: Prediction Quality
 
