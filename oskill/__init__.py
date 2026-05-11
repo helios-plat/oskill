@@ -1,18 +1,22 @@
 """oskill — Composite financial analysis workflows built on oprim atomic operations."""
 
 from oskill._version import __version__
+from oskill.causal import symbolic_transfer_entropy
 from oskill.distribution import (
     bootstrap_distribution,
     detect_outliers_robust,
     distribution_shift_test,
 )
+from oskill.hmm import gaussian_hmm
 from oskill.performance import (
     bootstrap_sharpe,
     factor_attribution,
     psr_dsr,
     regime_aware_performance,
 )
+from oskill.point_process import fit_hawkes
 from oskill.prediction import calibration_analysis
+from oskill.signal_detection import adx, cusum_detector, platt_calibration
 from oskill.similarity import (
     commodity_ratio_analytics,
     geopolitical_risk_index,
@@ -47,4 +51,14 @@ __all__ = [
     "geopolitical_risk_index",
     # Group 5: Prediction
     "calibration_analysis",
+    # Group 6: Signal Detection (NEW from Selene)
+    "adx",
+    "cusum_detector",
+    "platt_calibration",
+    # Group 7: Point Process (NEW from Selene)
+    "fit_hawkes",
+    # Group 8: Causal (NEW from Selene)
+    "symbolic_transfer_entropy",
+    # Group 9: HMM (NEW from Selene)
+    "gaussian_hmm",
 ]
