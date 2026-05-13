@@ -8,6 +8,8 @@ from oskill.distribution import (
     distribution_shift_test,
 )
 from oskill.hmm import gaussian_hmm
+from oskill.factor import factor_ic
+from oskill.labeling import triple_barrier_label
 from oskill.performance import (
     bootstrap_sharpe,
     factor_attribution,
