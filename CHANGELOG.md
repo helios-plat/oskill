@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.0.0] - 2026-05-14
+
+### Added — Phase 10 (17 new elements)
+
+#### Behavioral Finance
+- `behavioral/cpt_portfolio.py`: `cpt_portfolio_optimize` (Tversky-Kahneman CPT portfolio via convex relaxation)
+- `behavioral/cpt_analytical.py`: `cpt_portfolio_analytical` (Bernard-Ghossoub 2010 closed-form)
+- `behavioral/salience_pricing.py`: `salience_asset_pricing` (BGS 2013)
+- `robust/maxmin_eu.py`: `maxmin_expected_utility_portfolio` (Gilboa-Schmeidler 1989)
+
+#### Networks + Systemic Risk
+- `networks/centrality.py`: `financial_network_centrality`
+- `networks/clearing.py`: `eisenberg_noe_clearing` (Eisenberg-Noe 2001)
+- `networks/contagion.py`: `contagion_simulate`
+- `risk/systemic.py`: `systemic_risk_metrics` (CoVaR, MES, SRISK)
+
+#### Spectral + Portfolio
+- `spectral/laplacian.py`: `graph_laplacian_compute`
+- `spectral/clustering.py`: `spectral_asset_clustering` (MST, PMFG, spectral)
+- `portfolio/hrp.py`: `hierarchical_risk_parity_v2` (RIE-cleaned HRP, López de Prado 2016)
+- `portfolio/ssd_milp.py`: `ssd_milp_optimizer` (Second-order Stochastic Dominance MILP)
+
+#### Microstructure
+- `microstructure/state_hawkes.py`: `order_book_state_hawkes`
+
+#### Robust Control
+- `robust/multiplier_preferences.py`: `multiplier_preferences_robust` (Hansen-Sargent)
+- `robust/variational_preferences.py`: `variational_preferences_estimate`
+- `robust/smooth_ambiguity.py`: `smooth_ambiguity_portfolio` (KMM 2005)
+
+#### Recursive Utility
+- `recursive_utility/ez_solver.py`: `epstein_zin_solver` (Bansal-Yaron 2004)
+
+### Changed
+- Version bump: 1.11.0 → 2.0.0
+- Dependency: oprim >=2.0.0,<3.0.0
+
+## [1.11.0] - 2026-05-09
+### Added — Phase 9A
+- signature_kernel, signature_based_pricing, avellaneda_stoikov_quotes, cartea_jaimungal_optimal_quotes, operational_risk_lda
+
 ## [1.5.0] - 2026-05-14
 
 ### Added (Phase 2: 5 new elements)
@@ -66,7 +107,7 @@
 - JSON Schemas in `oskill/schemas/signals/` and `oskill/schemas/llm/`
 - All elements have `@pytest.mark.academic_reference` tests
 - LLM elements use dependency injection: caller provides `client_fn`; oskill does no network I/O
-- Coverage: oskill total ≥90%, Phase 1 elements 100%
+- Coverage: oskill total >=90%, Phase 1 elements 100%
 
 ### Architecture Note
 The LLM integration follows the "delegated I/O" pattern: `oskill.llm.*` accepts a `client_fn`
@@ -114,7 +155,7 @@ enabling LLM-augmented signal generation and audit-grade fingerprinting.
 
 ### Infrastructure
 - Package skeleton with pyproject.toml (hatchling build)
-- CI workflow (lint + test + coverage gate ≥ 90%)
+- CI workflow (lint + test + coverage gate >= 90%)
 - Layer 2 discipline enforcement (no internal imports, must use oprim)
 - 181 tests, 95.77% coverage
 

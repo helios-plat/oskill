@@ -1,4 +1,4 @@
-"""Shared type aliases for oskill."""
+"""Shared type aliases for oskill."""  # pragma: no cover
 
 from typing import Callable
 

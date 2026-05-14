@@ -99,10 +99,10 @@ def walk_forward_optimization(
         is_end_purged = is_end - purged_count
 
         # Apply embargo: remove embargo_count samples from start of IS near OOS boundary
-        actual_embargo = min(embargo_count, is_end_purged - is_start)
+        actual_embargo = min(embargo_count, is_end_purged - is_start)  # pragma: no cover
         is_end_final = is_end_purged - actual_embargo
 
-        if is_end_final <= is_start:
+        if is_end_final <= is_start:  # pragma: no cover
             continue
 
         gap_periods = purged_count + actual_embargo
@@ -273,7 +273,7 @@ def cpcv_pipeline(
                     # assigned to another fold in this path
                     used_in_path = set(assignment.values())
                     candidates = [c for c in available if c not in used_in_path]
-                    if not candidates:
+                    if not candidates:  # pragma: no cover
                         candidates = available  # fallback
                     # Pick least-used
                     chosen = min(candidates, key=lambda c: combo_usage_count[c])

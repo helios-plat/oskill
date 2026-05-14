@@ -82,11 +82,11 @@ def conformal_with_change_points(
         else:
             cps = sorted(int(cp) for cp in change_points if 0 < cp < T)
     elif detection_method == "bocpd":
-        from oskill.change_point.bayesian_online import bocpd_bayesian
+        from oskill import bocpd_bayesian
         result_bocpd = bocpd_bayesian(acts, **kwargs)
         cps = sorted(int(cp) for cp in result_bocpd["change_points"] if 0 < cp < T)
     elif detection_method == "pelt":
-        from oskill.change_point.pelt import pelt_change_point
+        from oskill import pelt_change_point
         result_pelt = pelt_change_point(acts, **kwargs)
         cps = sorted(int(cp) for cp in result_pelt["change_points"] if 0 < cp < T)
     else:

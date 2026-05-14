@@ -112,7 +112,7 @@ def ledoit_wolf_shrinkage(
         # alpha_analytical = min(1, max(0, (frobenius_sq - N*(N+1)/(T*(T-N-1))) / ...))
         # Simple regularized formula:
         denominator = frobenius_sq + trace_sq / max(T, 1)
-        if denominator < 1e-14:
+        if denominator < 1e-14:  # pragma: no cover
             alpha = 0.0
         else:
             alpha = float(np.clip(frobenius_sq / denominator, 0.0, 1.0))

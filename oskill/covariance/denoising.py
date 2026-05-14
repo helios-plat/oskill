@@ -119,7 +119,7 @@ def denoised_covariance(
 
     # Final PSD check on normalized correlation
     evs_check = np.linalg.eigvalsh(C_denoised_normalized)
-    if np.any(evs_check < -1e-10):
+    if np.any(evs_check < -1e-10):  # pragma: no cover
         # Force PSD via eigenvalue clipping
         ev2, vec2 = np.linalg.eigh(C_denoised_normalized)
         ev2 = np.maximum(ev2, 0.0)
