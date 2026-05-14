@@ -13,6 +13,11 @@ from oskill.bayesian.hierarchical import hierarchical_bayes_normal
 from oskill.bayesian.linear_regression import bayesian_linear_regression
 from oskill.bayesian.posterior_diagnostics import posterior_diagnostics
 from oskill.bayesian.var import bayesian_var
+from oskill.behavioral.cpt_analytical import cpt_portfolio_analytical
+
+# Phase 10: Behavioral Portfolio
+from oskill.behavioral.cpt_portfolio import cpt_portfolio_optimize
+from oskill.behavioral.salience_pricing import salience_asset_pricing
 from oskill.causal import symbolic_transfer_entropy
 
 # Phase 7D: Causal Discovery
@@ -76,6 +81,9 @@ from oskill.microstructure.liquidity import amihud_illiquidity, kyle_lambda_esti
 
 # Phase 4: Microstructure
 from oskill.microstructure.order_flow import order_flow_imbalance
+
+# Phase 10: Microstructure
+from oskill.microstructure.state_hawkes import order_book_state_hawkes
 from oskill.ml_finance.bet_sizing import bet_sizing
 from oskill.ml_finance.cusum_filter import cusum_filter
 from oskill.ml_finance.fractional_diff import fractional_differentiation
@@ -84,6 +92,11 @@ from oskill.ml_finance.sample_weights import return_attribution_weights, sample_
 
 # Phase 4 prerequisites + Phase 5B: ml_finance
 from oskill.ml_finance.triple_barrier import triple_barrier_label
+
+# Phase 10: Networks + Systemic Risk
+from oskill.networks.centrality import financial_network_centrality
+from oskill.networks.clearing import eisenberg_noe_clearing
+from oskill.networks.contagion import contagion_simulate
 
 # Phase 9A: Operational Risk
 from oskill.operational_risk.lda import operational_risk_lda
@@ -94,11 +107,23 @@ from oskill.performance import (
     regime_aware_performance,
 )
 from oskill.point_process import fit_hawkes
+from oskill.portfolio.hrp import hierarchical_risk_parity_v2
+from oskill.portfolio.ssd_milp import ssd_milp_optimizer
 from oskill.prediction import calibration_analysis
 
 # Phase 3: RAG
 from oskill.rag.chunking import chunking_strategy_apply
 from oskill.rag.reranking import reranker_score
+
+# Phase 10: Recursive Utility
+from oskill.recursive_utility.ez_solver import epstein_zin_solver
+from oskill.risk.systemic import systemic_risk_metrics
+from oskill.robust.maxmin_eu import maxmin_expected_utility_portfolio
+
+# Phase 10: Robust Control
+from oskill.robust.multiplier_preferences import multiplier_preferences_robust
+from oskill.robust.smooth_ambiguity import smooth_ambiguity_portfolio
+from oskill.robust.variational_preferences import variational_preferences_estimate
 from oskill.scm_fit import structural_causal_model_fit
 from oskill.signal_detection import adx, cusum_detector, platt_calibration
 from oskill.signals.aggregation import weighted_signal_aggregation
@@ -113,6 +138,10 @@ from oskill.similarity import (
     historical_analogy_search,
     regime_transition_analysis,
 )
+from oskill.spectral.clustering import spectral_asset_clustering
+
+# Phase 10: Spectral + Portfolio
+from oskill.spectral.laplacian import graph_laplacian_compute
 
 # Phase 4: State Space
 from oskill.state_space.kalman import kalman_filter_pipeline, kalman_smoother
@@ -252,4 +281,27 @@ __all__ = [
     "cartea_jaimungal_optimal_quotes",
     # Group 31: Operational Risk (Phase 9A)
     "operational_risk_lda",
+    # Group 32: Behavioral Portfolio (Phase 10)
+    "cpt_portfolio_optimize",
+    "maxmin_expected_utility_portfolio",
+    "cpt_portfolio_analytical",
+    "salience_asset_pricing",
+    # Group 33: Networks + Systemic Risk (Phase 10)
+    "financial_network_centrality",
+    "eisenberg_noe_clearing",
+    "systemic_risk_metrics",
+    "contagion_simulate",
+    # Group 34: Spectral + Portfolio (Phase 10)
+    "graph_laplacian_compute",
+    "spectral_asset_clustering",
+    "hierarchical_risk_parity_v2",
+    "ssd_milp_optimizer",
+    # Group 35: Microstructure (Phase 10)
+    "order_book_state_hawkes",
+    # Group 36: Robust Control (Phase 10)
+    "multiplier_preferences_robust",
+    "variational_preferences_estimate",
+    "smooth_ambiguity_portfolio",
+    # Group 37: Recursive Utility (Phase 10)
+    "epstein_zin_solver",
 ]
