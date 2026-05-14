@@ -32,6 +32,14 @@ from oskill.validation import (
     regime_aware_rolling,
     walk_forward_optimization,
 )
+# Phase 2: Covariance
+from oskill.covariance.shrinkage import ledoit_wolf_shrinkage
+from oskill.covariance.denoising import denoised_covariance
+# Phase 2: Validation
+from oskill.validation.pbo import probability_of_backtest_overfitting
+from oskill.validation.deflated_sharpe import deflated_sharpe_ratio
+# Phase 2: Factor
+from oskill.factor.quantile_returns import factor_quantile_returns
 
 __all__ = [
     "__version__",
@@ -71,4 +79,12 @@ __all__ = [
     # Group 11: LLM (Phase 1)
     "deterministic_llm_call",
     "prompt_fingerprint",
+    # Group 12: Covariance (Phase 2)
+    "ledoit_wolf_shrinkage",
+    "denoised_covariance",
+    # Group 13: Validation (Phase 2)
+    "probability_of_backtest_overfitting",
+    "deflated_sharpe_ratio",
+    # Group 14: Factor (Phase 2)
+    "factor_quantile_returns",
 ]

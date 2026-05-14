@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.5.0] - 2026-05-14
+
+### Added (Phase 2: 5 new elements)
+
+#### Covariance Estimation (`oskill.covariance`)
+- `ledoit_wolf_shrinkage`: Ledoit-Wolf analytical shrinkage covariance estimator with three
+  target options (constant_correlation, constant_variance, identity). Uses sklearn OAS as
+  oracle for identity target; custom closed-form formula for other targets.
+  Reference: Ledoit & Wolf (2004), "Honey, I Shrunk the Sample Covariance Matrix".
+- `denoised_covariance`: Random Matrix Theory denoising via Marchenko-Pastur filter.
+  Removes noise eigenvalues (below MP upper bound lambda_+ = (1+sqrt(N/T))^2) and replaces
+  them with their mean to preserve trace. Supports mp_filter and constant_residual methods.
+  Reference: López de Prado (2020), "Machine Learning for Asset Managers", Ch.2.
+
+#### Validation Additions (`oskill.validation`)
+- `probability_of_backtest_overfitting`: CSCV method (Bailey et al., 2015). Splits T observations
+  into n_splits bins, evaluates C(n_splits, n_splits/2) train/test splits (capped at 500 samples),
+  computes fraction of splits where IS best strategy ranks below OOS median.
+  Reference: Bailey, Borwein, López de Prado, Zhu (2015), J. Computational Finance.
+- `deflated_sharpe_ratio`: Corrects for selection bias via E[max(SR)] adjustment.
+  Implements Bailey & LdP (2014) Eqs. 3-4: Euler-Mascheroni correction for N candidates,
+  non-normality adjustment via skewness/kurtosis.
+  Reference: Bailey & López de Prado (2014), Journal of Portfolio Management, 40(5), 94-107.
+
+#### Factor Analysis (`oskill.factor`)
+- `factor_quantile_returns`: Fama-MacBeth cross-sectional factor sorting into n_quantiles buckets.
+  Computes equal-weighted returns per quantile per period, long-short returns (Q_top - Q_bottom),
+  monotonicity score, and Sharpe ratio of the long-short portfolio.
+  Reference: Fama & MacBeth (1973); Grinold & Kahn (2000).
+
+### Infrastructure
+- New submodules: `oskill/covariance/`, `oskill/validation/` (package, extends existing module),
+  `oskill/factor/`
+- JSON Schemas in `oskill/schemas/covariance/`, `oskill/schemas/validation/`,
+  `oskill/schemas/factor/`
+- `oskill/validation/` is now a package (previously a flat module); backward compatible
+- All new elements have `@pytest.mark.academic_reference` tests
+
 ## [1.4.0] - 2026-05-14
 
 ### Added (Phase 1: 4 new elements)

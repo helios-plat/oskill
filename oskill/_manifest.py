@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
 ELEMENTS: list[str] = [
     # Group 1: Performance
@@ -40,6 +40,12 @@ ELEMENTS: list[str] = [
     "weighted_signal_aggregation",
     "deterministic_llm_call",
     "prompt_fingerprint",
+    # Phase 2 additions (v1.5.0):
+    "ledoit_wolf_shrinkage",
+    "denoised_covariance",
+    "probability_of_backtest_overfitting",
+    "deflated_sharpe_ratio",
+    "factor_quantile_returns",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -59,6 +65,9 @@ CATEGORIES: dict[str, list[str]] = {
     "hmm": ["gaussian_hmm"],
     "signals": ["signal_ensemble", "weighted_signal_aggregation"],
     "llm": ["deterministic_llm_call", "prompt_fingerprint"],
+    "covariance": ["ledoit_wolf_shrinkage", "denoised_covariance"],
+    "validation_phase2": ["probability_of_backtest_overfitting", "deflated_sharpe_ratio"],
+    "factor": ["factor_quantile_returns"],
 }
 
 STABILITY: dict[str, str] = {
@@ -88,4 +97,10 @@ STABILITY: dict[str, str] = {
     "weighted_signal_aggregation": "stable",
     "deterministic_llm_call": "experimental",
     "prompt_fingerprint": "stable",
+    # Phase 2 additions:
+    "ledoit_wolf_shrinkage": "stable",
+    "denoised_covariance": "stable",
+    "probability_of_backtest_overfitting": "stable",
+    "deflated_sharpe_ratio": "stable",
+    "factor_quantile_returns": "stable",
 }
