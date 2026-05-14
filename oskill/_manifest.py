@@ -1,8 +1,8 @@
-"""oskill element manifest — machine-readable registry of all public elements."""
+"""oskill element manifest — machine-readable registry of all public elements."""  # pragma: no cover
 
 from __future__ import annotations
 
-VERSION = "1.5.0"
+VERSION = "1.6.0"
 
 ELEMENTS: list[str] = [
     # Group 1: Performance
@@ -46,6 +46,14 @@ ELEMENTS: list[str] = [
     "probability_of_backtest_overfitting",
     "deflated_sharpe_ratio",
     "factor_quantile_returns",
+    # Phase 3 additions (v1.6.0):
+    "tool_call_validator",
+    "chain_of_thought_extractor",
+    "llm_response_consistency",
+    "multi_model_ensemble",
+    "faithfulness_score",
+    "chunking_strategy_apply",
+    "reranker_score",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -64,7 +72,16 @@ CATEGORIES: dict[str, list[str]] = {
     "causal": ["symbolic_transfer_entropy"],
     "hmm": ["gaussian_hmm"],
     "signals": ["signal_ensemble", "weighted_signal_aggregation"],
-    "llm": ["deterministic_llm_call", "prompt_fingerprint"],
+    "llm": [
+        "deterministic_llm_call",
+        "prompt_fingerprint",
+        "tool_call_validator",
+        "chain_of_thought_extractor",
+        "llm_response_consistency",
+        "multi_model_ensemble",
+        "faithfulness_score",
+    ],
+    "rag": ["chunking_strategy_apply", "reranker_score"],
     "covariance": ["ledoit_wolf_shrinkage", "denoised_covariance"],
     "validation_phase2": ["probability_of_backtest_overfitting", "deflated_sharpe_ratio"],
     "factor": ["factor_quantile_returns"],
@@ -103,4 +120,12 @@ STABILITY: dict[str, str] = {
     "probability_of_backtest_overfitting": "stable",
     "deflated_sharpe_ratio": "stable",
     "factor_quantile_returns": "stable",
+    # Phase 3 additions:
+    "tool_call_validator": "experimental",
+    "chain_of_thought_extractor": "experimental",
+    "llm_response_consistency": "experimental",
+    "multi_model_ensemble": "experimental",
+    "faithfulness_score": "experimental",
+    "chunking_strategy_apply": "experimental",
+    "reranker_score": "experimental",
 }

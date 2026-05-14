@@ -40,6 +40,15 @@ from oskill.validation.pbo import probability_of_backtest_overfitting
 from oskill.validation.deflated_sharpe import deflated_sharpe_ratio
 # Phase 2: Factor
 from oskill.factor.quantile_returns import factor_quantile_returns
+# Phase 3: LLM
+from oskill.llm.tool_validation import tool_call_validator
+from oskill.llm.cot import chain_of_thought_extractor
+from oskill.llm.consistency import llm_response_consistency
+from oskill.llm.multi_model import multi_model_ensemble
+from oskill.llm.faithfulness import faithfulness_score
+# Phase 3: RAG
+from oskill.rag.chunking import chunking_strategy_apply
+from oskill.rag.reranking import reranker_score
 
 __all__ = [
     "__version__",
@@ -87,4 +96,13 @@ __all__ = [
     "deflated_sharpe_ratio",
     # Group 14: Factor (Phase 2)
     "factor_quantile_returns",
+    # Group 15: LLM (Phase 3)
+    "tool_call_validator",
+    "chain_of_thought_extractor",
+    "llm_response_consistency",
+    "multi_model_ensemble",
+    "faithfulness_score",
+    # Group 16: RAG (Phase 3)
+    "chunking_strategy_apply",
+    "reranker_score",
 ]

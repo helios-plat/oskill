@@ -9,7 +9,7 @@ authors = [{ name = "Wiki" }]
 keywords = ["finance", "quantitative", "meta-skills", "bootstrap-sharpe", "cpcv", "calibration"]
 
 dependencies = [
-    "oprim>=1.4.0,<2.0.0",
+    "oprim>=1.6.0,<2.0.0",
     "numpy>=1.24",
     "scipy>=1.11",
     "pandas>=2.0",
