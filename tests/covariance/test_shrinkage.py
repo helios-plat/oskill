@@ -124,6 +124,26 @@ def test_lw_shrinkage_dataframe_input(sample_returns):
     assert result["covariance"].shape == (sample_returns.shape[1], sample_returns.shape[1])
 
 
+# ─── Additional A-class gap tests ─────────────────────────────────────────────
+
+
+def test_lw_shrinkage_ndarray_input():
+    """Pure ndarray input (not DataFrame) should work correctly."""
+    rng = np.random.default_rng(99)
+    data = rng.standard_normal((100, 5))  # plain ndarray
+    result = ledoit_wolf_shrinkage(data)
+    assert result["covariance"].shape == (5, 5)
+    assert 0.0 <= result["shrinkage_intensity"] <= 1.0
+
+
+def test_lw_shrinkage_single_asset_raises():
+    """N=1 (single asset) should raise ValueError."""
+    rng = np.random.default_rng(0)
+    data = rng.standard_normal((100, 1))  # 1D after reshape
+    with pytest.raises(ValueError, match="at least 2"):
+        ledoit_wolf_shrinkage(data)
+
+
 @pytest.mark.academic_reference
 def test_lw_shrinkage_ledoit_wolf_2004_paper(large_returns):
     """Identity target should match sklearn within rtol=0.05 for the covariance matrix.

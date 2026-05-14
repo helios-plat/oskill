@@ -119,6 +119,39 @@ def test_denoised_cov_dataframe_input(sample_returns):
     assert result["covariance"].shape == (sample_returns.shape[1],) * 2
 
 
+# ─── Additional A-class gap tests ─────────────────────────────────────────────
+
+
+def test_denoised_covariance_ndarray_input():
+    """Pure ndarray input (not DataFrame) should work correctly."""
+    rng = np.random.default_rng(7)
+    data = rng.standard_normal((200, 10))  # ndarray, not DataFrame
+    result = denoised_covariance(data)
+    assert result["covariance"].shape == (10, 10)
+    assert result["n_signal_eigenvalues"] >= 0
+
+
+def test_denoised_covariance_constant_residual_method():
+    """constant_residual method should return a valid 6-key dict."""
+    rng = np.random.default_rng(8)
+    data = rng.standard_normal((200, 10))
+    result = denoised_covariance(data, method="constant_residual")
+    expected_keys = {
+        "covariance", "correlation", "eigenvalues_original",
+        "eigenvalues_denoised", "lambda_plus", "n_signal_eigenvalues"
+    }
+    assert set(result.keys()) == expected_keys
+    assert result["covariance"].shape == (10, 10)
+
+
+def test_denoised_covariance_unknown_method_raises():
+    """Unknown method should raise ValueError."""
+    rng = np.random.default_rng(0)
+    data = rng.standard_normal((200, 10))
+    with pytest.raises(ValueError, match="Unknown method"):
+        denoised_covariance(data, method="bad_method")
+
+
 @pytest.mark.academic_reference
 def test_denoised_cov_mp_upper_bound_formula(sample_returns):
     """lambda_+ = (1 + sqrt(N/T))^2 per Marchenko-Pastur theory, rtol=1e-10.

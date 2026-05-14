@@ -386,6 +386,26 @@ class TestBootstrapDistribution:
         bootstrap_distribution(data, np.mean, n_bootstrap=200, include_density=True, random_state=42)
         mock_kde.assert_called_once()
 
+    def test_bootstrap_distribution_percentile_method(self):
+        """method='percentile' computes CI directly from bootstrap samples."""
+        rng = np.random.default_rng(5)
+        data = rng.normal(3.0, 1.0, 200)
+        result = bootstrap_distribution(data, np.mean, method="percentile",
+                                        n_bootstrap=500, random_state=5)
+        assert result["method"] == "percentile"
+        assert result["ci_low"] < result["ci_high"]
+        # CI should contain the true mean ≈ 3.0
+        assert result["ci_low"] < 3.0 < result["ci_high"]
+
+    def test_bootstrap_distribution_basic_method(self):
+        """method='basic' (reflection CI) computes ci without crashing."""
+        rng = np.random.default_rng(6)
+        data = rng.normal(2.0, 1.0, 200)
+        result = bootstrap_distribution(data, np.mean, method="basic",
+                                        n_bootstrap=500, random_state=6)
+        assert result["method"] == "basic"
+        assert result["ci_low"] < result["ci_high"]
+
     def test_academic_samples_mean_near_point_estimate(self):
         """Academic: mean of bootstrap samples ≈ point_estimate."""
         rng = np.random.default_rng(42)

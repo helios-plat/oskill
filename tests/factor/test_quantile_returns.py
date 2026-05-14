@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from oskill.factor import factor_quantile_returns
@@ -111,6 +112,73 @@ def test_factor_quantiles_monotonicity_score_range(random_data):
     factor, returns = random_data
     result = factor_quantile_returns(factor, returns, n_quantiles=5)
     assert 0.0 <= result["monotonicity_score"] <= 1.0
+
+
+# ─── Additional A-class gap tests ─────────────────────────────────────────────
+
+
+def test_factor_quantile_returns_dataframe_input():
+    """DataFrame inputs should work identically to ndarray inputs."""
+    rng = np.random.default_rng(11)
+    T, N = 50, 15
+    fv = rng.standard_normal((T, N))
+    fr = rng.standard_normal((T, N)) * 0.01
+    result_arr = factor_quantile_returns(fv, fr)
+    result_df = factor_quantile_returns(
+        pd.DataFrame(fv),
+        pd.DataFrame(fr),
+    )
+    np.testing.assert_allclose(
+        result_arr["mean_returns_by_quantile"],
+        result_df["mean_returns_by_quantile"],
+        rtol=1e-10,
+    )
+
+
+def test_factor_quantile_returns_shape_mismatch_raises():
+    """Mismatched T dimension should raise ValueError."""
+    rng = np.random.default_rng(0)
+    fv = rng.standard_normal((50, 10))
+    fr = rng.standard_normal((40, 10))  # different T
+    with pytest.raises(ValueError):
+        factor_quantile_returns(fv, fr)
+
+
+def test_factor_quantile_returns_1d_input():
+    """1D input arrays should be reshaped to (1, N) and run without error."""
+    rng = np.random.default_rng(3)
+    fv = rng.standard_normal(20)
+    fr = rng.standard_normal(20) * 0.01
+    result = factor_quantile_returns(fv, fr, n_quantiles=3)
+    assert result["quantile_returns"].shape == (1, 3)
+
+
+def test_factor_quantile_returns_too_few_assets_raises():
+    """N < n_quantiles should raise ValueError."""
+    rng = np.random.default_rng(0)
+    fv = rng.standard_normal((10, 3))
+    fr = rng.standard_normal((10, 3)) * 0.01
+    with pytest.raises(ValueError, match="n_quantiles"):
+        factor_quantile_returns(fv, fr, n_quantiles=5)
+
+
+def test_factor_quantile_returns_value_weighted():
+    """method='value_weighted' should return same shape as equal_weighted."""
+    rng = np.random.default_rng(5)
+    T, N = 40, 20
+    fv = rng.standard_normal((T, N))
+    fr = rng.standard_normal((T, N)) * 0.01
+    result = factor_quantile_returns(fv, fr, n_quantiles=5, method="value_weighted")
+    assert result["quantile_returns"].shape == (T, 5)
+
+
+def test_factor_quantile_returns_unknown_method_raises():
+    """Unknown method should raise ValueError."""
+    rng = np.random.default_rng(0)
+    fv = rng.standard_normal((20, 10))
+    fr = rng.standard_normal((20, 10)) * 0.01
+    with pytest.raises(ValueError, match="Unknown method"):
+        factor_quantile_returns(fv, fr, n_quantiles=3, method="bad_method")
 
 
 @pytest.mark.academic_reference
