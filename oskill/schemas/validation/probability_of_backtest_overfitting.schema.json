@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "probability_of_backtest_overfitting",
+  "description": "Probability of Backtest Overfitting (PBO) via CSCV method",
+  "type": "object",
+  "properties": {
+    "backtest_returns_matrix": {
+      "description": "T x N matrix (T observations, N strategies)",
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "number" } }
+    },
+    "n_splits": {
+      "description": "Number of equal bins (must be even, >= 2)",
+      "type": "integer",
+      "minimum": 2,
+      "default": 16
+    },
+    "metric": {
+      "description": "Performance metric",
+      "type": "string",
+      "enum": ["sharpe"],
+      "default": "sharpe"
+    },
+    "risk_free_rate": {
+      "description": "Risk-free rate for Sharpe computation",
+      "type": "number",
+      "default": 0.0
+    }
+  },
+  "required": ["backtest_returns_matrix"],
+  "output": {
+    "type": "object",
+    "properties": {
+      "pbo": {
+        "description": "Probability of backtest overfitting in [0, 1]",
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "rank_logits": {
+        "description": "Array of log(rank/(N-rank)) for each split",
+        "type": "array",
+        "items": { "type": "number" }
+      },
+      "performance_degradation": {
+        "description": "Mean performance degradation from IS to OOS",
+        "type": "number"
+      },
+      "is_significant_overfit": {
+        "description": "True if PBO > 0.55",
+        "type": "boolean"
+      }
+    },
+    "required": ["pbo", "rank_logits", "performance_degradation", "is_significant_overfit"]
+  },
+  "references": [
+    "Bailey, Borwein, López de Prado, Zhu (2015)",
+    "'The Probability of Backtest Overfitting', Journal of Computational Finance"
+  ]
+}
