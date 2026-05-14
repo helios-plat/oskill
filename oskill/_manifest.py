@@ -71,6 +71,18 @@ ELEMENTS: list[str] = [
     "carhart_4_factor_model",
     "barra_style_decomposition",
     "factor_neutralization",
+    # Phase 4: Microstructure (v1.8.0):
+    "order_flow_imbalance",
+    "dollar_bar_aggregation",
+    "volume_imbalance_bar",
+    "tick_imbalance_bar",
+    "kyle_lambda_estimator",
+    "amihud_illiquidity",
+    "hawkes_branching_ratio",
+    # Phase 4: State Space (v1.8.0):
+    "kalman_filter_pipeline",
+    "kalman_smoother",
+    "particle_filter_pipeline",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -113,6 +125,20 @@ CATEGORIES: dict[str, list[str]] = {
         "factor_ic", "factor_quantile_returns",
         "fama_french_5_factor_model", "carhart_4_factor_model",
         "barra_style_decomposition", "factor_neutralization",
+    ],
+    "microstructure": [
+        "order_flow_imbalance",
+        "dollar_bar_aggregation",
+        "volume_imbalance_bar",
+        "tick_imbalance_bar",
+        "kyle_lambda_estimator",
+        "amihud_illiquidity",
+        "hawkes_branching_ratio",
+    ],
+    "state_space": [
+        "kalman_filter_pipeline",
+        "kalman_smoother",
+        "particle_filter_pipeline",
     ],
 }
 
@@ -172,4 +198,16 @@ STABILITY: dict[str, str] = {
     "carhart_4_factor_model": "stable",
     "barra_style_decomposition": "stable",
     "factor_neutralization": "stable",
+    # Phase 4: Microstructure
+    "order_flow_imbalance": "stable",
+    "dollar_bar_aggregation": "stable",
+    "volume_imbalance_bar": "stable",
+    "tick_imbalance_bar": "stable",
+    "kyle_lambda_estimator": "stable",
+    "amihud_illiquidity": "stable",
+    "hawkes_branching_ratio": "stable",
+    # Phase 4: State Space
+    "kalman_filter_pipeline": "stable",
+    "kalman_smoother": "stable",
+    "particle_filter_pipeline": "stable",
 }

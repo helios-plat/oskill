@@ -80,6 +80,18 @@ from oskill.validation.trial_correction import bonferroni_holm_correction
 from oskill.backtest.embargo_cv import embargo_purged_cv
 from oskill.backtest.random_subsampling import random_subsampling_validation
 from oskill.backtest.walk_forward_optimization import walk_forward_optimization_pipeline
+# Phase 4: Microstructure
+from oskill.microstructure.order_flow import order_flow_imbalance
+from oskill.microstructure.bar_aggregation import (
+    dollar_bar_aggregation,
+    volume_imbalance_bar,
+    tick_imbalance_bar,
+)
+from oskill.microstructure.liquidity import kyle_lambda_estimator, amihud_illiquidity
+from oskill.microstructure.hawkes import hawkes_branching_ratio
+# Phase 4: State Space
+from oskill.state_space.kalman import kalman_filter_pipeline, kalman_smoother
+from oskill.state_space.particle import particle_filter_pipeline
 
 __all__ = [
     "__version__",
@@ -168,4 +180,16 @@ __all__ = [
     "embargo_purged_cv",
     "random_subsampling_validation",
     "walk_forward_optimization_pipeline",
+    # Group 23: Microstructure (Phase 4)
+    "order_flow_imbalance",
+    "dollar_bar_aggregation",
+    "volume_imbalance_bar",
+    "tick_imbalance_bar",
+    "kyle_lambda_estimator",
+    "amihud_illiquidity",
+    "hawkes_branching_ratio",
+    # Group 24: State Space (Phase 4)
+    "kalman_filter_pipeline",
+    "kalman_smoother",
+    "particle_filter_pipeline",
 ]
