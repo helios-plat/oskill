@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "factor_quantile_returns",
+  "description": "Factor quantile portfolio returns using Fama-MacBeth cross-sectional method",
+  "type": "object",
+  "properties": {
+    "factor_values": {
+      "description": "T x N factor scores (higher = more favorable)",
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "number" } }
+    },
+    "forward_returns": {
+      "description": "T x N 1-period forward returns",
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "number" } }
+    },
+    "n_quantiles": {
+      "description": "Number of quantile buckets (default 5)",
+      "type": "integer",
+      "minimum": 2,
+      "default": 5
+    },
+    "method": {
+      "description": "Portfolio weighting method",
+      "type": "string",
+      "enum": ["equal_weighted", "value_weighted"],
+      "default": "equal_weighted"
+    }
+  },
+  "required": ["factor_values", "forward_returns"],
+  "output": {
+    "type": "object",
+    "properties": {
+      "quantile_returns": {
+        "description": "T x n_quantiles array of period returns per quantile",
+        "type": "array"
+      },
+      "mean_returns_by_quantile": {
+        "description": "n_quantiles array of time-averaged returns",
+        "type": "array",
+        "items": { "type": "number" }
+      },
+      "long_short_returns": {
+        "description": "T-array of Q_top minus Q_bottom each period",
+        "type": "array",
+        "items": { "type": "number" }
+      },
+      "monotonicity_score": {
+        "description": "Fraction of periods where Q_top > Q_bottom",
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "top_minus_bottom_sharpe": {
+        "description": "Sharpe ratio of long_short_returns",
+        "type": "number"
+      }
+    },
+    "required": ["quantile_returns", "mean_returns_by_quantile", "long_short_returns",
+                 "monotonicity_score", "top_minus_bottom_sharpe"]
+  },
+  "references": [
+    "Fama & MacBeth (1973), 'Risk, Return, and Equilibrium'",
+    "Grinold & Kahn (2000), 'Active Portfolio Management'"
+  ]
+}
