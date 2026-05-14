@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ledoit_wolf_shrinkage",
+  "description": "Ledoit-Wolf shrinkage covariance estimator output schema",
+  "type": "object",
+  "properties": {
+    "returns": {
+      "description": "T x N returns matrix (numpy array or DataFrame)",
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "number" } }
+    },
+    "target": {
+      "description": "Shrinkage target type",
+      "type": "string",
+      "enum": ["constant_correlation", "constant_variance", "identity"],
+      "default": "constant_correlation"
+    }
+  },
+  "required": ["returns"],
+  "output": {
+    "type": "object",
+    "properties": {
+      "covariance": {
+        "description": "N x N shrunken covariance matrix",
+        "type": "array",
+        "items": { "type": "array", "items": { "type": "number" } }
+      },
+      "shrinkage_intensity": {
+        "description": "Optimal shrinkage intensity alpha in [0, 1]",
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "sample_covariance": {
+        "description": "N x N raw sample covariance matrix",
+        "type": "array",
+        "items": { "type": "array", "items": { "type": "number" } }
+      },
+      "target_matrix": {
+        "description": "N x N shrinkage target matrix F",
+        "type": "array",
+        "items": { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "required": ["covariance", "shrinkage_intensity", "sample_covariance", "target_matrix"]
+  },
+  "references": [
+    "Ledoit & Wolf (2004), 'Honey, I Shrunk the Sample Covariance Matrix'",
+    "Chen, Wiesel, Eldar, Hero (2010) OAS formula"
+  ]
+}
