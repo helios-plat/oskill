@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-VERSION = "1.8.0"
+VERSION = "1.10.0"
 
 ELEMENTS: list[str] = [
     # Group 1: Performance
@@ -83,6 +83,18 @@ ELEMENTS: list[str] = [
     "kalman_filter_pipeline",
     "kalman_smoother",
     "particle_filter_pipeline",
+    # Phase 7B: Conformal Prediction (v1.10.0):
+    "conformal_prediction_interval",
+    "adaptive_conformal_inference",
+    "conformal_with_change_points",
+    # Phase 7C: Distributional RL (v1.10.0):
+    "quantile_regression_loss",
+    "implicit_quantile_loss",
+    # Phase 7D: Causal Discovery (v1.10.0):
+    "pcmci_causal_discovery",
+    "structural_causal_model_fit",
+    # Phase 7E: Generative (v1.10.0):
+    "ddpm_synthetic_path_generator",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -98,7 +110,7 @@ CATEGORIES: dict[str, list[str]] = {
     "prediction": ["calibration_analysis"],
     "signal_detection": ["adx", "cusum_detector", "platt_calibration"],
     "point_process": ["fit_hawkes"],
-    "causal": ["symbolic_transfer_entropy"],
+    "causal": ["symbolic_transfer_entropy", "pcmci_causal_discovery", "structural_causal_model_fit"],
     "hmm": ["gaussian_hmm"],
     "signals": ["signal_ensemble", "weighted_signal_aggregation"],
     "llm": [
@@ -139,6 +151,18 @@ CATEGORIES: dict[str, list[str]] = {
         "kalman_filter_pipeline",
         "kalman_smoother",
         "particle_filter_pipeline",
+    ],
+    "conformal": [
+        "conformal_prediction_interval",
+        "adaptive_conformal_inference",
+        "conformal_with_change_points",
+    ],
+    "distributional_rl": [
+        "quantile_regression_loss",
+        "implicit_quantile_loss",
+    ],
+    "generative": [
+        "ddpm_synthetic_path_generator",
     ],
 }
 
@@ -210,4 +234,16 @@ STABILITY: dict[str, str] = {
     "kalman_filter_pipeline": "stable",
     "kalman_smoother": "stable",
     "particle_filter_pipeline": "stable",
+    # Phase 7B: Conformal Prediction
+    "conformal_prediction_interval": "stable",
+    "adaptive_conformal_inference": "stable",
+    "conformal_with_change_points": "experimental",
+    # Phase 7C: Distributional RL
+    "quantile_regression_loss": "stable",
+    "implicit_quantile_loss": "stable",
+    # Phase 7D: Causal Discovery
+    "pcmci_causal_discovery": "stable",
+    "structural_causal_model_fit": "stable",
+    # Phase 7E: Generative
+    "ddpm_synthetic_path_generator": "experimental",
 }
