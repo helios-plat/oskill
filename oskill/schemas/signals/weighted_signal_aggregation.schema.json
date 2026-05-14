@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://3o-spec.org/schemas/oskill/signals/weighted_signal_aggregation.schema.json",
+  "title": "WeightedSignalAggregation Input",
+  "type": "object",
+  "required": ["signals", "raw_weights"],
+  "properties": {
+    "signals": {
+      "type": "object",
+      "description": "Map of signal_name -> time-aligned signal values",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "number"}
+      }
+    },
+    "raw_weights": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "number", "minimum": 0}
+    },
+    "shrinkage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.7
+    },
+    "apply_fdm": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
