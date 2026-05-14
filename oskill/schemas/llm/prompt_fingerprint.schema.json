@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://3o-spec.org/schemas/oskill/llm/prompt_fingerprint.schema.json",
+  "title": "PromptFingerprint Output",
+  "type": "object",
+  "required": ["fingerprint", "template_fingerprint", "full_payload_canonical"],
+  "properties": {
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hex of canonical(all inputs)"
+    },
+    "template_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hex of prompt_template only"
+    },
+    "full_payload_canonical": {
+      "type": "string",
+      "description": "Canonical JSON string of all inputs"
+    }
+  }
+}
