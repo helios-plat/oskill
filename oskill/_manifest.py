@@ -1,8 +1,8 @@
-"""oskill element manifest — machine-readable registry of all public elements."""  # pragma: no cover
+"""oskill element manifest — machine-readable registry of all public elements."""  # pragma: no cover  # noqa: E501
 
 from __future__ import annotations
 
-VERSION = "1.10.0"
+VERSION = "1.11.0"
 
 ELEMENTS: list[str] = [
     # Group 1: Performance
@@ -95,12 +95,24 @@ ELEMENTS: list[str] = [
     "structural_causal_model_fit",
     # Phase 7E: Generative (v1.10.0):
     "ddpm_synthetic_path_generator",
+    # Phase 9A: Signature (v1.11.0):
+    "signature_kernel",
+    "signature_based_pricing",
+    # Phase 9A: Market Making (v1.11.0):
+    "avellaneda_stoikov_quotes",
+    "cartea_jaimungal_optimal_quotes",
+    # Phase 9A: Operational Risk (v1.11.0):
+    "operational_risk_lda",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
-    "performance": ["bootstrap_sharpe", "psr_dsr", "factor_attribution", "regime_aware_performance"],
+    "performance": [
+        "bootstrap_sharpe", "psr_dsr", "factor_attribution", "regime_aware_performance",
+    ],
     "validation": ["walk_forward_optimization", "cpcv_pipeline", "regime_aware_rolling"],
-    "distribution": ["distribution_shift_test", "detect_outliers_robust", "bootstrap_distribution"],
+    "distribution": [
+        "distribution_shift_test", "detect_outliers_robust", "bootstrap_distribution",
+    ],
     "similarity": [
         "historical_analogy_search",
         "regime_transition_analysis",
@@ -110,7 +122,9 @@ CATEGORIES: dict[str, list[str]] = {
     "prediction": ["calibration_analysis"],
     "signal_detection": ["adx", "cusum_detector", "platt_calibration"],
     "point_process": ["fit_hawkes"],
-    "causal": ["symbolic_transfer_entropy", "pcmci_causal_discovery", "structural_causal_model_fit"],
+    "causal": [
+        "symbolic_transfer_entropy", "pcmci_causal_discovery", "structural_causal_model_fit",
+    ],
     "hmm": ["gaussian_hmm"],
     "signals": ["signal_ensemble", "weighted_signal_aggregation"],
     "llm": [
@@ -164,6 +178,10 @@ CATEGORIES: dict[str, list[str]] = {
     "generative": [
         "ddpm_synthetic_path_generator",
     ],
+    # Phase 9A categories
+    "signature": ["signature_kernel", "signature_based_pricing"],
+    "market_making": ["avellaneda_stoikov_quotes", "cartea_jaimungal_optimal_quotes"],
+    "operational_risk": ["operational_risk_lda"],
 }
 
 STABILITY: dict[str, str] = {
@@ -246,4 +264,10 @@ STABILITY: dict[str, str] = {
     "structural_causal_model_fit": "stable",
     # Phase 7E: Generative
     "ddpm_synthetic_path_generator": "experimental",
+    # Phase 9A additions
+    "signature_kernel": "stable",
+    "signature_based_pricing": "stable",
+    "avellaneda_stoikov_quotes": "stable",
+    "cartea_jaimungal_optimal_quotes": "stable",
+    "operational_risk_lda": "stable",
 }
