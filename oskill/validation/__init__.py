@@ -20,6 +20,11 @@ from oskill.validation._legacy import (
 # Phase 2 additions
 from oskill.validation.pbo import probability_of_backtest_overfitting
 from oskill.validation.deflated_sharpe import deflated_sharpe_ratio
+# Phase 6C additions
+from oskill.validation.csv import combinatorially_symmetric_cv
+from oskill.validation.haircut import haircut_sharpe
+from oskill.validation.full_cpcv import full_combinatorial_purged_cv
+from oskill.validation.trial_correction import bonferroni_holm_correction
 
 __all__ = [
     # Phase 1
@@ -29,4 +34,9 @@ __all__ = [
     # Phase 2
     "probability_of_backtest_overfitting",
     "deflated_sharpe_ratio",
+    # Phase 6C
+    "combinatorially_symmetric_cv",
+    "haircut_sharpe",
+    "full_combinatorial_purged_cv",
+    "bonferroni_holm_correction",
 ]
