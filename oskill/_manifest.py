@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-VERSION = "1.11.0"
+VERSION = "2.0.0"
 
 ELEMENTS: list[str] = [
     # Group 1: Performance
@@ -103,6 +103,29 @@ ELEMENTS: list[str] = [
     "cartea_jaimungal_optimal_quotes",
     # Phase 9A: Operational Risk (v1.11.0):
     "operational_risk_lda",
+    # Phase 10: Behavioral Finance (v2.0.0)
+    "cpt_portfolio_optimize",
+    "maxmin_expected_utility_portfolio",
+    "cpt_portfolio_analytical",
+    "salience_asset_pricing",
+    # Phase 10: Networks + Systemic Risk (v2.0.0)
+    "financial_network_centrality",
+    "eisenberg_noe_clearing",
+    "systemic_risk_metrics",
+    "contagion_simulate",
+    # Phase 10: Spectral + Portfolio (v2.0.0)
+    "graph_laplacian_compute",
+    "spectral_asset_clustering",
+    "hierarchical_risk_parity_v2",
+    "ssd_milp_optimizer",
+    # Phase 10: Microstructure (v2.0.0)
+    "order_book_state_hawkes",
+    # Phase 10: Robust Control (v2.0.0)
+    "multiplier_preferences_robust",
+    "variational_preferences_estimate",
+    "smooth_ambiguity_portfolio",
+    # Phase 10: Recursive Utility (v2.0.0)
+    "epstein_zin_solver",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -182,6 +205,32 @@ CATEGORIES: dict[str, list[str]] = {
     "signature": ["signature_kernel", "signature_based_pricing"],
     "market_making": ["avellaneda_stoikov_quotes", "cartea_jaimungal_optimal_quotes"],
     "operational_risk": ["operational_risk_lda"],
+    # Phase 10 categories
+    "behavioral_portfolio": [
+        "cpt_portfolio_optimize",
+        "maxmin_expected_utility_portfolio",
+        "cpt_portfolio_analytical",
+        "salience_asset_pricing",
+    ],
+    "networks": [
+        "financial_network_centrality",
+        "eisenberg_noe_clearing",
+        "systemic_risk_metrics",
+        "contagion_simulate",
+    ],
+    "spectral_portfolio": [
+        "graph_laplacian_compute",
+        "spectral_asset_clustering",
+        "hierarchical_risk_parity_v2",
+        "ssd_milp_optimizer",
+    ],
+    "robust_control": [
+        "multiplier_preferences_robust",
+        "variational_preferences_estimate",
+        "smooth_ambiguity_portfolio",
+    ],
+    "recursive_utility": ["epstein_zin_solver"],
+    "state_hawkes": ["order_book_state_hawkes"],
 }
 
 STABILITY: dict[str, str] = {
@@ -270,4 +319,22 @@ STABILITY: dict[str, str] = {
     "avellaneda_stoikov_quotes": "stable",
     "cartea_jaimungal_optimal_quotes": "stable",
     "operational_risk_lda": "stable",
+    # Phase 10 additions
+    "cpt_portfolio_optimize": "stable",
+    "maxmin_expected_utility_portfolio": "stable",
+    "financial_network_centrality": "stable",
+    "eisenberg_noe_clearing": "stable",
+    "systemic_risk_metrics": "stable",
+    "contagion_simulate": "stable",
+    "graph_laplacian_compute": "stable",
+    "spectral_asset_clustering": "stable",
+    "hierarchical_risk_parity_v2": "stable",
+    "order_book_state_hawkes": "stable",
+    "multiplier_preferences_robust": "stable",
+    "variational_preferences_estimate": "stable",
+    "cpt_portfolio_analytical": "stable",
+    "salience_asset_pricing": "stable",
+    "smooth_ambiguity_portfolio": "stable",
+    "ssd_milp_optimizer": "stable",
+    "epstein_zin_solver": "stable",
 }
