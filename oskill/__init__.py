@@ -1,6 +1,10 @@
 """oskill — Composite financial analysis workflows built on oprim atomic operations."""
 
 from oskill._version import __version__
+from oskill.llm.deterministic_call import deterministic_llm_call
+from oskill.llm.prompt_fingerprint import prompt_fingerprint
+from oskill.signals.aggregation import weighted_signal_aggregation
+from oskill.signals.ensemble import signal_ensemble
 from oskill.causal import symbolic_transfer_entropy
 from oskill.distribution import (
     bootstrap_distribution,
@@ -61,4 +65,10 @@ __all__ = [
     "symbolic_transfer_entropy",
     # Group 9: HMM (NEW from Selene)
     "gaussian_hmm",
+    # Group 10: Signals (Phase 1)
+    "signal_ensemble",
+    "weighted_signal_aggregation",
+    # Group 11: LLM (Phase 1)
+    "deterministic_llm_call",
+    "prompt_fingerprint",
 ]
