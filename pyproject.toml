@@ -1,6 +1,6 @@
 [project]
 name = "oskill"
-version = "2.0.0"
+version = "2.1.0"
 description = "Composite financial analysis workflows built on oprim atomic operations"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,6 +16,7 @@ dependencies = [
     "scikit-learn>=1.3",
     "statsmodels>=0.14",
     "pydantic>=2.0",
+    "aiohttp>=3.10",              # DeepSeek REST client (llm_client)
 ]
 
 [project.optional-dependencies]
@@ -24,6 +25,7 @@ dev = [
     "pytest-cov>=4.0",
     "pytest-benchmark>=4.0",
     "pytest-mock>=3.0",
+    "pytest-asyncio>=0.24",       # async test support (llm_client)
     "ruff>=0.1.0",
     "mypy>=1.5",
 ]
@@ -43,6 +45,7 @@ path = "oskill/_version.py"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--strict-markers -v"
+asyncio_mode = "auto"
 markers = [
     "academic_reference: test verifies against published academic/RFC/FIPS reference vectors",
 ]

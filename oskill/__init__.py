@@ -2,6 +2,15 @@
 
 from oskill._version import __version__
 
+# Phase 3 P14: LLM client
+from oskill.llm_client import (
+    deepseek_call,
+    LLMUnavailable,
+    LLMRateLimit,
+    LLMAPIError,
+    LLMTimeout,
+)
+
 # Phase 6D: Advanced backtest
 from oskill.backtest.embargo_cv import embargo_purged_cv
 from oskill.backtest.random_subsampling import random_subsampling_validation
@@ -304,4 +313,10 @@ __all__ = [
     "smooth_ambiguity_portfolio",
     # Group 37: Recursive Utility (Phase 10)
     "epstein_zin_solver",
+    # Phase 3 P14: LLM client
+    "deepseek_call",
+    "LLMUnavailable",
+    "LLMRateLimit",
+    "LLMAPIError",
+    "LLMTimeout",
 ]
