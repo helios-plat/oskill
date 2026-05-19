@@ -2,6 +2,17 @@
 
 from oskill._version import __version__
 
+# Phase 3 P18: OKX Demo exchange client
+from oskill.exchange.okx_demo import (
+    OKXDemoRestClient,
+    OKXDemoWSPrivate,
+    OKXAPIError,
+    OKXClientError,
+    OrderResponse,
+    FillEvent,
+    AccountSnapshot,
+)
+
 # Phase 3 P14: LLM client
 from oskill.llm_client import (
     deepseek_call,
