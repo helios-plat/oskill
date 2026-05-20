@@ -113,9 +113,9 @@ class TestFlushOutboxUploads:
 
         result = await flush_outbox(USER, DEVICE, db, storage, state_dir=tmp_path)
         assert len(result.uploaded_files) == 1
-        # path format: Stratum/changefeed/{device_id}/events_{start}_{end}.jsonl
+        # path format: Stratum/changefeed/events_{device_id}_{start}_{end}.jsonl
         path = result.uploaded_files[0]
-        assert "events_1_2.jsonl" in path
+        assert f"events_{DEVICE}_1_2.jsonl" in path
 
 
 class TestFlushOutboxErrors:

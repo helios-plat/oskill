@@ -216,19 +216,25 @@ async def apply_remote_events(
     errors: list[str] = []
     newly_processed: list[str] = []
 
-    # Collect candidate files from all remote sub-folders except own device
-    candidate_files: list[str] = []
+    # Collect candidate files — skip own device's files and already-processed ones.
+    # candidate_files: list of (name, file_id) tuples.
+    # name: the logical key used for deduplication (storage_file.name — the filename).
+    # file_id: the handle passed to download() (provider-specific: abs path for local,
+    #          GDrive ID for gdrive).
+    # Filename convention: events_{device_id}_{seq_start}_{seq_end}.jsonl
+    candidate_files: list[tuple[str, str]] = []
     try:
         async for storage_file in storage_adapter.list_files(
             "/Stratum/changefeed", recursive=True
         ):
             fname = storage_file.name
-            # Skip own-device files — those are already in local DB
-            if f"/{device_id}/" in fname or fname.startswith(f"{device_id}/"):
+            fid = storage_file.file_id
+            # Skip files originating from this device
+            if fname.startswith(f"events_{device_id}_"):
                 continue
             if fname in processed_set:
                 continue
-            candidate_files.append(fname)
+            candidate_files.append((fname, fid))
     except Exception as exc:
         log.error("apply_remote_list_failed", error=str(exc))
         raise ApplyError(f"Failed to list remote changefeed files: {exc}") from exc
@@ -242,18 +248,18 @@ async def apply_remote_events(
             last_applied_seq=last_applied_seq,
         )
 
-    for remote_name in sorted(candidate_files):
+    for fname, fid in sorted(candidate_files):
         with tempfile.NamedTemporaryFile(
             mode="wb", suffix=".jsonl", delete=False
         ) as tf:
             tmp_path = tf.name
 
         try:
-            await storage_adapter.download(remote_name, tmp_path)
+            await storage_adapter.download(fid, tmp_path)
             content = Path(tmp_path).read_text(encoding="utf-8")
         except Exception as exc:
-            log.error("apply_remote_download_failed", file=remote_name, error=str(exc))
-            errors.append(f"download:{remote_name}:{exc}")
+            log.error("apply_remote_download_failed", file=fname, error=str(exc))
+            errors.append(f"download:{fname}:{exc}")
             continue
         finally:
             os.unlink(tmp_path)
@@ -289,7 +295,7 @@ async def apply_remote_events(
                 errors.append(f"apply:{event.event_type.value}:{exc}")
                 conflict_count += 1
 
-        newly_processed.append(remote_name)
+        newly_processed.append(fname)
 
     # Persist updated state
     state["last_applied_seq"] = last_applied_seq

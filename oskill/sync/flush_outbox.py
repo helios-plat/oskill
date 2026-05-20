@@ -91,7 +91,7 @@ async def flush_outbox(
     jsonl_lines = [json.dumps(e.to_dict(), ensure_ascii=False) for e in own_events]
     jsonl_content = "\n".join(jsonl_lines)
 
-    remote_path = f"Stratum/changefeed/{device_id}/events_{seq_start}_{seq_end}.jsonl"
+    remote_path = f"Stratum/changefeed/events_{device_id}_{seq_start}_{seq_end}.jsonl"
 
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".jsonl", delete=False, encoding="utf-8"

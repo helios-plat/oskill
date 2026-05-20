@@ -25,14 +25,18 @@ DEVICE_B = "device_B"
 
 
 def _make_storage_with_files(files: dict[str, str]) -> MagicMock:
-    """files: {remote_name: jsonl_content_string}"""
+    """files: {filename (name): jsonl_content_string}
+
+    filename convention: events_{device_id}_{seq_start}_{seq_end}.jsonl
+    Both file_id and name are set to filename for easy test setup.
+    """
     storage = MagicMock()
 
     async def list_files(folder=None, recursive=False):
         for name in files:
             yield StorageFile(
-                file_id=name,
-                name=name,
+                file_id=name,   # used as download handle in tests
+                name=name,      # just the filename
                 size=len(files[name]),
                 mime_type="application/x-ndjson",
                 created_at=None,  # type: ignore[arg-type]
@@ -42,8 +46,8 @@ def _make_storage_with_files(files: dict[str, str]) -> MagicMock:
 
     storage.list_files = list_files
 
-    async def download(file_id_or_path, local_path, on_progress=None):
-        content = files.get(file_id_or_path, "")
+    async def download(file_id, local_path, on_progress=None):
+        content = files.get(file_id, "")
         Path(local_path).write_bytes(content.encode())
 
     storage.download = download
@@ -58,7 +62,7 @@ class TestApplyRemoteNoFiles:
 
     async def test_own_device_files_skipped(self, db, tmp_path):
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_A}/events_1_1.jsonl": ""}
+            {f"events_{DEVICE_A}_1_1.jsonl": ""}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 0
@@ -76,7 +80,7 @@ class TestApplySubstrate:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
@@ -95,7 +99,7 @@ class TestApplySubstrate:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
@@ -112,7 +116,7 @@ class TestApplySubstrate:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
@@ -129,7 +133,7 @@ class TestApplySubstrate:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
@@ -146,7 +150,7 @@ class TestApplySubstrate:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
@@ -160,7 +164,7 @@ class TestApplyNote:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
@@ -176,7 +180,7 @@ class TestApplyNote:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         rows = db.fetchall("SELECT title FROM note WHERE id = 'note_1'")
@@ -188,7 +192,7 @@ class TestApplyNote:
             "note.deleted", "note_1", {"id": "note_1"}, device_id=DEVICE_B
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         rows = db.fetchall("SELECT id FROM note WHERE id = 'note_1'")
@@ -204,7 +208,7 @@ class TestApplyConcept:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
@@ -217,7 +221,7 @@ class TestApplyConcept:
             "derivative.deleted", "c_1", {"id": "c_1"}, device_id=DEVICE_B
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         rows = db.fetchall("SELECT id FROM concept WHERE id = 'c_1'")
@@ -232,7 +236,7 @@ class TestApplyConcept:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         rows = db.fetchall("SELECT source_ids FROM concept WHERE id = 'c_1'")
@@ -247,7 +251,7 @@ class TestApplyConcept:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
@@ -256,21 +260,21 @@ class TestApplyEdgeCases:
     async def test_unknown_event_type_skipped(self, db, tmp_path):
         ev = make_event_dict("unknown.type", None, {}, device_id=DEVICE_B)
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.skipped_count >= 1
 
     async def test_malformed_jsonl_line_skipped(self, db, tmp_path):
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": "not json\n{broken"}
+            {f"events_{DEVICE_B}_1_1.jsonl": "not json\n{broken"}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 0
 
     async def test_empty_jsonl_file_handled(self, db, tmp_path):
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": ""}
+            {f"events_{DEVICE_B}_1_1.jsonl": ""}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 0
@@ -282,7 +286,7 @@ class TestApplyEdgeCases:
             {"id": "sub_1", "ulid": "01HX", "title": "Doc", "meta_json": "{}"},
             device_id=DEVICE_B,
         )
-        fname = f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl"
+        fname = f"events_{DEVICE_B}_1_1.jsonl"
         storage = _make_storage_with_files({fname: jsonl_content(ev)})
 
         # First apply
@@ -309,7 +313,7 @@ class TestApplyEdgeCases:
         async def list_files(*args, **kwargs):
             yield StorageFile(
                 file_id="f1",
-                name=f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl",
+                name=f"events_{DEVICE_B}_1_1.jsonl",
                 size=10,
                 mime_type="text/plain",
                 created_at=None,  # type: ignore[arg-type]
@@ -331,7 +335,7 @@ class TestApplyEdgeCases:
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files(
-            {f"Stratum/changefeed/{DEVICE_B}/events_1_1.jsonl": jsonl_content(ev)}
+            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
         )
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
