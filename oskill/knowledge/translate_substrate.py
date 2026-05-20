@@ -13,7 +13,7 @@ from oprim._logging import log
 from oprim.embedding import embed_text
 from oprim.errors import StratumError
 from oprim.meta_db import open_meta_db
-from oprim.translate import TerminologyGlossary, TranslationResult, translate_document
+from oprim.translate import TerminologyGlossary, TranslationResult, translate_document_async
 from oprim.vector_db import open_vector_db
 from oprim.vector_db.lancedb import VectorRecord
 
@@ -153,7 +153,7 @@ async def translate_substrate(
         embed=embed_translation,
     )
 
-    translated_text, chunk_results = translate_document(
+    translated_text, chunk_results = await translate_document_async(
         source_text,
         source_lang=effective_source,
         target_lang=target_lang,
