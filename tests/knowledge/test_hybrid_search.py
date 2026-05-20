@@ -271,3 +271,231 @@ class TestHybridSearch:
         with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
             result = await hybrid_search("test", view_id="some-view-id")
         assert isinstance(result, list)
+
+    async def test_unknown_view_id_no_crash(self, stratum_home):
+        """Unknown view_id returns empty filter — search proceeds normally."""
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import meta_db_path
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        db.close()
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            result = await hybrid_search("test", view_id="nonexistent-uuid")
+        assert isinstance(result, list)
+
+
+class TestViewFilterResolution:
+    """Phase 13 — view_id and user_id default view filter application."""
+
+    def _insert_substrate(self, db, sid: str, medium: str, domain: str | None = None,
+                          created_at: str | None = None) -> None:
+        from datetime import datetime, timezone
+        now = created_at or datetime.now(timezone.utc).isoformat()
+        meta = {"medium": medium}
+        if domain:
+            meta["domain"] = domain
+        import json
+        db.execute(
+            "INSERT INTO substrate (id, ulid, title, mime, source_path, file_hash, "
+            "byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            [sid, sid, f"title-{sid}", "", "", f"hash-{sid}", 0, json.dumps(meta), now, now],
+        )
+
+    def _insert_view(self, db, view_id: str, user_id: str,
+                     default_filter: dict, is_default: bool = False) -> None:
+        import json
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc).isoformat()
+        db.execute(
+            "INSERT INTO views (id, user_id, name, description, default_filter, "
+            "default_llm, default_system_prompt, icon, is_default, is_builtin, "
+            "created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            [view_id, user_id, "TestView", None, json.dumps(default_filter),
+             "{}", None, None, is_default, False, now, now],
+        )
+
+    async def test_view_id_applies_medium_filter(self, stratum_home):
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([
+            FulltextDoc(id="p001", fields={"title": "finance paper", "content": "quant"}),
+            FulltextDoc(id="n001", fields={"title": "finance note", "content": "quant"}),
+        ])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        self._insert_substrate(db, "p001", "paper")
+        self._insert_substrate(db, "n001", "note")
+        self._insert_view(db, "v-paper", "u1", {"medium": ["paper"]})
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                results = await hybrid_search("finance", view_id="v-paper")
+
+        assert all(r.metadata.get("medium") == "paper" for r in results)
+        ids = {r.id for r in results}
+        assert "p001" in ids
+        assert "n001" not in ids
+
+    async def test_user_id_default_view_applied(self, stratum_home):
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([
+            FulltextDoc(id="bk001", fields={"title": "algo book", "content": "finance"}),
+            FulltextDoc(id="nt001", fields={"title": "algo note", "content": "finance"}),
+        ])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        self._insert_substrate(db, "bk001", "book")
+        self._insert_substrate(db, "nt001", "note")
+        self._insert_view(db, "v-default", "u2", {"medium": ["book"]}, is_default=True)
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                results = await hybrid_search("algo", user_id="u2")
+
+        assert all(r.metadata.get("medium") == "book" for r in results)
+
+    async def test_explicit_medium_filter_overrides_view(self, stratum_home):
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([
+            FulltextDoc(id="pa002", fields={"title": "strategy paper", "content": "trade"}),
+            FulltextDoc(id="bk002", fields={"title": "strategy book", "content": "trade"}),
+        ])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        self._insert_substrate(db, "pa002", "paper")
+        self._insert_substrate(db, "bk002", "book")
+        self._insert_view(db, "v-paper2", "u3", {"medium": ["paper"]})
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                # caller passes medium_filter=["book"] — should override view's ["paper"]
+                results = await hybrid_search("strategy", view_id="v-paper2",
+                                              medium_filter=["book"])
+
+        assert all(r.metadata.get("medium") == "book" for r in results)
+
+    async def test_domain_filter_excludes_tagged_mismatch(self, stratum_home):
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([
+            FulltextDoc(id="q001", fields={"title": "quant paper", "content": "sharpe ratio"}),
+            FulltextDoc(id="lit001", fields={"title": "poem", "content": "sharpe ratio"}),
+        ])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        self._insert_substrate(db, "q001", "paper", domain="quant")
+        self._insert_substrate(db, "lit001", "article", domain="literature")
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                results = await hybrid_search("sharpe ratio", domain_filter=["quant", "finance"])
+
+        ids = {r.id for r in results}
+        assert "q001" in ids
+        assert "lit001" not in ids
+
+    async def test_domain_filter_passes_untagged(self, stratum_home):
+        """Substrates without domain tag pass through the domain filter."""
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([FulltextDoc(id="nd001", fields={"title": "general content", "content": "test"})])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        self._insert_substrate(db, "nd001", "paper")  # no domain
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                results = await hybrid_search("general", domain_filter=["quant"])
+
+        assert any(r.id == "nd001" for r in results)
+
+    async def test_time_range_filters_old_substrates(self, stratum_home):
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+        from datetime import datetime, timezone, timedelta
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([
+            FulltextDoc(id="new001", fields={"title": "recent note", "content": "work"}),
+            FulltextDoc(id="old001", fields={"title": "old note", "content": "work"}),
+        ])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        recent = datetime.now(timezone.utc).isoformat()
+        old    = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
+        self._insert_substrate(db, "new001", "note", created_at=recent)
+        self._insert_substrate(db, "old001", "note", created_at=old)
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                results = await hybrid_search("work", time_range="last_30d")
+
+        ids = {r.id for r in results}
+        assert "new001" in ids
+        assert "old001" not in ids
+
+    async def test_view_id_applies_time_range(self, stratum_home):
+        from oprim.fulltext import open_fulltext_index
+        from oprim.fulltext.tantivy import FulltextDoc
+        from oprim.meta_db import open_meta_db
+        from oskill.knowledge._context import tantivy_path, meta_db_path
+        from datetime import datetime, timezone, timedelta
+
+        ft_idx = open_fulltext_index(tantivy_path())
+        ft_idx.add([
+            FulltextDoc(id="nw002", fields={"title": "recent log", "content": "log"}),
+            FulltextDoc(id="od002", fields={"title": "old log", "content": "log"}),
+        ])
+        db = open_meta_db(meta_db_path())
+        db.migrate(_MIGRATIONS)
+        recent = datetime.now(timezone.utc).isoformat()
+        old    = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
+        self._insert_substrate(db, "nw002", "note", created_at=recent)
+        self._insert_substrate(db, "od002", "note", created_at=old)
+        self._insert_view(db, "v-worklog", "u4", {"medium": ["note"], "time_range": "last_30d"})
+        db.close()
+
+        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+                mv.return_value.search.return_value = []
+                results = await hybrid_search("log", view_id="v-worklog")
+
+        ids = {r.id for r in results}
+        assert "nw002" in ids
+        assert "od002" not in ids
