@@ -2,6 +2,9 @@
 
 from oskill._version import __version__
 
+# P0-1 fix (v2.7.0): sigmoid market impact model
+from oskill.cost import crypto_market_impact_sigmoid
+
 # Sprint 0 additions (v2.5.0)
 from oskill.signals.forward_returns import aggregate_signal_returns
 from oskill.performance import portfolio_metrics_summary, trade_pnl_statistics
@@ -196,6 +199,8 @@ from oskill.validation.trial_correction import bonferroni_holm_correction
 
 __all__ = [
     "__version__",
+    # P0-1: cost model (v2.7.0)
+    "crypto_market_impact_sigmoid",
     # Group 1: Performance
     "bootstrap_sharpe",
     "psr_dsr",
