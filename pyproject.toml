@@ -1,6 +1,6 @@
 [project]
 name = "oskill"
-version = "2.5.0"
+version = "2.6.0"
 description = "Composite financial analysis workflows built on oprim atomic operations"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -49,6 +49,7 @@ addopts = "--strict-markers -v"
 asyncio_mode = "auto"
 markers = [
     "academic_reference: test verifies against published academic/RFC/FIPS reference vectors",
+    "integration: requires live external service (OAuth, storage, network)",
 ]
 
 [tool.ruff]

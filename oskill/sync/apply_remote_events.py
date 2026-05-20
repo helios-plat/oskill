@@ -1,0 +1,312 @@
+"""oskill.sync.apply_remote_events — pull remote changefeed events and apply to local DB."""
+from __future__ import annotations
+
+import json
+import os
+import tempfile
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from oprim._logging import log
+from oprim.changefeed.schema import ChangefeedEvent, EventType
+from oprim.meta_db.duckdb import MetaDB
+
+from oskill.sync.errors import ApplyError
+
+_DEFAULT_STATE_DIR = Path.home() / ".stratum"
+
+
+@dataclass
+class ApplyResult:
+    applied_count: int
+    skipped_count: int
+    conflict_count: int
+    last_applied_seq: int
+    errors: list[str] = field(default_factory=list)
+
+
+def _state_path(user_id: str, device_id: str, state_dir: Path) -> Path:
+    return state_dir / f"sync_state_{user_id}_{device_id}.json"
+
+
+def _load_state(path: Path) -> dict:
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_state(path: Path, state: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+
+# ── event appliers ────────────────────────────────────────────────────────────
+
+def _apply_substrate_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
+    p = event.payload
+    db.execute("DELETE FROM substrate WHERE id = ?", [p.get("id")])
+    db.execute(
+        "INSERT INTO substrate "
+        "(id, ulid, title, mime, source_path, file_hash, byte_size, page_count, "
+        "parser, language, has_cjk, is_scanned, created_at, updated_at, meta_json) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            p.get("id"), p.get("ulid"), p.get("title"), p.get("mime"),
+            p.get("source_path"), p.get("file_hash"), p.get("byte_size"),
+            p.get("page_count"), p.get("parser"), p.get("language"),
+            p.get("has_cjk"), p.get("is_scanned"),
+            p.get("created_at"), p.get("updated_at"),
+            p.get("meta_json", "{}"),
+        ],
+    )
+
+
+def _apply_substrate_delete(db: MetaDB, event: ChangefeedEvent) -> None:
+    row_id = event.aggregate_id or event.payload.get("id")
+    db.execute("DELETE FROM substrate WHERE id = ?", [row_id])
+
+
+def _apply_substrate_pin(db: MetaDB, event: ChangefeedEvent) -> None:
+    meta = event.payload.get("meta_json")
+    if meta is not None:
+        db.execute(
+            "UPDATE substrate SET meta_json = ? WHERE id = ?",
+            [meta, event.aggregate_id],
+        )
+
+
+def _apply_substrate_unpin(db: MetaDB, event: ChangefeedEvent) -> None:
+    meta = event.payload.get("meta_json")
+    if meta is not None:
+        db.execute(
+            "UPDATE substrate SET meta_json = ? WHERE id = ?",
+            [meta, event.aggregate_id],
+        )
+
+
+def _apply_note_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
+    p = event.payload
+    db.execute("DELETE FROM note WHERE id = ?", [p.get("id")])
+    db.execute(
+        "INSERT INTO note "
+        "(id, title, content, wikilinks, substrate_id, meta_json, created_at, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            p.get("id"), p.get("title"), p.get("content"),
+            p.get("wikilinks", "[]"), p.get("substrate_id"),
+            p.get("meta_json", "{}"), p.get("created_at"), p.get("updated_at"),
+        ],
+    )
+
+
+def _apply_note_delete(db: MetaDB, event: ChangefeedEvent) -> None:
+    row_id = event.aggregate_id or event.payload.get("id")
+    db.execute("DELETE FROM note WHERE id = ?", [row_id])
+
+
+def _apply_concept_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
+    p = event.payload
+    db.execute("DELETE FROM concept WHERE id = ?", [p.get("id")])
+    db.execute(
+        "INSERT INTO concept "
+        "(id, name, aliases, description, wikilink, source_ids, meta_json, created_at, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            p.get("id"), p.get("name"), p.get("aliases"),
+            p.get("description"), p.get("wikilink"),
+            p.get("source_ids", "[]"), p.get("meta_json", "{}"),
+            p.get("created_at"), p.get("updated_at"),
+        ],
+    )
+
+
+def _apply_concept_delete(db: MetaDB, event: ChangefeedEvent) -> None:
+    row_id = event.aggregate_id or event.payload.get("id")
+    db.execute("DELETE FROM concept WHERE id = ?", [row_id])
+
+
+def _apply_concept_link(db: MetaDB, event: ChangefeedEvent) -> None:
+    source_ids = event.payload.get("source_ids")
+    if source_ids is not None:
+        db.execute(
+            "UPDATE concept SET source_ids = ? WHERE id = ?",
+            [source_ids, event.aggregate_id],
+        )
+
+
+def _apply_concept_unlink(db: MetaDB, event: ChangefeedEvent) -> None:
+    source_ids = event.payload.get("source_ids")
+    if source_ids is not None:
+        db.execute(
+            "UPDATE concept SET source_ids = ? WHERE id = ?",
+            [source_ids, event.aggregate_id],
+        )
+
+
+_HANDLERS: dict[str, object] = {
+    EventType.SUBSTRATE_CREATED.value: _apply_substrate_upsert,
+    EventType.SUBSTRATE_UPDATED.value: _apply_substrate_upsert,
+    EventType.SUBSTRATE_DELETED.value: _apply_substrate_delete,
+    EventType.SUBSTRATE_PINNED.value: _apply_substrate_pin,
+    EventType.SUBSTRATE_UNPINNED.value: _apply_substrate_unpin,
+    EventType.DERIVATIVE_CREATED.value: _apply_concept_upsert,
+    EventType.DERIVATIVE_DELETED.value: _apply_concept_delete,
+    EventType.NOTE_CREATED.value: _apply_note_upsert,
+    EventType.NOTE_UPDATED.value: _apply_note_upsert,
+    EventType.NOTE_DELETED.value: _apply_note_delete,
+    EventType.CONCEPT_CREATED.value: _apply_concept_upsert,
+    EventType.CONCEPT_LINKED.value: _apply_concept_link,
+    EventType.CONCEPT_UNLINKED.value: _apply_concept_unlink,
+}
+
+
+def _apply_one(db: MetaDB, event: ChangefeedEvent) -> bool:
+    handler = _HANDLERS.get(event.event_type.value)
+    if handler is None:
+        log.warning("apply_remote_unknown_event_type", event_type=event.event_type.value)
+        return False
+    handler(db, event)  # type: ignore[call-arg]
+    return True
+
+
+def _parse_jsonl(content: str) -> list[dict]:
+    events = []
+    for line in content.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError as exc:
+            log.warning("apply_remote_malformed_jsonl_line", error=str(exc))
+    return events
+
+
+async def apply_remote_events(
+    user_id: str,
+    device_id: str,
+    db: MetaDB,
+    storage_adapter,
+    *,
+    since_seq: int = 0,
+    state_dir: Path | None = None,
+) -> ApplyResult:
+    """Download remote changefeed JSONL files and apply events to local DB.
+
+    Lists all files under /Stratum/changefeed/ in storage, skips files from the
+    current device_id (those are our own events already in the local DB), and
+    applies events that haven't been processed yet.
+
+    State tracking uses a set of processed file paths stored in the sync_state
+    JSON file so files are never re-applied on subsequent calls.
+    """
+    state_dir = state_dir or _DEFAULT_STATE_DIR
+    state_file = _state_path(user_id, device_id, state_dir)
+    state = _load_state(state_file)
+    processed_files: list[str] = state.get("processed_remote_files", [])
+    processed_set: set[str] = set(processed_files)
+
+    applied_count = 0
+    skipped_count = 0
+    conflict_count = 0
+    last_applied_seq = int(state.get("last_applied_seq", since_seq))
+    errors: list[str] = []
+    newly_processed: list[str] = []
+
+    # Collect candidate files from all remote sub-folders except own device
+    candidate_files: list[str] = []
+    try:
+        async for storage_file in storage_adapter.list_files(
+            "/Stratum/changefeed", recursive=True
+        ):
+            fname = storage_file.name
+            # Skip own-device files — those are already in local DB
+            if f"/{device_id}/" in fname or fname.startswith(f"{device_id}/"):
+                continue
+            if fname in processed_set:
+                continue
+            candidate_files.append(fname)
+    except Exception as exc:
+        log.error("apply_remote_list_failed", error=str(exc))
+        raise ApplyError(f"Failed to list remote changefeed files: {exc}") from exc
+
+    if not candidate_files:
+        log.info("apply_remote_nothing_new", user_id=user_id, device_id=device_id)
+        return ApplyResult(
+            applied_count=0,
+            skipped_count=0,
+            conflict_count=0,
+            last_applied_seq=last_applied_seq,
+        )
+
+    for remote_name in sorted(candidate_files):
+        with tempfile.NamedTemporaryFile(
+            mode="wb", suffix=".jsonl", delete=False
+        ) as tf:
+            tmp_path = tf.name
+
+        try:
+            await storage_adapter.download(remote_name, tmp_path)
+            content = Path(tmp_path).read_text(encoding="utf-8")
+        except Exception as exc:
+            log.error("apply_remote_download_failed", file=remote_name, error=str(exc))
+            errors.append(f"download:{remote_name}:{exc}")
+            continue
+        finally:
+            os.unlink(tmp_path)
+
+        raw_events = _parse_jsonl(content)
+        for raw in raw_events:
+            try:
+                event = ChangefeedEvent.from_dict(raw)
+            except Exception as exc:
+                log.warning("apply_remote_parse_failed", error=str(exc))
+                skipped_count += 1
+                continue
+
+            # Skip events already applied (by seq — cross-device seq not comparable,
+            # but within a single device file they are monotonically increasing)
+            if event.seq <= since_seq and since_seq > 0:
+                skipped_count += 1
+                continue
+
+            try:
+                if _apply_one(db, event):
+                    applied_count += 1
+                    last_applied_seq = max(last_applied_seq, event.seq)
+                else:
+                    skipped_count += 1
+            except Exception as exc:
+                log.error(
+                    "apply_remote_event_failed",
+                    event_type=event.event_type.value,
+                    seq=event.seq,
+                    error=str(exc),
+                )
+                errors.append(f"apply:{event.event_type.value}:{exc}")
+                conflict_count += 1
+
+        newly_processed.append(remote_name)
+
+    # Persist updated state
+    state["last_applied_seq"] = last_applied_seq
+    state["processed_remote_files"] = sorted(processed_set | set(newly_processed))
+    _save_state(state_file, state)
+
+    log.info(
+        "apply_remote_done",
+        applied=applied_count,
+        skipped=skipped_count,
+        conflicts=conflict_count,
+        user_id=user_id,
+    )
+    return ApplyResult(
+        applied_count=applied_count,
+        skipped_count=skipped_count,
+        conflict_count=conflict_count,
+        last_applied_seq=last_applied_seq,
+        errors=errors,
+    )
