@@ -472,3 +472,190 @@ def regime_aware_performance(
     # Reorder columns
     cols = [c for c in all_cols if c in df.columns]
     return df[cols]
+
+
+# ── Sprint 0 additions (v2.5.0) ──────────────────────────────────────────────
+
+STABILITY_NEW = "experimental"  # for Sprint 0 additions only
+
+
+def portfolio_metrics_summary(
+    trades: list[dict],
+    equity_curve: list[tuple],
+    initial_capital: float,
+) -> dict:
+    """Compute summary performance metrics for a backtest run.
+
+    Parameters
+    ----------
+    trades : list of {"entry_date": date, "exit_date": date,
+                      "pnl": float, "pnl_pct": float}
+    equity_curve : [(date, equity_value), ...] sorted ascending
+    initial_capital : starting capital
+
+    Returns
+    -------
+    {
+        "total_return_pct": float,
+        "cagr": float,
+        "sharpe_ratio": float,
+        "max_drawdown_pct": float,
+        "win_rate": float,
+        "profit_loss_ratio": float,
+        "n_trades": int,
+        "avg_holding_days": float
+    }
+
+    Methodology
+    -----------
+    Combines oprim.finance.sharpe_ratio + oprim.finance.drawdown_curve +
+    oprim.performance.cagr into a single summary report.
+
+    Uses: oprim.finance, oprim.performance
+
+    Reference
+    ---------
+    Bailey & Lopez de Prado (2014). The Deflated Sharpe Ratio.
+    """
+    import math
+    from datetime import date as date_type
+
+    n_trades = len(trades)
+
+    if not equity_curve or initial_capital <= 0:
+        return {
+            "total_return_pct": 0.0,
+            "cagr": 0.0,
+            "sharpe_ratio": 0.0,
+            "max_drawdown_pct": 0.0,
+            "win_rate": 0.0,
+            "profit_loss_ratio": 0.0,
+            "n_trades": n_trades,
+            "avg_holding_days": 0.0,
+        }
+
+    final_equity = equity_curve[-1][1]
+    total_return_pct = (final_equity - initial_capital) / initial_capital * 100
+
+    # CAGR using oprim
+    start_date = equity_curve[0][0]
+    end_date = equity_curve[-1][0]
+    years = max((end_date - start_date).days / 365.25, 1 / 365.25)
+    cagr_val = oprim.cagr(pd.Series([initial_capital, final_equity]), periods_per_year=1 / years)
+
+    # Daily returns from equity curve for Sharpe
+    equity_vals = [v for _, v in equity_curve]
+    if len(equity_vals) >= 2:
+        daily_rets = pd.Series(
+            [(equity_vals[i] - equity_vals[i - 1]) / equity_vals[i - 1]
+             for i in range(1, len(equity_vals))]
+        )
+        sharpe = float(oprim.sharpe_ratio(daily_rets, annualization_factor=252))
+    else:
+        sharpe = 0.0
+
+    # Max drawdown using oprim.drawdown_curve
+    eq_series = pd.Series(equity_vals)
+    dd_curve = oprim.drawdown_curve(eq_series)
+    max_drawdown_pct = float(dd_curve["max_drawdown"]) * 100
+
+    # Trade statistics
+    if trades:
+        wins = [t for t in trades if t.get("pnl", 0) > 0]
+        losses = [t for t in trades if t.get("pnl", 0) <= 0]
+        win_rate = len(wins) / n_trades
+        avg_win = sum(t.get("pnl", 0) for t in wins) / len(wins) if wins else 0.0
+        avg_loss = abs(sum(t.get("pnl", 0) for t in losses) / len(losses)) if losses else 0.0
+        profit_loss_ratio = avg_win / avg_loss if avg_loss > 0 else float("inf")
+
+        holding_days = []
+        for t in trades:
+            entry = t.get("entry_date")
+            exit_ = t.get("exit_date")
+            if entry is not None and exit_ is not None:
+                holding_days.append((exit_ - entry).days)
+        avg_holding_days = sum(holding_days) / len(holding_days) if holding_days else 0.0
+    else:
+        win_rate = 0.0
+        profit_loss_ratio = 0.0
+        avg_holding_days = 0.0
+
+    return {
+        "total_return_pct": total_return_pct,
+        "cagr": cagr_val,
+        "sharpe_ratio": sharpe,
+        "max_drawdown_pct": max_drawdown_pct,
+        "win_rate": win_rate,
+        "profit_loss_ratio": profit_loss_ratio,
+        "n_trades": n_trades,
+        "avg_holding_days": avg_holding_days,
+    }
+
+
+def trade_pnl_statistics(
+    trades: list[dict],
+    pnl_field: str = "realized_pnl_pct",
+    group_fields: list[str] | None = None,
+) -> dict:
+    """Compute PnL aggregation statistics, optionally grouped.
+
+    Parameters
+    ----------
+    trades : list of trade dicts
+    pnl_field : which field to aggregate (e.g. "realized_pnl_pct" or "pnl_yuan")
+    group_fields : optional list of fields to group by (e.g. ["symbol", "entry_reason"])
+
+    Returns
+    -------
+    If group_fields is None:
+        {"win_rate": float, "profit_loss_ratio": float, "avg_pnl": float,
+         "median_pnl": float, "std_pnl": float, "n_trades": int}
+    Else:
+        {group_key_tuple: same dict, ...}
+
+    Reference
+    ---------
+    Standard trade journal analytics.
+    """
+    import statistics as _stats
+
+    def _compute_group(group: list[dict]) -> dict:
+        pnls = [float(t.get(pnl_field, 0)) for t in group]
+        n = len(pnls)
+        if n == 0:
+            return {
+                "win_rate": 0.0, "profit_loss_ratio": 0.0, "avg_pnl": 0.0,
+                "median_pnl": 0.0, "std_pnl": 0.0, "n_trades": 0,
+            }
+        wins = [p for p in pnls if p > 0]
+        losses = [p for p in pnls if p <= 0]
+        win_rate = len(wins) / n
+        avg_win = sum(wins) / len(wins) if wins else 0.0
+        avg_loss = abs(sum(losses) / len(losses)) if losses else 0.0
+        plr = avg_win / avg_loss if avg_loss > 0 else float("inf")
+
+        avg_pnl = sum(pnls) / n
+        median_pnl = _stats.median(pnls)
+        std_pnl = _stats.stdev(pnls) if n > 1 else 0.0
+
+        return {
+            "win_rate": win_rate,
+            "profit_loss_ratio": plr,
+            "avg_pnl": avg_pnl,
+            "median_pnl": median_pnl,
+            "std_pnl": std_pnl,
+            "n_trades": n,
+        }
+
+    if group_fields is None:
+        return _compute_group(trades)
+
+    # Group by
+    groups: dict[tuple, list[dict]] = {}
+    for t in trades:
+        key = tuple(t.get(f) for f in group_fields)
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(t)
+
+    return {k: _compute_group(v) for k, v in groups.items()}

@@ -2,6 +2,18 @@
 
 from oskill._version import __version__
 
+# Sprint 0 additions (v2.5.0)
+from oskill.signals.forward_returns import aggregate_signal_returns
+from oskill.performance import portfolio_metrics_summary, trade_pnl_statistics
+from oskill.similarity import multi_dim_nearest_search, forward_outcome_distribution
+from oskill.classifier.rule_based import rule_based_classifier, rule_based_veto_check
+from oskill.dsl.evaluator import dsl_rule_validate, dsl_rule_evaluate
+from oskill.regime.multi_state_classify import multi_state_classify
+from oskill.factor.disclosure_scoring import disclosure_event_scoring
+from oskill.factor.event_theme_cluster import event_theme_cluster
+from oskill.factor.sector_rotation import sector_capital_rotation_detect
+from oskill.backtest.market_rules_backtest import market_rules_backtest_run
+
 # Phase 3 P18: OKX Demo exchange client
 from oskill.exchange.okx_demo import (
     OKXDemoRestClient,
@@ -330,4 +342,19 @@ __all__ = [
     "LLMRateLimit",
     "LLMAPIError",
     "LLMTimeout",
+    # Sprint 0 additions (v2.5.0)
+    "aggregate_signal_returns",
+    "portfolio_metrics_summary",
+    "trade_pnl_statistics",
+    "multi_dim_nearest_search",
+    "forward_outcome_distribution",
+    "rule_based_classifier",
+    "rule_based_veto_check",
+    "dsl_rule_validate",
+    "dsl_rule_evaluate",
+    "multi_state_classify",
+    "disclosure_event_scoring",
+    "event_theme_cluster",
+    "sector_capital_rotation_detect",
+    "market_rules_backtest_run",
 ]

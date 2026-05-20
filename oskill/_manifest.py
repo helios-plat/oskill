@@ -126,6 +126,21 @@ ELEMENTS: list[str] = [
     "smooth_ambiguity_portfolio",
     # Phase 10: Recursive Utility (v2.0.0)
     "epstein_zin_solver",
+    # Sprint 0 additions (v2.5.0)
+    "aggregate_signal_returns",
+    "portfolio_metrics_summary",
+    "trade_pnl_statistics",
+    "multi_dim_nearest_search",
+    "forward_outcome_distribution",
+    "rule_based_classifier",
+    "rule_based_veto_check",
+    "dsl_rule_validate",
+    "dsl_rule_evaluate",
+    "multi_state_classify",
+    "disclosure_event_scoring",
+    "event_theme_cluster",
+    "sector_capital_rotation_detect",
+    "market_rules_backtest_run",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -337,4 +352,19 @@ STABILITY: dict[str, str] = {
     "smooth_ambiguity_portfolio": "stable",
     "ssd_milp_optimizer": "stable",
     "epstein_zin_solver": "stable",
+    # Sprint 0 additions (v2.5.0)
+    "aggregate_signal_returns": "experimental",
+    "portfolio_metrics_summary": "experimental",
+    "trade_pnl_statistics": "experimental",
+    "multi_dim_nearest_search": "experimental",
+    "forward_outcome_distribution": "experimental",
+    "rule_based_classifier": "experimental",
+    "rule_based_veto_check": "experimental",
+    "dsl_rule_validate": "experimental",
+    "dsl_rule_evaluate": "experimental",
+    "multi_state_classify": "experimental",
+    "disclosure_event_scoring": "experimental",
+    "event_theme_cluster": "experimental",
+    "sector_capital_rotation_detect": "experimental",
+    "market_rules_backtest_run": "experimental",
 }

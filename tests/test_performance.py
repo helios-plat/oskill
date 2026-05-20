@@ -526,3 +526,143 @@ class TestRegimeAwarePerformance:
         import oprim
         direct_sharpe = oprim.sharpe_ratio(returns)
         assert abs(df.loc["OVERALL", "sharpe"] - direct_sharpe) < 1e-10
+
+
+# ============================================================
+# Sprint 0: portfolio_metrics_summary + trade_pnl_statistics
+# ============================================================
+
+from datetime import date as _date
+from oskill.performance import portfolio_metrics_summary, trade_pnl_statistics
+
+
+class TestPortfolioMetricsSummary:
+    def _make_trades(self):
+        return [
+            {"entry_date": _date(2024, 1, 2), "exit_date": _date(2024, 1, 10), "pnl": 500.0, "pnl_pct": 0.05},
+            {"entry_date": _date(2024, 2, 1), "exit_date": _date(2024, 2, 5), "pnl": -200.0, "pnl_pct": -0.02},
+        ]
+
+    def _make_equity_curve(self):
+        return [
+            (_date(2024, 1, 10), 100_500.0),
+            (_date(2024, 2, 5), 100_300.0),
+        ]
+
+    def test_empty_equity_returns_zeros(self):
+        result = portfolio_metrics_summary([], [], 100_000)
+        assert result["total_return_pct"] == 0.0
+        assert result["n_trades"] == 0
+
+    def test_required_keys_present(self):
+        result = portfolio_metrics_summary(self._make_trades(), self._make_equity_curve(), 100_000)
+        for key in ["total_return_pct", "cagr", "sharpe_ratio", "max_drawdown_pct", "win_rate",
+                    "profit_loss_ratio", "n_trades", "avg_holding_days"]:
+            assert key in result
+
+    def test_n_trades_correct(self):
+        result = portfolio_metrics_summary(self._make_trades(), self._make_equity_curve(), 100_000)
+        assert result["n_trades"] == 2
+
+    def test_win_rate_correct(self):
+        result = portfolio_metrics_summary(self._make_trades(), self._make_equity_curve(), 100_000)
+        assert result["win_rate"] == pytest.approx(0.5)
+
+    def test_total_return_pct_correct(self):
+        equity = [(_date(2024, 1, 1), 110_000.0)]
+        result = portfolio_metrics_summary([], equity, 100_000)
+        assert result["total_return_pct"] == pytest.approx(10.0)
+
+    def test_avg_holding_days_correct(self):
+        result = portfolio_metrics_summary(self._make_trades(), self._make_equity_curve(), 100_000)
+        # trade1: 8 days, trade2: 4 days -> avg = 6
+        assert result["avg_holding_days"] == pytest.approx(6.0)
+
+    def test_zero_initial_capital_returns_zeros(self):
+        result = portfolio_metrics_summary(self._make_trades(), self._make_equity_curve(), 0)
+        assert result["total_return_pct"] == 0.0
+
+    @pytest.mark.academic_reference
+    def test_bailey_lopezdeprado_2014_backtest_metrics(self):
+        """Bailey & Lopez de Prado (2014) Deflated Sharpe Ratio: backtest metrics.
+
+        For a strategy with positive total return, win_rate must be between 0 and 1,
+        and n_trades must match the input. Verifies metric bundle consistency.
+        """
+        trades = [
+            {"entry_date": _date(2024, 1, 1), "exit_date": _date(2024, 1, 30), "pnl": 1000.0, "pnl_pct": 0.01},
+            {"entry_date": _date(2024, 2, 1), "exit_date": _date(2024, 2, 28), "pnl": 2000.0, "pnl_pct": 0.02},
+            {"entry_date": _date(2024, 3, 1), "exit_date": _date(2024, 3, 31), "pnl": -500.0, "pnl_pct": -0.005},
+        ]
+        equity = [
+            (_date(2024, 1, 30), 101_000.0),
+            (_date(2024, 2, 28), 103_000.0),
+            (_date(2024, 3, 31), 102_500.0),
+        ]
+        result = portfolio_metrics_summary(trades, equity, 100_000)
+        assert result["n_trades"] == 3
+        assert 0.0 <= result["win_rate"] <= 1.0
+        assert result["total_return_pct"] == pytest.approx(2.5)
+
+
+class TestTradePnlStatistics:
+    def _make_trades(self):
+        return [
+            {"symbol": "A", "entry_reason": "breakout", "realized_pnl_pct": 0.05},
+            {"symbol": "A", "entry_reason": "mean_rev", "realized_pnl_pct": -0.02},
+            {"symbol": "B", "entry_reason": "breakout", "realized_pnl_pct": 0.03},
+        ]
+
+    def test_overall_n_trades(self):
+        result = trade_pnl_statistics(self._make_trades())
+        assert result["n_trades"] == 3
+
+    def test_overall_win_rate(self):
+        result = trade_pnl_statistics(self._make_trades())
+        # 2 positive out of 3
+        assert result["win_rate"] == pytest.approx(2 / 3)
+
+    def test_overall_avg_pnl_correct(self):
+        result = trade_pnl_statistics(self._make_trades())
+        expected = (0.05 - 0.02 + 0.03) / 3
+        assert result["avg_pnl"] == pytest.approx(expected)
+
+    def test_grouped_by_symbol(self):
+        result = trade_pnl_statistics(self._make_trades(), group_fields=["symbol"])
+        assert ("A",) in result
+        assert ("B",) in result
+
+    def test_grouped_by_symbol_n_trades(self):
+        result = trade_pnl_statistics(self._make_trades(), group_fields=["symbol"])
+        assert result[("A",)]["n_trades"] == 2
+        assert result[("B",)]["n_trades"] == 1
+
+    def test_empty_trades_returns_zeros(self):
+        result = trade_pnl_statistics([])
+        assert result["n_trades"] == 0
+        assert result["win_rate"] == 0.0
+
+    def test_custom_pnl_field(self):
+        trades = [{"custom_pnl": 0.1}, {"custom_pnl": -0.05}]
+        result = trade_pnl_statistics(trades, pnl_field="custom_pnl")
+        assert result["win_rate"] == pytest.approx(0.5)
+
+    def test_std_pnl_zero_single_trade(self):
+        result = trade_pnl_statistics([{"realized_pnl_pct": 0.05}])
+        assert result["std_pnl"] == 0.0
+
+    @pytest.mark.academic_reference
+    def test_standard_trade_journal_analytics(self):
+        """Standard trade journal analytics: profit_loss_ratio = avg_win / avg_loss.
+
+        Given wins=[0.06, 0.04], losses=[-0.02]:
+        avg_win = 0.05, avg_loss = 0.02, PLR = 0.05/0.02 = 2.5
+        """
+        trades = [
+            {"realized_pnl_pct": 0.06},
+            {"realized_pnl_pct": 0.04},
+            {"realized_pnl_pct": -0.02},
+        ]
+        result = trade_pnl_statistics(trades)
+        assert result["profit_loss_ratio"] == pytest.approx(2.5)
+        assert result["win_rate"] == pytest.approx(2 / 3)

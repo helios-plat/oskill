@@ -104,6 +104,33 @@ class TestHistoricalAnalogySearch:
         with pytest.warns(UserWarning, match="indices.*excluded"):
             historical_analogy_search(query, db, methods=["cosine"], top_k=3)
 
+    def test_numpy_2d_array_input(self):
+        """historical_db as 2D numpy array is supported."""
+        rng = np.random.default_rng(42)
+        query = rng.normal(0, 1, 20)
+        db_2d = np.stack([rng.normal(0, 1, 20) for _ in range(5)])
+        results = historical_analogy_search(query, db_2d, top_k=3)
+        assert len(results) == 3
+        assert all("historical_idx" in r for r in results)
+
+    def test_empty_db_raises(self):
+        """Empty historical_db raises ValueError."""
+        query = np.zeros(10)
+        with pytest.raises(ValueError, match="historical_db must not be empty"):
+            historical_analogy_search(query, [], top_k=3)
+
+    def test_euclidean_variable_length_warning(self):
+        """Euclidean with variable-length entries warns and excludes bad ones from ranking."""
+        rng = np.random.default_rng(42)
+        query = rng.normal(0, 1, 20)
+        db = [rng.normal(0, 1, 15), rng.normal(0, 1, 20)]  # first is different length
+        with pytest.warns(UserWarning):
+            results = historical_analogy_search(query, db, methods=["euclidean"], top_k=2)
+        # the entry with matching length should have finite distance, mismatched has inf
+        finite = [r for r in results if r["distances_per_method"]["euclidean"] != float("inf")]
+        assert len(finite) == 1
+        assert finite[0]["historical_idx"] == 1
+
     def test_integration_mock_dtw(self, mocker):
         """Integration: oprim.dtw_distance called for each db entry."""
         mock_dtw = mocker.patch("oskill.similarity.oprim.dtw_distance",
@@ -529,3 +556,207 @@ class TestGeopoliticalRiskIndex:
         events = self._make_events()
         geopolitical_risk_index(events)
         mock_pr.assert_called_once()
+
+
+# ============================================================
+# Sprint 0: multi_dim_nearest_search + forward_outcome_distribution
+# ============================================================
+
+from datetime import date as _date
+from oskill.similarity import multi_dim_nearest_search, forward_outcome_distribution
+
+
+class TestMultiDimNearestSearch:
+    def _history(self):
+        return [
+            (_date(2023, 1, 1), [1.0, 1.0, 1.0]),
+            (_date(2023, 1, 2), [2.0, 2.0, 2.0]),
+            (_date(2023, 1, 3), [5.0, 5.0, 5.0]),
+        ]
+
+    def test_empty_history_returns_empty(self):
+        result = multi_dim_nearest_search([1.0, 2.0, 3.0], [])
+        assert result == []
+
+    def test_returns_k_results(self):
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], self._history(), k=2)
+        assert len(result) == 2
+
+    def test_sorted_by_distance_ascending(self):
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], self._history())
+        dists = [r["distance"] for r in result]
+        assert dists == sorted(dists)
+
+    def test_nearest_neighbor_identified(self):
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], self._history(), k=1)
+        assert result[0]["date"] == _date(2023, 1, 1)
+        assert result[0]["distance"] == pytest.approx(0.0)
+
+    def test_required_keys_in_result(self):
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], self._history(), k=1)
+        assert "date" in result[0]
+        assert "distance" in result[0]
+        assert "vec" in result[0]
+
+    def test_euclidean_metric(self):
+        result = multi_dim_nearest_search([0.0, 0.0, 0.0], self._history(), k=3, distance_metric="euclidean")
+        dists = [r["distance"] for r in result]
+        assert dists == sorted(dists)
+
+    def test_cosine_metric(self):
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], self._history(), k=3, distance_metric="cosine")
+        assert len(result) == 3
+
+    def test_unknown_metric_raises(self):
+        with pytest.raises(ValueError):
+            multi_dim_nearest_search([1.0, 1.0, 1.0], self._history(), distance_metric="unknown")
+
+    def test_weights_applied(self):
+        history = [(_date(2023, 1, 1), [2.0, 1.0])]
+        result_w = multi_dim_nearest_search([1.0, 100.0], history, k=1, weights=[2.0, 0.0])
+        result_nw = multi_dim_nearest_search([1.0, 100.0], history, k=1, weights=None)
+        assert result_w[0]["distance"] != result_nw[0]["distance"]
+
+    def test_weights_wrong_length_raises(self):
+        with pytest.raises(ValueError):
+            multi_dim_nearest_search([1.0, 2.0], self._history(), weights=[1.0])
+
+    def test_mismatched_history_vec_skipped(self):
+        history = [
+            (_date(2023, 1, 1), [1.0, 1.0, 1.0]),
+            (_date(2023, 1, 2), [1.0, 1.0]),  # wrong dims
+        ]
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], history)
+        assert len(result) == 1
+
+    def test_cosine_zero_vector_distance_one(self):
+        history = [(_date(2023, 1, 1), [0.0, 0.0, 0.0])]
+        result = multi_dim_nearest_search([1.0, 1.0, 1.0], history, distance_metric="cosine")
+        assert result[0]["distance"] == pytest.approx(1.0)
+
+    @pytest.mark.academic_reference
+    def test_cover_hart_1967_knn_pattern(self):
+        """Cover & Hart (1967) Nearest Neighbor: nearest point has smallest distance.
+
+        Given anchor = [3.0, 3.0, 3.0] and 3 history points at [1,1,1], [3,3,3], [5,5,5]:
+        Nearest is [3,3,3] with distance=0.0.
+        """
+        history = [
+            (_date(2023, 1, 1), [1.0, 1.0, 1.0]),
+            (_date(2023, 1, 2), [3.0, 3.0, 3.0]),
+            (_date(2023, 1, 3), [5.0, 5.0, 5.0]),
+        ]
+        result = multi_dim_nearest_search([3.0, 3.0, 3.0], history, k=1)
+        assert result[0]["distance"] == pytest.approx(0.0)
+        assert result[0]["date"] == _date(2023, 1, 2)
+
+
+class TestForwardOutcomeDistribution:
+    def _ohlcv(self):
+        dates = [_date(2023, 1, i) for i in range(2, 12)]
+        return {d: {"close": 100.0 + i} for i, d in enumerate(dates)}
+
+    def _similar_dates(self):
+        return [_date(2023, 1, 2), _date(2023, 1, 3)]
+
+    def test_required_keys_present(self):
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), self._similar_dates(), self._ohlcv(), [5]
+        )
+        assert "anchor_date" in result
+        assert "n_analogues" in result
+        assert "by_period" in result
+
+    def test_n_analogues_correct(self):
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), self._similar_dates(), self._ohlcv(), [5]
+        )
+        assert result["n_analogues"] == 2
+
+    def test_anchor_date_preserved(self):
+        anchor = _date(2023, 1, 1)
+        result = forward_outcome_distribution(anchor, self._similar_dates(), self._ohlcv(), [5])
+        assert result["anchor_date"] == anchor
+
+    def test_period_stats_present(self):
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), self._similar_dates(), self._ohlcv(), [5]
+        )
+        assert 5 in result["by_period"]
+        p = result["by_period"][5]
+        for key in ["mean_return", "median_return", "win_rate", "p25", "p75", "p10", "p90"]:
+            assert key in p
+
+    def test_empty_similar_dates(self):
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), [], self._ohlcv(), [5]
+        )
+        assert result["n_analogues"] == 0
+        assert result["by_period"][5]["mean_return"] == 0.0
+
+    def test_positive_returns_win_rate_one(self):
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), self._similar_dates(), self._ohlcv(), [5]
+        )
+        assert result["by_period"][5]["win_rate"] == pytest.approx(1.0)
+
+    def test_missing_period_returns_zeros(self):
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), [_date(2023, 1, 9)], self._ohlcv(), [5]
+        )
+        assert result["by_period"][5]["mean_return"] == 0.0
+
+    def test_date_not_in_ohlcv_skipped(self):
+        ohlcv = {
+            _date(2023, 1, 2): {"close": 100.0},
+            _date(2023, 1, 3): {"close": 105.0},
+        }
+        # similar_date not in ohlcv -> skipped
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), [_date(2023, 1, 9)], ohlcv, [1]
+        )
+        assert result["by_period"][1]["mean_return"] == 0.0
+
+    def test_zero_start_price_skipped(self):
+        ohlcv = {
+            _date(2023, 1, 2): {"close": 0.0},  # zero price
+            _date(2023, 1, 3): {"close": 105.0},
+        }
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), [_date(2023, 1, 2)], ohlcv, [1]
+        )
+        assert result["by_period"][1]["mean_return"] == 0.0
+
+    def test_tuple_ohlcv_format(self):
+        # ohlcv_lookup can be [open, high, low, close, volume] tuples
+        ohlcv = {
+            _date(2023, 1, 2): (99.0, 102.0, 98.0, 100.0, 1e6),  # close at index 3
+            _date(2023, 1, 3): (104.0, 106.0, 103.0, 105.0, 1e6),
+        }
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), [_date(2023, 1, 2)], ohlcv, [1]
+        )
+        # 105/100 - 1 = 5%
+        assert result["by_period"][1]["mean_return"] == pytest.approx(0.05)
+
+    @pytest.mark.academic_reference
+    def test_lo_mamaysky_wang_2000_analogy_returns(self):
+        """Lo, Mamaysky & Wang (2000) JoF: forward return distribution from analogues.
+
+        Given 2 analogues starting at prices [100, 101] with 3-day forward at [103, 104]:
+        Both positive -> win_rate = 1.0, mean_return > 0.
+        """
+        ohlcv = {
+            _date(2023, 1, 2): {"close": 100.0},
+            _date(2023, 1, 3): {"close": 101.0},
+            _date(2023, 1, 4): {"close": 102.0},
+            _date(2023, 1, 5): {"close": 103.0},
+            _date(2023, 1, 6): {"close": 104.0},
+        }
+        similar_dates = [_date(2023, 1, 2), _date(2023, 1, 3)]
+        result = forward_outcome_distribution(
+            _date(2023, 1, 1), similar_dates, ohlcv, [3]
+        )
+        p = result["by_period"][3]
+        assert p["win_rate"] == pytest.approx(1.0)
+        assert p["mean_return"] > 0

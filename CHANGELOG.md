@@ -2,6 +2,47 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [2.5.0] - 2026-05-20
+
+### Added — Sprint 0 (14 new elements, experimental)
+
+#### Signals
+- `signals/forward_returns.py`: `aggregate_signal_returns` — event-driven forward return aggregation across multiple periods
+
+#### Performance
+- `performance.py` (appended): `portfolio_metrics_summary` — one-shot metrics bundle (CAGR, Sharpe, drawdown, win_rate)
+- `performance.py` (appended): `trade_pnl_statistics` — grouped/overall PnL statistics
+
+#### Similarity
+- `similarity.py` (appended): `multi_dim_nearest_search` — k-NN search on multi-dimensional state vectors (euclidean, cosine, weighted)
+- `similarity.py` (appended): `forward_outcome_distribution` — forward return distribution from historical analogues
+
+#### Classifier
+- `classifier/rule_based.py`: `rule_based_classifier` — deterministic threshold rule engine with exclusive label support
+- `classifier/rule_based.py`: `rule_based_veto_check` — hard/soft veto rule evaluation
+
+#### DSL
+- `dsl/evaluator.py`: `dsl_rule_validate` — JSON Schema Draft 2020-12 rule validation
+- `dsl/evaluator.py`: `dsl_rule_evaluate` — async three-stage (trigger/filter/action) rule evaluation
+
+#### Regime
+- `regime/multi_state_classify.py`: `multi_state_classify` — rule-based N-state regime classification with Markov transition validation
+
+#### Factor
+- `factor/disclosure_scoring.py`: `disclosure_event_scoring` — multi-dimensional weighted disclosure event scoring
+- `factor/event_theme_cluster.py`: `event_theme_cluster` — stock-to-theme clustering with continuation probability
+- `factor/sector_rotation.py`: `sector_capital_rotation_detect` — sector-level capital rotation detection
+
+#### Backtest
+- `backtest/market_rules_backtest.py`: `market_rules_backtest_run` — backtest engine with T+N, daily limits, commission, stamp tax
+
+### Changed
+- Bumped version to `2.5.0`
+- Added JSON schemas: `schemas/dsl_rule.schema.json`, `schemas/market_rules_backtest_input.schema.json`, `schemas/market_rules_backtest_output.schema.json`
+- Added 18 new test files covering Sprint 0 elements; overall coverage: 90.09% (≥90% target met)
+- Fixed `portfolio_metrics_summary` to use `oprim.drawdown_curve["max_drawdown"]` instead of calling `.min()` on dict
+- Fixed `market_rules_backtest_run` to correctly compute `prev_close` from previous bar (not current bar)
+
 ## [2.0.0] - 2026-05-14
 
 ### Added — Phase 10 (17 new elements)

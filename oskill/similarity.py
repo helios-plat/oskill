@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import warnings
-from typing import Literal
+from datetime import date
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
 
 import oprim
+
+STABILITY_NEW = "experimental"  # for Sprint 0 additions only
 
 
 def historical_analogy_search(
@@ -380,4 +383,166 @@ def geopolitical_risk_index(
         "percentile_rank": current_pct,
         "regime": regime,
         "top_contributors": top_contributors,
+    }
+
+
+# ── Sprint 0 additions (v2.5.0) ──────────────────────────────────────────────
+
+
+def multi_dim_nearest_search(
+    anchor_vec: list[float],
+    history_vecs: list[tuple],
+    k: int = 20,
+    weights: Optional[list[float]] = None,
+    distance_metric: Literal["euclidean", "cosine", "weighted_euclidean"] = "weighted_euclidean",
+) -> list[dict]:
+    """Find k nearest historical neighbors for a multi-dimensional anchor vector.
+
+    Parameters
+    ----------
+    anchor_vec : current state vector (e.g. 5 dims)
+    history_vecs : [(date, vec), ...] historical states
+    k : number of neighbors to return
+    weights : optional dimension weights (must match len(anchor_vec))
+    distance_metric : distance function
+
+    Returns
+    -------
+    [{"date": date, "distance": float, "vec": list[float]}, ...] sorted ascending by distance
+
+    Methodology
+    -----------
+    Uses oprim.distance.euclidean_distance_matrix or oprim.distance.cosine_similarity_batch
+    depending on metric. Weighted euclidean composes element-wise weights with euclidean.
+
+    Uses: oprim.distance
+
+    Reference
+    ---------
+    Cover, T. M., & Hart, P. E. (1967). Nearest neighbor pattern classification.
+    IEEE Transactions on Information Theory, 13(1), 21-27.
+    """
+    if not history_vecs:
+        return []
+
+    anchor = np.array(anchor_vec, dtype=np.float64)
+    n_dims = len(anchor_vec)
+
+    if weights is not None and len(weights) != n_dims:
+        raise ValueError("weights must match len(anchor_vec)")
+
+    w = np.array(weights, dtype=np.float64) if weights is not None else np.ones(n_dims)
+
+    results = []
+    for hist_date, hist_vec in history_vecs:
+        hv = np.array(hist_vec, dtype=np.float64)
+        if len(hv) != n_dims:
+            continue
+
+        if distance_metric in ("euclidean", "weighted_euclidean"):
+            diff = (anchor - hv) * w
+            dist = float(np.sqrt(np.sum(diff ** 2)))
+        elif distance_metric == "cosine":
+            anchor_norm = np.linalg.norm(anchor)
+            hv_norm = np.linalg.norm(hv)
+            if anchor_norm > 0 and hv_norm > 0:
+                sim = float(np.dot(anchor, hv) / (anchor_norm * hv_norm))
+                dist = 1.0 - sim
+            else:
+                dist = 1.0
+        else:
+            raise ValueError(f"Unknown distance_metric: {distance_metric!r}")
+
+        results.append({"date": hist_date, "distance": dist, "vec": list(hv)})
+
+    results.sort(key=lambda x: x["distance"])
+    return results[:k]
+
+
+def forward_outcome_distribution(
+    anchor_date: date,
+    similar_dates: list[date],
+    ohlcv_lookup: dict,
+    periods: list[int],
+) -> dict:
+    """Compute the distribution of forward returns starting from similar historical dates.
+
+    Parameters
+    ----------
+    anchor_date : reference date (not used in computation, only for output)
+    similar_dates : list of historical analogue dates
+    ohlcv_lookup : {date: [open, high, low, close, volume]} for all needed dates
+    periods : forward periods to compute (e.g. [5, 10, 20])
+
+    Returns
+    -------
+    {
+        "anchor_date": date,
+        "n_analogues": int,
+        "by_period": {
+            period: {"mean_return": float, "median_return": float, "win_rate": float,
+                     "p25": float, "p75": float, "p10": float, "p90": float}
+        }
+    }
+
+    Methodology
+    -----------
+    For each similar_date, compute forward N-period return using ohlcv_lookup.
+
+    Uses: oprim.statistics.distribution_summary, oprim.statistics.percentile_value
+
+    Reference
+    ---------
+    Lo, A. W., Mamaysky, H., & Wang, J. (2000). Foundations of Technical Analysis.
+    Journal of Finance, 55(4), 1705-1770.
+    """
+    sorted_dates = sorted(ohlcv_lookup.keys())
+
+    def _fwd_return(start_date: date, n: int) -> float | None:
+        try:
+            idx = sorted_dates.index(start_date)
+        except ValueError:
+            return None
+        end_idx = idx + n
+        if end_idx >= len(sorted_dates):
+            return None
+        start_ohlcv = ohlcv_lookup[sorted_dates[idx]]
+        end_ohlcv = ohlcv_lookup[sorted_dates[end_idx]]
+        start_price = start_ohlcv[3] if isinstance(start_ohlcv, (list, tuple)) else start_ohlcv.get("close", 0)
+        end_price = end_ohlcv[3] if isinstance(end_ohlcv, (list, tuple)) else end_ohlcv.get("close", 0)
+        if start_price <= 0:
+            return None
+        return (end_price - start_price) / start_price
+
+    by_period = {}
+    for period in periods:
+        rets = []
+        for sim_date in similar_dates:
+            r = _fwd_return(sim_date, period)
+            if r is not None:
+                rets.append(r)
+
+        if not rets:
+            by_period[period] = {
+                "mean_return": 0.0, "median_return": 0.0, "win_rate": 0.0,
+                "p25": 0.0, "p75": 0.0, "p10": 0.0, "p90": 0.0,
+            }
+            continue
+
+        rets_sorted = sorted(rets)
+        n = len(rets)
+        by_period[period] = {
+            "mean_return": sum(rets) / n,
+            "median_return": oprim.percentile_value(rets_sorted, 0.5),
+            "win_rate": sum(1 for r in rets if r > 0) / n,
+            "p25": oprim.percentile_value(rets_sorted, 0.25),
+            "p75": oprim.percentile_value(rets_sorted, 0.75),
+            "p10": oprim.percentile_value(rets_sorted, 0.10),
+            "p90": oprim.percentile_value(rets_sorted, 0.90),
+        }
+
+    return {
+        "anchor_date": anchor_date,
+        "n_analogues": len(similar_dates),
+        "by_period": by_period,
     }

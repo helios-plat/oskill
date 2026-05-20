@@ -79,3 +79,37 @@ def test_sbp_n_basis_paths():
     paths = _make_paths(n=500)
     r = signature_based_pricing(paths, lambda p: _asian_call_payoff(p), n_basis_paths=50)
     assert len(r["training_payoffs"]) <= 50
+
+
+def test_sbp_fallback_when_no_signature(mocker):
+    """When _HAS_SIGNATURE is False, _compute_sig is used instead of oprim."""
+    mocker.patch("oskill.signature.pricing._HAS_SIGNATURE", False)
+    paths = _make_paths(n=50)
+    r = signature_based_pricing(paths, lambda p: _asian_call_payoff(p), truncation_depth=2)
+    assert "pricing_functional" in r
+    assert isinstance(r["in_sample_r_squared"], float)
+
+
+def test_compute_sig_helper_pricing():
+    """_compute_sig helper produces correct shape output."""
+    from oskill.signature.pricing import _compute_sig
+    path = np.cumsum(np.random.default_rng(0).normal(0, 0.1, (8, 2)), axis=0)
+    sig = _compute_sig(path, depth=2)
+    assert sig.ndim == 1
+    assert len(sig) > 0
+
+
+def test_get_signature_fallback(mocker):
+    """_get_signature uses _compute_sig when _HAS_SIGNATURE is False."""
+    mocker.patch("oskill.signature.pricing._HAS_SIGNATURE", False)
+    from oskill.signature.pricing import _get_signature
+    path = np.cumsum(np.random.default_rng(0).normal(0, 0.1, (8, 2)), axis=0)
+    sig = _get_signature(path, depth=2)
+    assert sig.ndim == 1
+
+
+def test_sbp_linear_regression_method():
+    """Default method (linear regression) works and sets method='linear'."""
+    paths = _make_paths(n=50)
+    r = signature_based_pricing(paths, lambda p: _asian_call_payoff(p), method="linear")
+    assert r["method"] == "linear"
