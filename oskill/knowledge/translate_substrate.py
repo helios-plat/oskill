@@ -255,7 +255,10 @@ def _embed_translation(derivative_id: str, text: str) -> list[str]:
         if not raw_chunks:
             return []
 
-        embeddings = embed_text(raw_chunks, provider="qwen3_dashscope", dim=_VECTOR_DIM)
+        from oprim._config import cfg
+
+        _emb_provider = str(cfg.get("EMBEDDING_PROVIDER", "qwen3_dashscope"))
+        embeddings = embed_text(raw_chunks, provider=_emb_provider, dim=_VECTOR_DIM)
         vdb_path = lancedb_path()
         vdb_path.mkdir(parents=True, exist_ok=True)
         vdb = open_vector_db(vdb_path, table_name=_VECTOR_TABLE, dim=_VECTOR_DIM)

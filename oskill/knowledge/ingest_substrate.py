@@ -98,9 +98,12 @@ async def ingest_substrate(
     vector_ids: list[str] = []
     if chunks:
         try:
+            from oprim._config import cfg
+
+            _emb_provider = str(cfg.get("EMBEDDING_PROVIDER", "qwen3_dashscope"))
             embeddings = embed_text(
                 [c for c in chunks],
-                provider="qwen3_dashscope",
+                provider=_emb_provider,
                 dim=_VECTOR_DIM,
             )
             vdb_path = lancedb_path()

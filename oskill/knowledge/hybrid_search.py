@@ -140,7 +140,10 @@ async def _dense_search(query: str, top_k: int) -> list[tuple[str, float]]:
     if not db_path.exists():
         return []
     try:
-        vecs = embed_text([query], provider="qwen3_dashscope", dim=_VECTOR_DIM)
+        from oprim._config import cfg
+
+        provider = str(cfg.get("EMBEDDING_PROVIDER", "qwen3_dashscope"))
+        vecs = embed_text([query], provider=provider, dim=_VECTOR_DIM)
         vdb = open_vector_db(db_path, table_name=_TABLE_NAME, dim=_VECTOR_DIM)
         records = vdb.search(vecs[0], top_k=top_k)
         results = []
