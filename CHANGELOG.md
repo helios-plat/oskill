@@ -2,6 +2,13 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.2.0] - 2026-05-24
+
+### Added — Sprint 12 — Batch Similarity Indexing (B4) + Point-in-Time Join (B5)
+
+- `batch_similarity_indexing(vectors, metadata, method, n_clusters, persist_path)` — Build flat/ivf similarity index.
+- `point_in_time_join(left, right, left_on, right_on, value_cols, publish_lag_days)` — PIT join preventing lookahead bias.
+
 ## [3.1.0] - 2026-05-24
 
 ### Added — Sprint 11 — Rule Compliance Winrate Diff (B8)

@@ -186,6 +186,8 @@ from oskill.performance import (
     regime_aware_performance,
     rule_compliance_winrate_diff,
 )
+from oskill.similarity_indexing import batch_similarity_indexing
+from oskill.data import point_in_time_join
 from oskill.point_process import fit_hawkes
 from oskill.portfolio.hrp import hierarchical_risk_parity_v2
 from oskill.portfolio.ssd_milp import ssd_milp_optimizer
@@ -252,6 +254,8 @@ __all__ = [
     "factor_attribution",
     "regime_aware_performance",
     "rule_compliance_winrate_diff",
+    "batch_similarity_indexing",
+    "point_in_time_join",
     # Group 2: Validation
     "walk_forward_optimization",
     "cpcv_pipeline",
