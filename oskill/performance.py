@@ -755,3 +755,45 @@ def rule_compliance_winrate_diff(
         "n_total": len(trades),
         "errors": errors,
     }
+
+
+def subject_forward_winrate(
+    *,
+    events: list[dict],
+    prices: dict[str, list[float]],
+    forward_window_days: int = 3,
+    win_mode: str = "any_positive",
+) -> dict:
+    """Calculate forward winrate for a subject (seat/trader/theme)."""
+    if forward_window_days <= 0:
+        raise ValueError("forward_window_days must be > 0")
+    if not events:
+        return {"winrate": None, "n_events_total": 0, "n_events_valid": 0, "wins": 0, "losses": 0}
+    wins = 0
+    losses = 0
+    skipped = 0
+    for event in events:
+        symbol = event.get("symbol", "")
+        price_series = prices.get(symbol)
+        if not price_series or len(price_series) < forward_window_days + 1:
+            skipped += 1
+            continue
+        entry_price = price_series[0]
+        forward_prices = price_series[1:forward_window_days + 1]
+        if entry_price <= 0:
+            skipped += 1
+            continue
+        returns = [(p - entry_price) / entry_price for p in forward_prices]
+        if win_mode == "any_positive":
+            is_win = any(r > 0 for r in returns)
+        elif win_mode == "final_positive":
+            is_win = returns[-1] > 0 if returns else False
+        else:
+            raise ValueError(f"Unknown win_mode: {win_mode}")
+        if is_win:
+            wins += 1
+        else:
+            losses += 1
+    n_valid = wins + losses
+    winrate = wins / n_valid if n_valid > 0 else None
+    return {"winrate": winrate, "n_events_total": len(events), "n_events_valid": n_valid, "wins": wins, "losses": losses}
