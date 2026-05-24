@@ -192,6 +192,7 @@ from oskill.data.calendar_surprise_detect import calendar_surprise_detect
 from oskill.llm.batch_classify import llm_batch_classify
 from oskill.screening import candidate_pool_builder
 from oskill.performance import subject_forward_winrate
+from oskill.llm.text_translate import text_translate
 from oskill.point_process import fit_hawkes
 from oskill.portfolio.hrp import hierarchical_risk_parity_v2
 from oskill.portfolio.ssd_milp import ssd_milp_optimizer
@@ -264,6 +265,7 @@ __all__ = [
     "llm_batch_classify",
     "candidate_pool_builder",
     "subject_forward_winrate",
+    "text_translate",
     # Group 2: Validation
     "walk_forward_optimization",
     "cpcv_pipeline",

@@ -7,6 +7,7 @@ from oskill.llm.cot import chain_of_thought_extractor
 from oskill.llm.consistency import llm_response_consistency
 from oskill.llm.multi_model import multi_model_ensemble
 from oskill.llm.faithfulness import faithfulness_score
+from oskill.llm.text_translate import text_translate
 
 __all__ = [
     "deterministic_llm_call",
@@ -16,4 +17,5 @@ __all__ = [
     "llm_response_consistency",
     "multi_model_ensemble",
     "faithfulness_score",
+    "text_translate",
 ]
