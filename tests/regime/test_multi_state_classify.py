@@ -167,3 +167,48 @@ class TestMultiStateClassify:
         assert result["current_state"] == "expansion"
         assert result["transition_valid"] is True
         assert result["confidence"] > 0.0
+
+
+# --- Sprint 12 E1 extension tests ---
+
+class TestE1NStatesConstraint:
+    def test_backward_compat_6_states_unchanged(self) -> None:
+        """Without n_states_constraint, n_states field is added to output."""
+        from unittest.mock import patch
+        states = [
+            {"name": f"s{i}", "conditions": [], "priority": i}
+            for i in range(6)
+        ]
+        # Mock the classifier to return a simple result
+        with patch("oskill.regime.multi_state_classify.rule_based_classifier") as mock_cls:
+            mock_cls.return_value = {"matched_labels": ["s3"], "scores": {"s3": 0.8}}
+            result = multi_state_classify({"x": 55}, states)
+        assert "n_states" in result
+        assert result["n_states"] == 6
+        assert result["current_state"] == "s3"
+
+    def test_7_states_fixture_tide_v3(self) -> None:
+        """7-state emotion classification for Tide v3."""
+        from unittest.mock import patch
+        states = [
+            {"name": "冰点", "conditions": [], "priority": 1},
+            {"name": "恐慌", "conditions": [], "priority": 2},
+            {"name": "分歧", "conditions": [], "priority": 3},
+            {"name": "犹豫", "conditions": [], "priority": 4},
+            {"name": "谨慎", "conditions": [], "priority": 5},
+            {"name": "积极", "conditions": [], "priority": 6},
+            {"name": "狂热", "conditions": [], "priority": 7},
+        ]
+        with patch("oskill.regime.multi_state_classify.rule_based_classifier") as mock_cls:
+            mock_cls.return_value = {"matched_labels": ["分歧"], "scores": {"分歧": 0.9}}
+            result = multi_state_classify({"score": 30}, states, n_states_constraint=7)
+        assert result["n_states"] == 7
+        assert result["current_state"] == "分歧"
+
+    def test_n_states_constraint_mismatch_raises(self) -> None:
+        """Mismatch between constraint and actual definitions raises."""
+        states = [
+            {"name": "a", "conditions": [], "priority": 1},
+        ]
+        with pytest.raises(ValueError, match="n_states_constraint=7"):
+            multi_state_classify({"x": 5}, states, n_states_constraint=7)

@@ -2,6 +2,13 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.3.0] - 2026-05-25
+
+### Changed — Sprint 12 — multi_state_classify E1 Extension
+
+- `multi_state_classify` now accepts `n_states_constraint` parameter (backward compatible).
+- Output includes `n_states` field.
+
 ## [3.2.0] - 2026-05-24
 
 ### Added — Sprint 12 — Batch Similarity Indexing (B4) + Point-in-Time Join (B5)

@@ -14,6 +14,7 @@ def multi_state_classify(
     state_definitions: list[dict],
     transition_rules: Optional[dict] = None,
     prev_state: Optional[str] = None,
+    n_states_constraint: Optional[int] = None,
 ) -> dict:
     """Classify the current regime state based on indicators and rule-based state definitions.
 
@@ -26,6 +27,7 @@ def multi_state_classify(
     transition_rules : optional Markov transition matrix for state filtering
                        (e.g. allow "hot" only if prev_state in {"warm", "hot"})
     prev_state : optional previous state for transition validation
+    n_states_constraint : if provided, validate len(state_definitions) == n_states_constraint
 
     Returns
     -------
@@ -61,6 +63,11 @@ def multi_state_classify(
         for sd in state_definitions
     ]
 
+    if n_states_constraint is not None and len(state_definitions) != n_states_constraint:
+        raise ValueError(
+            f"n_states_constraint={n_states_constraint} but got {len(state_definitions)} state_definitions"
+        )
+
     classification = rule_based_classifier(indicators, rule_table)
     matched_states = classification["matched_labels"]
     scores = classification["scores"]
@@ -95,4 +102,5 @@ def multi_state_classify(
         "confidence": confidence,
         "matched_states": matched_states,
         "transition_valid": transition_valid,
+        "n_states": len(state_definitions),
     }
