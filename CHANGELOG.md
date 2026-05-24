@@ -4,6 +4,22 @@
 
 ## [3.0.0] - 2026-05-24
 
+### Added — Hevi Batch 3 — Video Generation Skills
+
+- `oskill.script_writer(topic, target_duration_s, llm, template_prompt, language)` — LLM-based video script generation.
+- `oskill.storyboard_planner(script, llm, shots_per_scene_min, shots_per_scene_max)` — Break script into shot-level storyboard.
+- `oskill.shot_generator(storyboard, llm)` — Generate image prompts and TTS text per shot.
+- `oskill.consistency_check(shots, llm)` — LLM-based character/scene consistency check.
+- `oskill.reference_generator(shots, llm, style_prompt)` — Generate detailed image prompts per shot.
+- `oskill.frame_renderer(references, image_provider, output_dir, concurrency)` — Concurrent image generation for shots.
+- `oskill.subtitle_generator(shots, output_path, format)` — Generate SRT/ASS from shot plans.
+- `oskill.avatar_assembler(shots, portrait_path, tts_provider, avatar_provider, output_dir, concurrency)` — Per-shot avatar video assembly.
+- `oskill.video_assembler(avatar_videos, bgm_path, subtitle_path, output_path)` — Final video assembly (concat + BGM + subtitles).
+- `oskill.shorts_recompose(full_video_path, storyboard, target_duration_s, output_path)` — Long video → shorts by importance.
+- `oskill.metadata_generate(script, storyboard, llm, constraints, style_prompt)` — Platform-agnostic video metadata generation.
+- `oskill.threeo_ingester(omodul_function, omodul_config, llm)` — Invoke 3O omodul and extract InsightContext.
+- `oskill._schemas` — Shared Pydantic models (Script, Scene, Shot, Storyboard, ShotPlan, etc.).
+
 ### Added — Phase 11C
 - `oskill.render_template`: primitive for template variable substitution.
 - `oskill.expand_tasks_from_note`: parse and deduplicate obsidian tasks.
