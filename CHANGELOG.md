@@ -2,6 +2,13 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.1.0] - 2026-05-24
+
+### Added — Sprint 11 — Rule Compliance Winrate Diff (B8)
+
+- `rule_compliance_winrate_diff(trades, rule_check_fn, return_field)` — Compare winrate between rule-compliant and rule-violating trades.
+  - Example: `result = rule_compliance_winrate_diff(trades=trades, rule_check_fn=check, return_field="pnl_pct")`
+
 ## [3.0.0] - 2026-05-24
 
 ### Changed — Phase 11B Wave 6 — TTS Deferral

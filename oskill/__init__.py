@@ -184,6 +184,7 @@ from oskill.performance import (
     factor_attribution,
     psr_dsr,
     regime_aware_performance,
+    rule_compliance_winrate_diff,
 )
 from oskill.point_process import fit_hawkes
 from oskill.portfolio.hrp import hierarchical_risk_parity_v2
@@ -250,6 +251,7 @@ __all__ = [
     "psr_dsr",
     "factor_attribution",
     "regime_aware_performance",
+    "rule_compliance_winrate_diff",
     # Group 2: Validation
     "walk_forward_optimization",
     "cpcv_pipeline",

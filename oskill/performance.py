@@ -659,3 +659,99 @@ def trade_pnl_statistics(
         groups[key].append(t)
 
     return {k: _compute_group(v) for k, v in groups.items()}
+
+
+def rule_compliance_winrate_diff(
+    *,
+    trades: list[dict[str, object]],
+    rule_check_fn: object,
+    return_field: str = "pnl_pct",
+) -> dict[str, object]:
+    """Compare winrate between rule-compliant and rule-violating trades.
+
+    Parameters
+    ----------
+    trades : list of dict
+        Each dict must have at least the `return_field` key.
+    rule_check_fn : callable
+        Function(trade) -> bool. True = compliant. Exceptions → skip + log.
+    return_field : str
+        Key in trade dict for the return value (default "pnl_pct").
+
+    Returns
+    -------
+    dict with keys: compliant, violation, diff, n_total, errors.
+    """
+    compliant_trades: list[dict[str, object]] = []
+    violation_trades: list[dict[str, object]] = []
+    errors: list[dict[str, object]] = []
+
+    for trade in trades:
+        try:
+            is_compliant = rule_check_fn(trade)  # type: ignore[operator]
+        except Exception as e:
+            errors.append({"trade": trade, "error": str(e)})
+            continue
+        if is_compliant:
+            compliant_trades.append(trade)
+        else:
+            violation_trades.append(trade)
+
+    def _group_stats(group: list[dict[str, object]]) -> dict[str, object]:
+        if not group:
+            return {
+                "n_trades": 0,
+                "winrate": None,
+                "avg_return_pct": None,
+                "median_return_pct": None,
+            }
+        returns = [t[return_field] for t in group if t.get(return_field) is not None]
+        if not returns:
+            return {
+                "n_trades": len(group),
+                "winrate": None,
+                "avg_return_pct": None,
+                "median_return_pct": None,
+            }
+        arr = np.array(returns, dtype=float)
+        valid = arr[~np.isnan(arr)]
+        if len(valid) == 0:
+            return {
+                "n_trades": len(group),
+                "winrate": None,
+                "avg_return_pct": None,
+                "median_return_pct": None,
+            }
+        n = len(valid)
+        wins = int(np.sum(valid > 0))
+        return {
+            "n_trades": n,
+            "winrate": wins / n,
+            "avg_return_pct": float(np.mean(valid)),
+            "median_return_pct": float(np.median(valid)),
+        }
+
+    c_stats = _group_stats(compliant_trades)
+    v_stats = _group_stats(violation_trades)
+
+    # Compute diff
+    diff: dict[str, object] = {}
+    if c_stats["winrate"] is not None and v_stats["winrate"] is not None:
+        diff["winrate_pct_points"] = round(
+            (c_stats["winrate"] - v_stats["winrate"]) * 100, 2
+        )
+        if c_stats["avg_return_pct"] is not None and v_stats["avg_return_pct"] is not None:
+            diff["avg_return_pct_points"] = round(
+                c_stats["avg_return_pct"] - v_stats["avg_return_pct"], 2
+            )
+    else:
+        diff["winrate_pct_points"] = None
+        diff["avg_return_pct_points"] = None
+
+    return {
+        "compliant": c_stats,
+        "violation": v_stats,
+        "diff": diff,
+        "n_total": len(trades),
+        "errors": errors,
+    }
