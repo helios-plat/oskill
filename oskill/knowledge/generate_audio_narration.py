@@ -11,6 +11,13 @@ from oprim.external.gpu_lock import GpuLock
 from oprim.meta_db import open_meta_db
 
 from oskill.knowledge._context import meta_db_path, stratum_home
+def __getattr__(name: str) -> Any:
+    if name == "generate_audio_narration":
+        raise NotImplementedError(
+            "TTS unavailable v1.0: F5-TTS upstream image broken, v1.1+ evaluate"
+        )
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 _CHUNK_WORDS = 120
 
