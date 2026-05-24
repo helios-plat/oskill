@@ -51,7 +51,8 @@ async def storyboard_planner(
         {"role": "system", "content": (
             f"Break each scene into {shots_per_scene_min}-{shots_per_scene_max} shots. "
             "Return JSON: {\"shots\": [{\"shot_id\", \"scene_index\", \"visual_description\", "
-            "\"narration\", \"duration_s\", \"importance\"}]}"
+            "\"narration\", \"duration_s\", \"importance\", "
+            "\"motion\": str|null (e.g. 'pan_left', 'zoom_in', 'static', or null)}]}"
         )},
         {"role": "user", "content": json.dumps(
             [s.model_dump() for s in script.scenes], ensure_ascii=False
