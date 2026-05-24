@@ -2,6 +2,44 @@
 
 from oskill._version import __version__
 
+# Aegis Batch 2, 3, 4 (v2.10.0)
+from oskill._llm_caller import LLMCaller
+from oskill._signal import Signal
+from oskill.container_health_aggregate import (
+    CheckResult,
+    HealthAggregateResult,
+    container_health_aggregate,
+)
+from oskill.event_trail_correlate import CorrelatedEvents, event_trail_correlate
+from oskill.metric_baseline_compare import BaselineCompareResult, MetricDelta, metric_baseline_compare
+from oskill.structured_log_anomaly_cluster import (
+    LogAnomalyClusters,
+    LogCluster,
+    structured_log_anomaly_cluster,
+)
+from oskill.agentic_investigate_loop import (
+    agentic_investigate_loop,
+    InvestigationOutcome,
+    InvestigationStep,
+)
+from oskill.tool_call_loop import (
+    tool_call_loop,
+    ToolHandler,
+)
+from oskill.retrieve_and_synthesize import (
+    retrieve_and_synthesize,
+    SynthesizedResult,
+    RetrievedDoc,
+)
+from oskill.runbook_match import (
+    runbook_match,
+    RunbookMatchResult,
+)
+from oskill.restart_and_verify import (
+    restart_and_verify,
+    RestartAndVerifyOutcome,
+)
+
 # P0-1 fix (v2.7.0): sigmoid market impact model
 from oskill.cost import crypto_market_impact_sigmoid
 
@@ -362,4 +400,30 @@ __all__ = [
     "event_theme_cluster",
     "sector_capital_rotation_detect",
     "market_rules_backtest_run",
+    # Aegis Batch 2, 3, 4 (v2.10.0)
+    "LLMCaller",
+    "Signal",
+    "container_health_aggregate",
+    "HealthAggregateResult",
+    "CheckResult",
+    "metric_baseline_compare",
+    "BaselineCompareResult",
+    "MetricDelta",
+    "structured_log_anomaly_cluster",
+    "LogAnomalyClusters",
+    "LogCluster",
+    "event_trail_correlate",
+    "CorrelatedEvents",
+    "agentic_investigate_loop",
+    "InvestigationOutcome",
+    "InvestigationStep",
+    "tool_call_loop",
+    "ToolHandler",
+    "retrieve_and_synthesize",
+    "SynthesizedResult",
+    "RetrievedDoc",
+    "runbook_match",
+    "RunbookMatchResult",
+    "restart_and_verify",
+    "RestartAndVerifyOutcome",
 ]

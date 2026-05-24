@@ -2,6 +2,19 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [2.11.0] - 2026-05-24
+
+### Added — BATCH 19 — LLM Primitives
+
+#### LLM Loop
+- `oskill.tool_call_loop`: Generic LLM tool calling loop with ReAct-like pattern. Supports multi-turn interaction, tool handler registration, and usage tracking.
+  - Protocol: `ToolHandler`, `LLMCaller`.
+  - Termination: `end_turn`, `max_steps`, `tool_error`.
+
+### Changed
+- Bumped version to `2.11.0`.
+- Coverage: 100% for `tool_call_loop`, overall >90% maintained.
+
 ## [2.5.0] - 2026-05-20
 
 ### Added — Sprint 0 (14 new elements, experimental)
