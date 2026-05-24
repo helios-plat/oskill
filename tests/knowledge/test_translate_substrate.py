@@ -8,7 +8,7 @@ import pytest
 
 from oprim.meta_db import open_meta_db
 from oprim.translate.protocol import TranslationResult
-from oskill.knowledge.translate_substrate import TranslateResult, translate_substrate
+from oskill.translate_substrate import TranslateResult, translate_substrate
 
 
 def _make_translate_result(text: str = "译文") -> TranslationResult:
@@ -50,10 +50,10 @@ async def test_translate_substrate_basic(stratum_home):
     _seed_substrate(db_path, substrate_id, "Hello world. This is a test.")
 
     with patch(
-        "oskill.knowledge.translate_substrate.translate_document_async",
+        "oskill.translate_substrate.translate_document_async",
         new_callable=AsyncMock,
     ) as mock_td, \
-         patch("oskill.knowledge.translate_substrate._embed_translation", return_value=["v#0"]):
+         patch("oskill.translate_substrate._embed_translation", return_value=["v#0"]):
         mock_td.return_value = (
             "你好世界。这是一个测试。",
             [_make_translate_result()],
@@ -85,10 +85,10 @@ async def test_translate_substrate_embed_false(stratum_home):
     _seed_substrate(db_path, substrate_id, "Some text.")
 
     with patch(
-        "oskill.knowledge.translate_substrate.translate_document_async",
+        "oskill.translate_substrate.translate_document_async",
         new_callable=AsyncMock,
     ) as mock_td, \
-         patch("oskill.knowledge.translate_substrate._embed_translation") as mock_embed:
+         patch("oskill.translate_substrate._embed_translation") as mock_embed:
         mock_td.return_value = ("译文", [_make_translate_result()])
         result = await translate_substrate(substrate_id, "zh", embed_translation=False)
 
@@ -103,10 +103,10 @@ async def test_translate_substrate_idempotent_no_overwrite(stratum_home):
     _seed_substrate(db_path, substrate_id, "Some text.")
 
     with patch(
-        "oskill.knowledge.translate_substrate.translate_document_async",
+        "oskill.translate_substrate.translate_document_async",
         new_callable=AsyncMock,
     ) as mock_td, \
-         patch("oskill.knowledge.translate_substrate._embed_translation", return_value=[]):
+         patch("oskill.translate_substrate._embed_translation", return_value=[]):
         mock_td.return_value = ("译文", [])
         r1 = await translate_substrate(substrate_id, "zh", provider="deepseek")
         r2 = await translate_substrate(substrate_id, "zh", provider="deepseek")
@@ -148,14 +148,14 @@ async def test_translate_result_cost_aggregation(stratum_home):
     _seed_substrate(db_path, substrate_id, "Paragraph one.\n\nParagraph two.")
 
     chunks = [
-        TranslationResult("一", "mock", "mock", 10, 8, 0.001, "en", "zh"),
-        TranslationResult("二", "mock", "mock", 12, 9, 0.002, "en", "zh"),
+        TranslationResult(text="一", detected_source_language="en", billed_characters=10, input_tokens=10, output_tokens=8, cost_usd=0.001),
+        TranslationResult(text="二", detected_source_language="en", billed_characters=12, input_tokens=12, output_tokens=9, cost_usd=0.002),
     ]
     with patch(
-        "oskill.knowledge.translate_substrate.translate_document_async",
+        "oskill.translate_substrate.translate_document_async",
         new_callable=AsyncMock,
     ) as mock_td, \
-         patch("oskill.knowledge.translate_substrate._embed_translation", return_value=[]):
+         patch("oskill.translate_substrate._embed_translation", return_value=[]):
         mock_td.return_value = ("一 二", chunks)
         result = await translate_substrate(substrate_id, "zh", provider="deepseek")
 

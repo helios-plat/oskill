@@ -1,21 +1,31 @@
 """Local hybrid search: BM25 (tantivy) + dense vector (lancedb) fused with RRF."""
 from __future__ import annotations
 
+import asyncio
 import json
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any, Literal, Protocol
 
+from oprim._exceptions import OprimError
 from oprim._logging import log
 from oprim.embedding import embed_text
 from oprim.fulltext import open_fulltext_index
 from oprim.meta_db import open_meta_db
 from oprim.vector_db import open_vector_db
 
+from oskill._exceptions import OskillError
 from oskill.knowledge._context import lancedb_path, meta_db_path, tantivy_path
 
 _VECTOR_DIM = 1024
 _TABLE_NAME = "vectors_text"
 _RRF_K = 60
+
+
+class Reranker(Protocol):
+    def __call__(self, *, query: str, documents: list[str], top_k: int | None = None) -> list[Any]: ...
+
+class QueryExpander(Protocol):
+    def __call__(self, *, query: str, num_variants: int) -> list[str]: ...
 
 
 @dataclass
@@ -31,51 +41,89 @@ class SearchResult:
 
 async def hybrid_search(
     query: str,
-    top_k: int = 20,
-    medium_filter: list[str] | None = None,
-    domain_filter: list[str] | None = None,
-    type_filter: list[str] | None = None,
+    *,
+    corpus_id: str,
+    top_k: int = 10,
     mode: Literal["strict", "augmented"] = "augmented",
-    view_id: str | None = None,
-    user_id: str | None = None,
     pinned_boost: float = 1.5,
+    rerank: Reranker | None = None,
+    rerank_top_k: int | None = None,
+    expand: QueryExpander | None = None,
+    expand_num_variants: int = 3,
     return_citations: bool = True,
-    time_range: str | None = None,
+    view_id: str | None = None,
+    filter_medium: list[str] | None = None,
+    filter_tags: list[str] | None = None,
 ) -> list[SearchResult]:
     """Hybrid search: BM25 + dense vector + RRF fusion.
 
     Args:
-        medium_filter: Restrict results to these medium types (e.g. ["paper", "book"]).
-        domain_filter: Restrict results to these domain tags (e.g. ["quant", "finance"]).
+        query: Query string.
+        corpus_id: Knowledge corpus ID.
+        top_k: Number of results.
         mode: "strict" — substrate hits only, no LLM.
               "augmented" — substrate + LLM general knowledge fallback on zero hits.
-        view_id: Apply this view's default_filter (Phase 13, now active).
-        user_id: When view_id is None, auto-apply the user's is_default view.
         pinned_boost: Multiply score of is_pinned substrates by this factor (re-sorts).
+        rerank: Reranker function.
+        rerank_top_k: Truncation before reranking.
+        expand: Query expansion function.
+        expand_num_variants: Number of variants to generate.
         return_citations: Populate citation field on each result.
-        time_range: "last_30d" | "last_7d" | "last_24h" — time window filter.
+        view_id: Apply this view's default_filter.
+        filter_medium: Restrict results to these medium types.
+        filter_tags: Restrict results to these domain tags.
     """
-    # Phase 13: resolve view filter (view_id > default view for user_id)
-    if view_id is not None or user_id is not None:
-        vf = _load_view_filter(view_id, user_id)
+    if not query or not query.strip():
+        raise OskillError("Query cannot be empty")
+    if not corpus_id or not corpus_id.strip():
+        raise OskillError("corpus_id cannot be empty")
+
+    queries = [query]
+    if expand:
+        expanded = expand(query=query, num_variants=expand_num_variants)
+        if expanded:
+            queries = expanded
+
+    # Phase 13: resolve view filter
+    time_range = None
+    if view_id is not None:
+        vf = _load_view_filter(view_id)
         if vf:
-            if medium_filter is None and vf.get("medium"):
-                medium_filter = list(vf["medium"])
-            if domain_filter is None and vf.get("domain"):
-                domain_filter = list(vf["domain"])
+            if filter_medium is None and vf.get("medium"):
+                filter_medium = list(vf["medium"])
+            if filter_tags is None and vf.get("domain"):
+                filter_tags = list(vf["domain"])
             if time_range is None and vf.get("time_range"):
                 time_range = vf["time_range"]
 
-    bm25_hits = _bm25_search(query, top_k * 2)
-    dense_hits = await _dense_search(query, top_k * 2)
+    all_bm25 = []
+    all_dense = []
 
-    fused = _rrf_fuse(bm25_hits, dense_hits, k=_RRF_K, top_k=top_k * 2)
+    for q in queries:
+        all_bm25.extend(_bm25_search(q, top_k * 2))
+        all_dense.extend(await _dense_search(q, top_k * 2))
+
+    fused = _rrf_fuse(all_bm25, all_dense, k=_RRF_K, top_k=top_k * 2)
 
     if pinned_boost != 1.0 and fused:
         fused = _boost_pinned(fused, pinned_boost)
 
     enriched = _enrich(fused, return_citations=return_citations)
-    filtered = _apply_filters(enriched, medium_filter, domain_filter, type_filter, time_range)
+    filtered = _apply_filters(enriched, filter_medium, filter_tags, None, time_range)
+
+    if rerank and filtered:
+        to_rerank = filtered[:rerank_top_k] if rerank_top_k else filtered
+        docs_text = [r.title + "\n" + (r.highlight or "") for r in to_rerank]
+        reranked_scores = rerank(query=query, documents=docs_text, top_k=top_k)
+        
+        reranked_filtered = []
+        for r_res in reranked_scores:
+            idx = r_res.original_index
+            if 0 <= idx < len(to_rerank):
+                doc = to_rerank[idx]
+                doc.score = r_res.score
+                reranked_filtered.append(doc)
+        filtered = reranked_filtered
 
     if mode == "augmented" and not filtered:
         filtered = await _llm_augmented(query)
@@ -83,6 +131,7 @@ async def hybrid_search(
     log.info(
         "oskill.hybrid_search.done",
         query=query[:80], mode=mode, view_id=view_id,
+        corpus_id=corpus_id,
         results=len(filtered[:top_k]),
     )
     return filtered[:top_k]
@@ -90,25 +139,16 @@ async def hybrid_search(
 
 # ── View filter resolution (reads views table directly — no omodul dep) ──────
 
-def _load_view_filter(view_id: str | None, user_id: str | None) -> dict:
-    """Return the default_filter dict for the given view or user's default view."""
+def _load_view_filter(view_id: str | None) -> dict:
+    """Return the default_filter dict for the given view."""
     db_p = meta_db_path()
-    if not db_p.exists():
+    if not db_p.exists() or not view_id:
         return {}
     try:
         db = open_meta_db(db_p)
-        if view_id:
-            rows = db.fetchall(
-                "SELECT default_filter FROM views WHERE id = ?", [view_id]
-            )
-        elif user_id:
-            rows = db.fetchall(
-                "SELECT default_filter FROM views "
-                "WHERE user_id = ? AND is_default = TRUE LIMIT 1",
-                [user_id],
-            )
-        else:
-            rows = []
+        rows = db.fetchall(
+            "SELECT default_filter FROM views WHERE id = ?", [view_id]
+        )
         db.close()
         if not rows or not rows[0][0]:
             return {}
@@ -288,8 +328,6 @@ def _apply_filters(
     if medium_filter:
         results = [r for r in results if r.metadata.get("medium") in medium_filter]
     if domain_filter:
-        # Only exclude substrates that have an explicit domain set AND it's not in the filter.
-        # Substrates with no domain tag pass through (unclassified content is not excluded).
         results = [
             r for r in results
             if r.metadata.get("domain") is None

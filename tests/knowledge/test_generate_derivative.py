@@ -43,7 +43,7 @@ class TestGenerateDerivative:
 
     async def test_returns_chapters_for_structured_pdf(self, tmp_path, simple_pdf):
         """If PDF has TOC, chapters should be present."""
-        with patch("oskill.knowledge.generate_derivative.parse_pdf") as mock_parse:
+        with patch("oskill.generate_derivative.parse_pdf") as mock_parse:
             from oprim.parser.parse_pdf import ParsedContent
             mock_parse.return_value = ParsedContent(
                 markdown="# Chapter 1\n\nContent",

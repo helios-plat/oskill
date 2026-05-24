@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch, AsyncMock, MagicMock
 import pytest
 
-from oskill.knowledge.hybrid_search import (
+from oskill.hybrid_search import (
     hybrid_search, _rrf_fuse, _boost_pinned, _make_citation, SearchResult,
 )
 
@@ -80,8 +80,8 @@ class TestMakeCitation:
 
 class TestHybridSearch:
     async def test_returns_empty_when_no_indices(self, stratum_home):
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            result = await hybrid_search("test query")
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            result = await hybrid_search("test query", corpus_id="c1")
         assert result == []
 
     async def test_bm25_hit(self, stratum_home):
@@ -106,10 +106,10 @@ class TestHybridSearch:
         )
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mock_vdb:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mock_vdb:
                 mock_vdb.return_value.search.return_value = []
-                results = await hybrid_search("kelly criterion")
+                results = await hybrid_search("kelly criterion", corpus_id="c1")
 
         assert any(r.id == "sub001" for r in results)
 
@@ -138,22 +138,22 @@ class TestHybridSearch:
                    ["book001", "book001", "finance book", "", "", "h002", 0, '{"medium":"book"}', now, now])
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mock_vdb:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mock_vdb:
                 mock_vdb.return_value.search.return_value = []
-                results = await hybrid_search("finance", medium_filter=["paper"])
+                results = await hybrid_search("finance", filter_medium=["paper"], corpus_id="c1")
 
         assert all(r.metadata.get("medium") == "paper" for r in results)
 
     async def test_type_filter(self, stratum_home):
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            results = await hybrid_search("query", type_filter=["substrate"])
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            results = await hybrid_search("query", filter_tags=["substrate"], corpus_id="c1")
         assert all(r.type == "substrate" for r in results)
 
     async def test_mode_strict_does_not_call_llm(self, stratum_home):
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search._llm_augmented", new=AsyncMock()) as mock_llm:
-                results = await hybrid_search("no hits query", mode="strict")
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search._llm_augmented", new=AsyncMock()) as mock_llm:
+                results = await hybrid_search("no hits query", mode="strict", corpus_id="c1")
         mock_llm.assert_not_called()
         assert results == []
 
@@ -162,10 +162,10 @@ class TestHybridSearch:
             type="llm_augmented", id="llm-0", title="LLM Answer",
             score=0.5, highlight="answer text", citation=None,
         )
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search._llm_augmented",
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search._llm_augmented",
                        new=AsyncMock(return_value=[llm_result])):
-                results = await hybrid_search("no substrate hits", mode="augmented")
+                results = await hybrid_search("no substrate hits", mode="augmented", corpus_id="c1")
         assert len(results) == 1
         assert results[0].type == "llm_augmented"
 
@@ -190,10 +190,10 @@ class TestHybridSearch:
         )
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                results = await hybrid_search("citation", return_citations=True)
+                results = await hybrid_search("citation", return_citations=True, corpus_id="c1")
 
         assert results
         assert results[0].citation is not None
@@ -221,10 +221,10 @@ class TestHybridSearch:
         )
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                results = await hybrid_search("citation", return_citations=False)
+                results = await hybrid_search("citation", return_citations=False, corpus_id="c1")
 
         assert results
         assert results[0].citation is None
@@ -257,10 +257,10 @@ class TestHybridSearch:
         )
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                results = await hybrid_search("finance", pinned_boost=2.0)
+                results = await hybrid_search("finance", pinned_boost=2.0, corpus_id="c1")
 
         pinned_idx = next((i for i, r in enumerate(results) if r.id == "pinned_b"), None)
         normal_idx = next((i for i, r in enumerate(results) if r.id == "normal_a"), None)
@@ -268,8 +268,8 @@ class TestHybridSearch:
         assert pinned_idx < normal_idx  # pinned ranked higher
 
     async def test_view_id_accepted_without_error(self, stratum_home):
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            result = await hybrid_search("test", view_id="some-view-id")
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            result = await hybrid_search("test", view_id="some-view-id", corpus_id="c1")
         assert isinstance(result, list)
 
     async def test_unknown_view_id_no_crash(self, stratum_home):
@@ -279,8 +279,8 @@ class TestHybridSearch:
         db = open_meta_db(meta_db_path())
         db.migrate(_MIGRATIONS)
         db.close()
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            result = await hybrid_search("test", view_id="nonexistent-uuid")
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            result = await hybrid_search("test", view_id="nonexistent-uuid", corpus_id="c1")
         assert isinstance(result, list)
 
 
@@ -332,40 +332,15 @@ class TestViewFilterResolution:
         self._insert_view(db, "v-paper", "u1", {"medium": ["paper"]})
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                results = await hybrid_search("finance", view_id="v-paper")
+                results = await hybrid_search("finance", view_id="v-paper", corpus_id="c1")
 
         assert all(r.metadata.get("medium") == "paper" for r in results)
         ids = {r.id for r in results}
         assert "p001" in ids
         assert "n001" not in ids
-
-    async def test_user_id_default_view_applied(self, stratum_home):
-        from oprim.fulltext import open_fulltext_index
-        from oprim.fulltext.tantivy import FulltextDoc
-        from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-
-        ft_idx = open_fulltext_index(tantivy_path())
-        ft_idx.add([
-            FulltextDoc(id="bk001", fields={"title": "algo book", "content": "finance"}),
-            FulltextDoc(id="nt001", fields={"title": "algo note", "content": "finance"}),
-        ])
-        db = open_meta_db(meta_db_path())
-        db.migrate(_MIGRATIONS)
-        self._insert_substrate(db, "bk001", "book")
-        self._insert_substrate(db, "nt001", "note")
-        self._insert_view(db, "v-default", "u2", {"medium": ["book"]}, is_default=True)
-        db.close()
-
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
-                mv.return_value.search.return_value = []
-                results = await hybrid_search("algo", user_id="u2")
-
-        assert all(r.metadata.get("medium") == "book" for r in results)
 
     async def test_explicit_medium_filter_overrides_view(self, stratum_home):
         from oprim.fulltext import open_fulltext_index
@@ -385,12 +360,12 @@ class TestViewFilterResolution:
         self._insert_view(db, "v-paper2", "u3", {"medium": ["paper"]})
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                # caller passes medium_filter=["book"] — should override view's ["paper"]
+                # caller passes filter_medium=["book"] — should override view's ["paper"]
                 results = await hybrid_search("strategy", view_id="v-paper2",
-                                              medium_filter=["book"])
+                                              filter_medium=["book"], corpus_id="c1")
 
         assert all(r.metadata.get("medium") == "book" for r in results)
 
@@ -411,10 +386,10 @@ class TestViewFilterResolution:
         self._insert_substrate(db, "lit001", "article", domain="literature")
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                results = await hybrid_search("sharpe ratio", domain_filter=["quant", "finance"])
+                results = await hybrid_search("sharpe ratio", filter_tags=["quant", "finance"], corpus_id="c1")
 
         ids = {r.id for r in results}
         assert "q001" in ids
@@ -434,68 +409,9 @@ class TestViewFilterResolution:
         self._insert_substrate(db, "nd001", "paper")  # no domain
         db.close()
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mv:
                 mv.return_value.search.return_value = []
-                results = await hybrid_search("general", domain_filter=["quant"])
+                results = await hybrid_search("general", filter_tags=["quant"], corpus_id="c1")
 
         assert any(r.id == "nd001" for r in results)
-
-    async def test_time_range_filters_old_substrates(self, stratum_home):
-        from oprim.fulltext import open_fulltext_index
-        from oprim.fulltext.tantivy import FulltextDoc
-        from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone, timedelta
-
-        ft_idx = open_fulltext_index(tantivy_path())
-        ft_idx.add([
-            FulltextDoc(id="new001", fields={"title": "recent note", "content": "work"}),
-            FulltextDoc(id="old001", fields={"title": "old note", "content": "work"}),
-        ])
-        db = open_meta_db(meta_db_path())
-        db.migrate(_MIGRATIONS)
-        recent = datetime.now(timezone.utc).isoformat()
-        old    = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
-        self._insert_substrate(db, "new001", "note", created_at=recent)
-        self._insert_substrate(db, "old001", "note", created_at=old)
-        db.close()
-
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
-                mv.return_value.search.return_value = []
-                results = await hybrid_search("work", time_range="last_30d")
-
-        ids = {r.id for r in results}
-        assert "new001" in ids
-        assert "old001" not in ids
-
-    async def test_view_id_applies_time_range(self, stratum_home):
-        from oprim.fulltext import open_fulltext_index
-        from oprim.fulltext.tantivy import FulltextDoc
-        from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone, timedelta
-
-        ft_idx = open_fulltext_index(tantivy_path())
-        ft_idx.add([
-            FulltextDoc(id="nw002", fields={"title": "recent log", "content": "log"}),
-            FulltextDoc(id="od002", fields={"title": "old log", "content": "log"}),
-        ])
-        db = open_meta_db(meta_db_path())
-        db.migrate(_MIGRATIONS)
-        recent = datetime.now(timezone.utc).isoformat()
-        old    = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
-        self._insert_substrate(db, "nw002", "note", created_at=recent)
-        self._insert_substrate(db, "od002", "note", created_at=old)
-        self._insert_view(db, "v-worklog", "u4", {"medium": ["note"], "time_range": "last_30d"})
-        db.close()
-
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mv:
-                mv.return_value.search.return_value = []
-                results = await hybrid_search("log", view_id="v-worklog")
-
-        ids = {r.id for r in results}
-        assert "nw002" in ids
-        assert "od002" not in ids

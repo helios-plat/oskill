@@ -2,6 +2,17 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.0.0] - 2026-05-24
+
+### Added — Phase 11C
+- `oskill.render_template`: primitive for template variable substitution.
+- `oskill.expand_tasks_from_note`: parse and deduplicate obsidian tasks.
+- `oskill.hybrid_search`: supports optional `rerank` and `expand`.
+
+### Changed — BREAKING
+- **BREAKING**: `hybrid_search` parameter `user_id` is removed and replaced with `corpus_id`.
+- `hybrid_search`, `ingest_substrate`, `translate_substrate` moved from `knowledge/` to root `oskill/`.
+
 ## [2.11.0] - 2026-05-24
 
 ### Added — BATCH 19 — LLM Primitives

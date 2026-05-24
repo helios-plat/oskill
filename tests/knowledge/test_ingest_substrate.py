@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch, AsyncMock, MagicMock
 import pytest
 
-from oskill.knowledge.ingest_substrate import ingest_substrate, IngestResult, _sha256, _chunk_text, _slugify
+from oskill.ingest_substrate import ingest_substrate, IngestResult, _sha256, _chunk_text, _slugify
 
 
 class TestHelpers:
@@ -74,7 +74,7 @@ class TestIngestSubstrate:
 
     async def test_successful_ingest_text_file(self, stratum_home, simple_txt):
         """End-to-end ingest of a text file (mocking embedding)."""
-        with patch("oskill.knowledge.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
+        with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
             with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
                 result = await ingest_substrate(simple_txt, source={"type": "inbox_local"})
 
@@ -88,7 +88,7 @@ class TestIngestSubstrate:
         from oprim.meta_db import open_meta_db
         from oskill.knowledge._context import meta_db_path
 
-        with patch("oskill.knowledge.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
+        with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
             with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
                 result = await ingest_substrate(simple_md, source={"type": "inbox_local"})
 
@@ -102,7 +102,7 @@ class TestIngestSubstrate:
         from oprim.fulltext import open_fulltext_index
         from oskill.knowledge._context import tantivy_path
 
-        with patch("oskill.knowledge.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
+        with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
             with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
                 result = await ingest_substrate(simple_md, source={"type": "inbox_local"})
 

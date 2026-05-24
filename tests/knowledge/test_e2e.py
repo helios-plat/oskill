@@ -4,23 +4,23 @@ from pathlib import Path
 from unittest.mock import patch
 import pytest
 
-from oskill.knowledge.ingest_substrate import ingest_substrate
-from oskill.knowledge.hybrid_search import hybrid_search
+from oskill.ingest_substrate import ingest_substrate
+from oskill.hybrid_search import hybrid_search
 
 
 class TestEndToEnd:
     async def test_ingest_then_search(self, stratum_home, simple_md):
         """Gate B end-to-end: ingest a file → hybrid_search finds it."""
-        with patch("oskill.knowledge.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
+        with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
             with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
                 ingest_result = await ingest_substrate(simple_md, source={"type": "inbox_local"})
 
         assert ingest_result.substrate_id
 
-        with patch("oskill.knowledge.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.hybrid_search.open_vector_db") as mock_vdb:
+        with patch("oskill.hybrid_search.embed_text", return_value=[[0.1] * 1024]):
+            with patch("oskill.hybrid_search.open_vector_db") as mock_vdb:
                 mock_vdb.return_value.search.return_value = []
-                search_results = await hybrid_search("Test Note")
+                search_results = await hybrid_search("Test Note", corpus_id="c1")
 
         assert any(r.id == ingest_result.substrate_id for r in search_results), (
             f"substrate {ingest_result.substrate_id} not found in search results: {search_results}"

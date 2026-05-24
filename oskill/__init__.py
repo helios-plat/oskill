@@ -39,6 +39,12 @@ from oskill.restart_and_verify import (
     restart_and_verify,
     RestartAndVerifyOutcome,
 )
+from oskill.hybrid_search import hybrid_search, Reranker, QueryExpander, SearchResult
+from oskill.ingest_substrate import ingest_substrate
+from oskill.translate_substrate import translate_substrate
+from oskill.render_template import render_template, TemplateVariableSpec
+from oskill.expand_tasks_from_note import expand_tasks_from_note, NormalizedTask
+
 
 # P0-1 fix (v2.7.0): sigmoid market impact model
 from oskill.cost import crypto_market_impact_sigmoid
@@ -426,4 +432,14 @@ __all__ = [
     "RunbookMatchResult",
     "restart_and_verify",
     "RestartAndVerifyOutcome",
+    "hybrid_search",
+    "Reranker",
+    "QueryExpander",
+    "SearchResult",
+    "ingest_substrate",
+    "translate_substrate",
+    "render_template",
+    "TemplateVariableSpec",
+    "expand_tasks_from_note",
+    "NormalizedTask",
 ]
