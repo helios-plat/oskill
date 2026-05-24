@@ -4,6 +4,10 @@
 
 ## [3.0.0] - 2026-05-24
 
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
+
 ### Added — Hevi Batch 3 — Video Generation Skills
 
 - `oskill.script_writer(topic, target_duration_s, llm, template_prompt, language)` — LLM-based video script generation.
@@ -20,6 +24,10 @@
 - `oskill.threeo_ingester(omodul_function, omodul_config, llm)` — Invoke 3O omodul and extract InsightContext.
 - `oskill._schemas` — Shared Pydantic models (Script, Scene, Shot, Storyboard, ShotPlan, etc.).
 
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
+
 ### Added — Phase 11C
 - `oskill.render_template`: primitive for template variable substitution.
 - `oskill.expand_tasks_from_note`: parse and deduplicate obsidian tasks.
@@ -30,6 +38,10 @@
 - `hybrid_search`, `ingest_substrate`, `translate_substrate` moved from `knowledge/` to root `oskill/`.
 
 ## [2.11.0] - 2026-05-24
+
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
 
 ### Added — BATCH 19 — LLM Primitives
 
@@ -43,6 +55,10 @@
 - Coverage: 100% for `tool_call_loop`, overall >90% maintained.
 
 ## [2.5.0] - 2026-05-20
+
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
 
 ### Added — Sprint 0 (14 new elements, experimental)
 
@@ -85,6 +101,10 @@
 
 ## [2.0.0] - 2026-05-14
 
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
+
 ### Added — Phase 10 (17 new elements)
 
 #### Behavioral Finance
@@ -121,10 +141,18 @@
 - Dependency: oprim >=2.0.0,<3.0.0
 
 ## [1.11.0] - 2026-05-09
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
+
 ### Added — Phase 9A
 - signature_kernel, signature_based_pricing, avellaneda_stoikov_quotes, cartea_jaimungal_optimal_quotes, operational_risk_lda
 
 ## [1.5.0] - 2026-05-14
+
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
 
 ### Added (Phase 2: 5 new elements)
 
@@ -164,6 +192,10 @@
 
 ## [1.4.0] - 2026-05-14
 
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
+
 ### Added (Phase 1: 4 new elements)
 
 #### Signal Ensemble
@@ -199,6 +231,10 @@ enabling LLM-augmented signal generation and audit-grade fingerprinting.
 
 ## [1.1.0] - 2026-05-11
 
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
+
 ### Added
 
 #### Group 4: Similarity Retrieval
@@ -210,6 +246,10 @@ enabling LLM-augmented signal generation and audit-grade fingerprinting.
 - Updated docs/INDEX.md with new skill entries
 
 ## [1.0.0] - 2026-05-10
+
+### Changed — Phase 11B Wave 6 — TTS Deferral
+
+- `oskill.knowledge.generate_audio_narration` — Raises `NotImplementedError` (TTS deferred to v1.1+ due to upstream image issues).
 
 ### Added
 
