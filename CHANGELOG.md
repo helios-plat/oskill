@@ -325,3 +325,10 @@ All future Phase releases must:
 1. Use independent feat branches (not accumulate Phases on one branch)
 2. Merge to main via PR before tagging
 3. Tag on main (never on feat branches)
+
+## [3.4.0] - 2026-05-25
+
+### Added — Sprint 13 — Calendar Surprise Detect (B6) + LLM Batch Classify (B7)
+
+- `calendar_surprise_detect(events, importance_filter)` — Detect economic calendar surprises.
+- `llm_batch_classify(items, labels, llm, batch_size, multi_label)` — Batch LLM classification.
