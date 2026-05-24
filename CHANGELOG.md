@@ -2,6 +2,16 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [Unreleased]
+
+### Added — P6-B3 — Video Generation Workflows
+
+- `oskill.image_to_video_workflow` — Multi-image animation with retry + fallback + concurrency.
+- `oskill.video_self_assess` — VLM-based video quality self-assessment (metrics + frames + scoring).
+- `VideoQualityScore` — Pydantic model (script/visual/pacing/overall scores + issues + suggestions).
+
+---
+
 ## [3.3.0] - 2026-05-25
 
 ### Changed — Sprint 12 — multi_state_classify E1 Extension

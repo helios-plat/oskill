@@ -45,6 +45,10 @@ from oskill.translate_substrate import translate_substrate
 from oskill.render_template import render_template, TemplateVariableSpec
 from oskill.expand_tasks_from_note import expand_tasks_from_note, NormalizedTask
 
+# P6-B3 — Video Generation Workflows
+from oskill.image_to_video_workflow import image_to_video_workflow, ImageToVideoWorkflowError
+from oskill.video_self_assess import video_self_assess, VideoQualityScore, VideoSelfAssessError
+
 
 # P0-1 fix (v2.7.0): sigmoid market impact model
 from oskill.cost import crypto_market_impact_sigmoid
@@ -458,4 +462,10 @@ __all__ = [
     "TemplateVariableSpec",
     "expand_tasks_from_note",
     "NormalizedTask",
+    # P6-B3 — Video Generation Workflows
+    "image_to_video_workflow",
+    "ImageToVideoWorkflowError",
+    "video_self_assess",
+    "VideoQualityScore",
+    "VideoSelfAssessError",
 ]
