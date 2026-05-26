@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def candidate_pool_builder(
@@ -12,6 +13,8 @@ def candidate_pool_builder(
     filter_rules: list[Callable[[dict[str, Any]], bool]] | None = None,
     top_n: int = 30,
     min_score: float = 0.0,
+    regime_aware: bool = False,
+    regime: str | None = None,
 ) -> dict[str, Any]:
     """Build a ranked candidate pool from universe.
 
@@ -22,13 +25,22 @@ def candidate_pool_builder(
     filter_rules : list of functions that return True to keep, False to reject
     top_n : max candidates to return
     min_score : minimum score threshold
+    regime_aware : enable regime-aware mode (injects regime into scoring context)
+    regime : current regime name (required when regime_aware=True)
 
     Returns
     -------
-    dict with: candidates (sorted by score desc), stats
+    dict with: candidates (sorted by score desc), stats, metadata
     """
+    if regime_aware and not regime:
+        raise ValueError("regime parameter required when regime_aware=True")
+
     if not universe:
-        return {"candidates": [], "stats": {"total": 0, "filtered": 0, "scored": 0}}
+        return {
+            "candidates": [],
+            "stats": {"total": 0, "filtered": 0, "scored": 0},
+            "metadata": {"regime_aware": regime_aware, "regime": regime if regime_aware else None},
+        }
 
     # Apply filters
     filtered = universe
@@ -50,6 +62,10 @@ def candidate_pool_builder(
             else:
                 n_rejected += 1
         filtered = kept
+
+    # Inject regime into candidates for scoring if regime_aware
+    if regime_aware:
+        filtered = [{**c, "_regime": regime} for c in filtered]
 
     # Score
     scored: list[tuple[float, dict[str, Any]]] = []
@@ -77,4 +93,5 @@ def candidate_pool_builder(
             "returned": len(candidates),
             "errors": errors,
         },
+        "metadata": {"regime_aware": regime_aware, "regime": regime if regime_aware else None},
     }

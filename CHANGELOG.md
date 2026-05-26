@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### Added — Tide v4 Regime Elements (v3.7.0)
+
+- `oskill.regime_smoothing` — Smooth raw regime states to prevent flapping. Configurable per-state minimum duration.
+- `oskill.regime_conditional_score_weighted` — Regime-aware weighted composite scoring with per-regime multiplier overrides.
+- `candidate_pool_builder` extended with `regime_aware` + `regime` parameters (backward compatible).
+- New type dataclasses: `RawRegimeState`, `SmoothingConfig`, `SmoothingResult`, `DimContribution`, `ScoreWeightedResult`.
+
 ### Added — P6-B3 — Video Generation Workflows
 
 - `oskill.image_to_video_workflow` — Multi-image animation with retry + fallback + concurrency.
