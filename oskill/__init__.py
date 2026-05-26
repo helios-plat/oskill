@@ -1,92 +1,18 @@
 """oskill — Composite financial analysis workflows built on oprim atomic operations."""
 
-from oskill._version import __version__
-
 # Aegis Batch 2, 3, 4 (v2.10.0)
 from oskill._llm_caller import LLMCaller
 from oskill._signal import Signal
-from oskill.container_health_aggregate import (
-    CheckResult,
-    HealthAggregateResult,
-    container_health_aggregate,
-)
-from oskill.event_trail_correlate import CorrelatedEvents, event_trail_correlate
-from oskill.metric_baseline_compare import BaselineCompareResult, MetricDelta, metric_baseline_compare
-from oskill.structured_log_anomaly_cluster import (
-    LogAnomalyClusters,
-    LogCluster,
-    structured_log_anomaly_cluster,
-)
+from oskill._version import __version__
 from oskill.agentic_investigate_loop import (
-    agentic_investigate_loop,
     InvestigationOutcome,
     InvestigationStep,
-)
-from oskill.tool_call_loop import (
-    tool_call_loop,
-    ToolHandler,
-)
-from oskill.retrieve_and_synthesize import (
-    retrieve_and_synthesize,
-    SynthesizedResult,
-    RetrievedDoc,
-)
-from oskill.runbook_match import (
-    runbook_match,
-    RunbookMatchResult,
-)
-from oskill.restart_and_verify import (
-    restart_and_verify,
-    RestartAndVerifyOutcome,
-)
-from oskill.hybrid_search import hybrid_search, Reranker, QueryExpander, SearchResult
-from oskill.ingest_substrate import ingest_substrate
-from oskill.translate_substrate import translate_substrate
-from oskill.render_template import render_template, TemplateVariableSpec
-from oskill.expand_tasks_from_note import expand_tasks_from_note, NormalizedTask
-
-# P6-B3 — Video Generation Workflows
-from oskill.image_to_video_workflow import image_to_video_workflow, ImageToVideoWorkflowError
-from oskill.video_self_assess import video_self_assess, VideoQualityScore, VideoSelfAssessError
-
-
-# P0-1 fix (v2.7.0): sigmoid market impact model
-from oskill.cost import crypto_market_impact_sigmoid
-
-# Sprint 0 additions (v2.5.0)
-from oskill.signals.forward_returns import aggregate_signal_returns
-from oskill.performance import portfolio_metrics_summary, trade_pnl_statistics
-from oskill.similarity import multi_dim_nearest_search, forward_outcome_distribution
-from oskill.classifier.rule_based import rule_based_classifier, rule_based_veto_check
-from oskill.dsl.evaluator import dsl_rule_validate, dsl_rule_evaluate
-from oskill.regime.multi_state_classify import multi_state_classify
-from oskill.factor.disclosure_scoring import disclosure_event_scoring
-from oskill.factor.event_theme_cluster import event_theme_cluster
-from oskill.factor.sector_rotation import sector_capital_rotation_detect
-from oskill.backtest.market_rules_backtest import market_rules_backtest_run
-
-# Phase 3 P18: OKX Demo exchange client
-from oskill.exchange.okx_demo import (
-    OKXDemoRestClient,
-    OKXDemoWSPrivate,
-    OKXAPIError,
-    OKXClientError,
-    OrderResponse,
-    FillEvent,
-    AccountSnapshot,
-)
-
-# Phase 3 P14: LLM client
-from oskill.llm_client import (
-    deepseek_call,
-    LLMUnavailable,
-    LLMRateLimit,
-    LLMAPIError,
-    LLMTimeout,
+    agentic_investigate_loop,
 )
 
 # Phase 6D: Advanced backtest
 from oskill.backtest.embargo_cv import embargo_purged_cv
+from oskill.backtest.market_rules_backtest import market_rules_backtest_run
 from oskill.backtest.random_subsampling import random_subsampling_validation
 from oskill.backtest.walk_forward_optimization import walk_forward_optimization_pipeline
 from oskill.bayesian.gp_regression import gaussian_process_regression
@@ -109,15 +35,26 @@ from oskill.causal_discovery import pcmci_causal_discovery
 # Phase 4 prerequisites: change_point
 from oskill.change_point.bayesian_online import bocpd_bayesian
 from oskill.change_point.pelt import pelt_change_point
+from oskill.classifier.rule_based import rule_based_classifier, rule_based_veto_check
 from oskill.conformal.adaptive_cp import adaptive_conformal_inference
 from oskill.conformal.change_point_cp import conformal_with_change_points
 
 # Phase 7B: Conformal Prediction
 from oskill.conformal.split_cp import conformal_prediction_interval
+from oskill.container_health_aggregate import (
+    CheckResult,
+    HealthAggregateResult,
+    container_health_aggregate,
+)
+
+# P0-1 fix (v2.7.0): sigmoid market impact model
+from oskill.cost import crypto_market_impact_sigmoid
 from oskill.covariance.denoising import denoised_covariance
 
 # Phase 2: Covariance
 from oskill.covariance.shrinkage import ledoit_wolf_shrinkage
+from oskill.data import point_in_time_join
+from oskill.data.calendar_surprise_detect import calendar_surprise_detect
 from oskill.distribution import (
     bootstrap_distribution,
     detect_outliers_robust,
@@ -127,8 +64,24 @@ from oskill.distributional_rl.iqn import implicit_quantile_loss
 
 # Phase 7C: Distributional RL
 from oskill.distributional_rl.quantile_regression import quantile_regression_loss
+from oskill.dsl.evaluator import dsl_rule_evaluate, dsl_rule_validate
+from oskill.event_trail_correlate import CorrelatedEvents, event_trail_correlate
+
+# Phase 3 P18: OKX Demo exchange client
+from oskill.exchange.okx_demo import (
+    AccountSnapshot,
+    FillEvent,
+    OKXAPIError,
+    OKXClientError,
+    OKXDemoRestClient,
+    OKXDemoWSPrivate,
+    OrderResponse,
+)
+from oskill.expand_tasks_from_note import NormalizedTask, expand_tasks_from_note
 from oskill.factor.barra import barra_style_decomposition
 from oskill.factor.carhart import carhart_4_factor_model
+from oskill.factor.disclosure_scoring import disclosure_event_scoring
+from oskill.factor.event_theme_cluster import event_theme_cluster
 from oskill.factor.fama_french import fama_french_5_factor_model
 
 # Phase 4 prerequisites + Phase 5C: factor
@@ -137,23 +90,45 @@ from oskill.factor.neutralization import factor_neutralization
 
 # Phase 2: Factor
 from oskill.factor.quantile_returns import factor_quantile_returns
+from oskill.factor.sector_rotation import sector_capital_rotation_detect
 
 # Phase 7E: Generative
 from oskill.generative.ddpm_paths import ddpm_synthetic_path_generator
 from oskill.hmm import gaussian_hmm
+from oskill.hybrid_search import QueryExpander, Reranker, SearchResult, hybrid_search
+
+# P6-B3 — Video Generation Workflows
+from oskill.image_to_video_workflow import ImageToVideoWorkflowError, image_to_video_workflow
+from oskill.ingest_substrate import ingest_substrate
+from oskill.llm.batch_classify import llm_batch_classify
 from oskill.llm.consistency import llm_response_consistency
 from oskill.llm.cot import chain_of_thought_extractor
 from oskill.llm.deterministic_call import deterministic_llm_call
 from oskill.llm.faithfulness import faithfulness_score
 from oskill.llm.multi_model import multi_model_ensemble
 from oskill.llm.prompt_fingerprint import prompt_fingerprint
+from oskill.llm.text_translate import text_translate
 
 # Phase 3: LLM
 from oskill.llm.tool_validation import tool_call_validator
 
+# Phase 3 P14: LLM client
+from oskill.llm_client import (
+    LLMAPIError,
+    LLMRateLimit,
+    LLMTimeout,
+    LLMUnavailable,
+    deepseek_call,
+)
+
 # Phase 9A: Market Making
 from oskill.market_making.avellaneda_stoikov import avellaneda_stoikov_quotes
 from oskill.market_making.cartea_jaimungal import cartea_jaimungal_optimal_quotes
+from oskill.metric_baseline_compare import (
+    BaselineCompareResult,
+    MetricDelta,
+    metric_baseline_compare,
+)
 from oskill.microstructure.bar_aggregation import (
     dollar_bar_aggregation,
     tick_imbalance_bar,
@@ -186,17 +161,13 @@ from oskill.operational_risk.lda import operational_risk_lda
 from oskill.performance import (
     bootstrap_sharpe,
     factor_attribution,
+    portfolio_metrics_summary,
     psr_dsr,
     regime_aware_performance,
     rule_compliance_winrate_diff,
+    subject_forward_winrate,
+    trade_pnl_statistics,
 )
-from oskill.similarity_indexing import batch_similarity_indexing
-from oskill.data import point_in_time_join
-from oskill.data.calendar_surprise_detect import calendar_surprise_detect
-from oskill.llm.batch_classify import llm_batch_classify
-from oskill.screening import candidate_pool_builder
-from oskill.performance import subject_forward_winrate
-from oskill.llm.text_translate import text_translate
 from oskill.point_process import fit_hawkes
 from oskill.portfolio.hrp import hierarchical_risk_parity_v2
 from oskill.portfolio.ssd_milp import ssd_milp_optimizer
@@ -208,6 +179,21 @@ from oskill.rag.reranking import reranker_score
 
 # Phase 10: Recursive Utility
 from oskill.recursive_utility.ez_solver import epstein_zin_solver
+from oskill.regime.multi_state_classify import multi_state_classify
+from oskill.regime_conditional_score_weighted import regime_conditional_score_weighted
+
+# Tide v4 — Regime Elements (v3.7.0)
+from oskill.regime_smoothing import regime_smoothing
+from oskill.render_template import TemplateVariableSpec, render_template
+from oskill.restart_and_verify import (
+    RestartAndVerifyOutcome,
+    restart_and_verify,
+)
+from oskill.retrieve_and_synthesize import (
+    RetrievedDoc,
+    SynthesizedResult,
+    retrieve_and_synthesize,
+)
 from oskill.risk.systemic import systemic_risk_metrics
 from oskill.robust.maxmin_eu import maxmin_expected_utility_portfolio
 
@@ -215,20 +201,31 @@ from oskill.robust.maxmin_eu import maxmin_expected_utility_portfolio
 from oskill.robust.multiplier_preferences import multiplier_preferences_robust
 from oskill.robust.smooth_ambiguity import smooth_ambiguity_portfolio
 from oskill.robust.variational_preferences import variational_preferences_estimate
+from oskill.runbook_match import (
+    RunbookMatchResult,
+    runbook_match,
+)
 from oskill.scm_fit import structural_causal_model_fit
+from oskill.screening import candidate_pool_builder
 from oskill.signal_detection import adx, cusum_detector, platt_calibration
 from oskill.signals.aggregation import weighted_signal_aggregation
 from oskill.signals.ensemble import signal_ensemble
+
+# Sprint 0 additions (v2.5.0)
+from oskill.signals.forward_returns import aggregate_signal_returns
 
 # Phase 9A: Signature
 from oskill.signature.kernel import signature_kernel
 from oskill.signature.pricing import signature_based_pricing
 from oskill.similarity import (
     commodity_ratio_analytics,
+    forward_outcome_distribution,
     geopolitical_risk_index,
     historical_analogy_search,
+    multi_dim_nearest_search,
     regime_transition_analysis,
 )
+from oskill.similarity_indexing import batch_similarity_indexing
 from oskill.spectral.clustering import spectral_asset_clustering
 
 # Phase 10: Spectral + Portfolio
@@ -237,6 +234,23 @@ from oskill.spectral.laplacian import graph_laplacian_compute
 # Phase 4: State Space
 from oskill.state_space.kalman import kalman_filter_pipeline, kalman_smoother
 from oskill.state_space.particle import particle_filter_pipeline
+from oskill.structured_log_anomaly_cluster import (
+    LogAnomalyClusters,
+    LogCluster,
+    structured_log_anomaly_cluster,
+)
+from oskill.tool_call_loop import (
+    ToolHandler,
+    tool_call_loop,
+)
+from oskill.translate_substrate import translate_substrate
+from oskill.types import (
+    DimContribution,
+    RawRegimeState,
+    ScoreWeightedResult,
+    SmoothingConfig,
+    SmoothingResult,
+)
 from oskill.validation import (
     cpcv_pipeline,
     regime_aware_rolling,
@@ -252,6 +266,7 @@ from oskill.validation.haircut import haircut_sharpe
 # Phase 2: Validation
 from oskill.validation.pbo import probability_of_backtest_overfitting
 from oskill.validation.trial_correction import bonferroni_holm_correction
+from oskill.video_self_assess import VideoQualityScore, VideoSelfAssessError, video_self_assess
 
 __all__ = [
     "__version__",
@@ -411,6 +426,14 @@ __all__ = [
     "LLMRateLimit",
     "LLMAPIError",
     "LLMTimeout",
+    # Phase 3 P18: OKX Demo exchange client
+    "OKXDemoRestClient",
+    "OKXDemoWSPrivate",
+    "OKXAPIError",
+    "OKXClientError",
+    "OrderResponse",
+    "FillEvent",
+    "AccountSnapshot",
     # Sprint 0 additions (v2.5.0)
     "aggregate_signal_returns",
     "portfolio_metrics_summary",
@@ -468,4 +491,12 @@ __all__ = [
     "video_self_assess",
     "VideoQualityScore",
     "VideoSelfAssessError",
+    # Tide v4 — Regime Elements (v3.7.0)
+    "regime_smoothing",
+    "regime_conditional_score_weighted",
+    "RawRegimeState",
+    "SmoothingConfig",
+    "SmoothingResult",
+    "DimContribution",
+    "ScoreWeightedResult",
 ]
