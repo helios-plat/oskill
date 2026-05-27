@@ -1,0 +1,8 @@
+[run]
+include =
+    */oskill/script_writer.py
+    */oskill/storyboard_planner.py
+    */oskill/_schemas.py
+
+[report]
+show_missing = true

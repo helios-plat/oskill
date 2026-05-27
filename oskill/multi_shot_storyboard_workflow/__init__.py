@@ -27,23 +27,15 @@ from typing import Any, Literal
 
 from oprim.lighting_control_prompt import LightingType, lighting_control_prompt
 from oprim.style_marker_prompt import StyleType, style_marker_prompt
-from pydantic import BaseModel
+from pydantic import BaseModel  # needed for MultiShotStoryboard
 
 from oskill._llm_caller import LLMCaller
-from oskill._schemas import Script
+from oskill._schemas import Script, SubjectRef
 from oskill.storyboard_grid import StoryboardGridError, storyboard_grid
 
 
 class MultiShotStoryboardError(Exception):
     """Multi-shot storyboard workflow failed."""
-
-
-class SubjectRef(BaseModel):
-    """Reference to a subject/character in the storyboard."""
-
-    subject_id: str
-    name: str
-    image_path: Path
 
 
 class MultiShotStoryboard(BaseModel):

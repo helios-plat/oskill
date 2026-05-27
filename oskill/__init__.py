@@ -285,9 +285,9 @@ from oskill.character_consistency_workflow import (
 from oskill.multi_shot_storyboard_workflow import (
     MultiShotStoryboard,
     MultiShotStoryboardError,
-    SubjectRef,
     multi_shot_storyboard_workflow,
 )
+from oskill._schemas import SubjectRef  # canonical location (P7-B4)
 
 __all__ = [
     "__version__",

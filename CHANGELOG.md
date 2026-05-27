@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### Changed — P7-B4 — MINOR extensions: script_writer + storyboard_planner (backward compatible)
+
+- `oskill.script_writer`: new optional `subjects: list[SubjectRef] | None = None` parameter. When provided, character names + descriptions are appended to the LLM system prompt. `subjects=None` (default) is identical to all prior behaviour.
+- `oskill.storyboard_planner`: three new optional parameters — `subjects: list[SubjectRef] | None = None`, `style_marker: str | None = None`, `lighting_control: str | None = None`. When provided, `style_marker_prompt` / `lighting_control_prompt` / character info are injected into the system prompt. All default to `None` (backward compatible).
+- `oskill._schemas.SubjectRef` — canonical Pydantic model (`subject_id`, `name`, `description=""`, `image_path=None`) moved from `multi_shot_storyboard_workflow` to `_schemas.py`. Re-exported at `oskill.SubjectRef`. `multi_shot_storyboard_workflow` imports from `_schemas`.
+- 16 new tests (8 script_writer subjects + 8 storyboard_planner style/lighting/subjects). All 48 Phase-6 + P7-B4 tests pass. 100% coverage on modified files.
+
 ### Added — P7-B3 — Visual Generation Workflows (6 elements)
 
 **Depth-0 oskill (direct oprim composition):**

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from pydantic import BaseModel
 
 
@@ -100,3 +102,16 @@ class InsightContext(BaseModel):
     related_concepts: list[str]
     source_omodul: str
     raw_report: dict[str, object]
+
+
+class SubjectRef(BaseModel):
+    """Reference to a subject/character for LLM prompt injection.
+
+    Used by script_writer, storyboard_planner, and multi_shot_storyboard_workflow
+    to inject character context into LLM prompts.
+    """
+
+    subject_id: str
+    name: str
+    description: str = ""  # optional; injected into LLM prompt when non-empty
+    image_path: Path | None = None  # optional reference image
