@@ -4,6 +4,24 @@
 
 ## [Unreleased]
 
+### Added — P7-B3 — Visual Generation Workflows (6 elements)
+
+**Depth-0 oskill (direct oprim composition):**
+
+- `oskill.character_three_view` — Portrait image → front/side/back character views via LLM prompt + `oprim.image_generate` × 3. Returns `ThreeViewResult` with paths + `consistency_score`.
+- `oskill.storyboard_grid` — Scene description → 3×3 or 5×5 PIL grid via LLM + `oprim.image_generate` × N. Supports `grid_size` 9 or 25.
+- `oskill.multi_angle_9` — Scene description → 9-camera-angle grid (3 angles × 3 distances) via LLM + `oprim.image_generate` × 9 + PIL 3×3 stitch.
+- `oskill.comic_to_animation_workflow` — Comic panel → animation via LLM analysis + `oprim.image_generate` × N + `oprim.image_to_video` × N + `oprim.video_concat`.
+
+**Depth-1 oskill (oskill composition, per v0.9 SPEC):**
+
+- `oskill.character_consistency_workflow` — Calls `oskill.character_three_view` (depth-1) + `oprim.image_generate` × scenes. Returns `CharacterConsistencyResult`.
+- `oskill.multi_shot_storyboard_workflow` — Calls `oskill.storyboard_grid` (depth-1) + `oprim.style_marker_prompt` + `oprim.lighting_control_prompt` + `oprim.image_generate` × scenes. Returns `MultiShotStoryboard`.
+
+**New types:** `ThreeViewResult`, `CharacterThreeViewError`, `StoryboardGridError`, `MultiAngleError`, `ComicToAnimationError`, `CharacterConsistencyResult`, `CharacterConsistencyError`, `MultiShotStoryboard`, `MultiShotStoryboardError`, `SubjectRef`.
+
+**Tests:** 75 tests, 100% coverage on all 6 modules. mypy --strict + ruff 0 errors.
+
 ### Added — Tide v4 Regime Elements (v3.7.0)
 
 - `oskill.regime_smoothing` — Smooth raw regime states to prevent flapping. Configurable per-state minimum duration.

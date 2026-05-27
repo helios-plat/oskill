@@ -268,6 +268,27 @@ from oskill.validation.pbo import probability_of_backtest_overfitting
 from oskill.validation.trial_correction import bonferroni_holm_correction
 from oskill.video_self_assess import VideoQualityScore, VideoSelfAssessError, video_self_assess
 
+# P7-B3 — Visual Generation Workflows
+from oskill.character_three_view import (
+    CharacterThreeViewError,
+    ThreeViewResult,
+    character_three_view,
+)
+from oskill.storyboard_grid import StoryboardGridError, storyboard_grid
+from oskill.multi_angle_9 import MultiAngleError, multi_angle_9
+from oskill.comic_to_animation_workflow import ComicToAnimationError, comic_to_animation_workflow
+from oskill.character_consistency_workflow import (
+    CharacterConsistencyError,
+    CharacterConsistencyResult,
+    character_consistency_workflow,
+)
+from oskill.multi_shot_storyboard_workflow import (
+    MultiShotStoryboard,
+    MultiShotStoryboardError,
+    SubjectRef,
+    multi_shot_storyboard_workflow,
+)
+
 __all__ = [
     "__version__",
     # P0-1: cost model (v2.7.0)
@@ -499,4 +520,21 @@ __all__ = [
     "SmoothingResult",
     "DimContribution",
     "ScoreWeightedResult",
+    # P7-B3 — Visual Generation Workflows
+    "character_three_view",
+    "CharacterThreeViewError",
+    "ThreeViewResult",
+    "storyboard_grid",
+    "StoryboardGridError",
+    "multi_angle_9",
+    "MultiAngleError",
+    "comic_to_animation_workflow",
+    "ComicToAnimationError",
+    "character_consistency_workflow",
+    "CharacterConsistencyError",
+    "CharacterConsistencyResult",
+    "multi_shot_storyboard_workflow",
+    "MultiShotStoryboardError",
+    "MultiShotStoryboard",
+    "SubjectRef",
 ]

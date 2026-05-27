@@ -1,0 +1,11 @@
+[run]
+source =
+    oskill/character_three_view
+    oskill/storyboard_grid
+    oskill/multi_angle_9
+    oskill/comic_to_animation_workflow
+    oskill/character_consistency_workflow
+    oskill/multi_shot_storyboard_workflow
+
+[report]
+show_missing = true
