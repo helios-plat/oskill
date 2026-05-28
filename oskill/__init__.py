@@ -289,6 +289,52 @@ from oskill.multi_shot_storyboard_workflow import (
 )
 from oskill._schemas import SubjectRef  # canonical location (P7-B4)
 
+# --- Helios Wave 01: Crypto Skills ---
+from oskill.crypto_fusion_scorers import (
+    FusionScorerError,
+    derivatives_score,
+    flow_score,
+    macro_score,
+    onchain_score,
+    sentiment_score,
+    support_resistance_score,
+    trend_score,
+)
+from oskill.crypto_environ_processors import (
+    EnvironProcessorSkillError,
+    derivatives_agg_compute,
+    dex_truth_compute,
+    dex_truth_dydx_compute,
+    dex_truth_gmx_compute,
+    etf_flow_compute,
+    etf_flow_per_ticker_compute,
+    exchange_netflow_compute,
+    macro_environ_compute,
+    onchain_aggregate_compute,
+    options_environ_compute,
+)
+from oskill.crypto_data_skills import (
+    CryptoSkillError,
+    collect_cycle,
+    collect_sectors,
+    collect_sentiment,
+    collect_write_event,
+    compute_signal_quality,
+    dex_cex_check,
+    evaluate_stale,
+    fear_greed_fetch_all,
+    get_30d_returns_stddev,
+    get_etf_inflow_7d,
+    get_symbol_basis,
+    get_symbol_daily_klines,
+    get_symbol_max_pain,
+    get_symbol_onchain_metrics,
+    get_symbol_options_skew,
+    proxy_check_and_notify,
+    stale_check_and_notify,
+    store_market,
+)
+
 __all__ = [
     "__version__",
     # P0-1: cost model (v2.7.0)
@@ -537,4 +583,45 @@ __all__ = [
     "MultiShotStoryboardError",
     "MultiShotStoryboard",
     "SubjectRef",
+    # --- Helios Wave 01: Crypto Fusion Scorers (7) ---
+    "trend_score",
+    "flow_score",
+    "sentiment_score",
+    "onchain_score",
+    "derivatives_score",
+    "macro_score",
+    "support_resistance_score",
+    "FusionScorerError",
+    # --- Helios Wave 01: Crypto Environ Processors (10) ---
+    "derivatives_agg_compute",
+    "dex_truth_compute",
+    "dex_truth_dydx_compute",
+    "dex_truth_gmx_compute",
+    "etf_flow_compute",
+    "etf_flow_per_ticker_compute",
+    "macro_environ_compute",
+    "onchain_aggregate_compute",
+    "exchange_netflow_compute",
+    "options_environ_compute",
+    "EnvironProcessorSkillError",
+    # --- Helios Wave 01: Crypto Data/Alert/Collect Skills (18) ---
+    "get_symbol_basis",
+    "get_symbol_daily_klines",
+    "get_symbol_onchain_metrics",
+    "get_symbol_options_skew",
+    "get_symbol_max_pain",
+    "get_etf_inflow_7d",
+    "get_30d_returns_stddev",
+    "fear_greed_fetch_all",
+    "dex_cex_check",
+    "proxy_check_and_notify",
+    "evaluate_stale",
+    "stale_check_and_notify",
+    "compute_signal_quality",
+    "collect_cycle",
+    "collect_sectors",
+    "collect_sentiment",
+    "store_market",
+    "collect_write_event",
+    "CryptoSkillError",
 ]
