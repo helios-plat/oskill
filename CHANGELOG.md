@@ -2,6 +2,25 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.8.0] - 2026-05-30 — B10 Tide v4 step2 oskills (12 oskills)
+
+### Added — B10 Tide v4 step2
+
+- `macro_surprise_compute` — fetch_macro_calendar + zscore_normalize + percentile_rank; returns MacroSurpriseReport with z-scored surprise and shock_count.
+- `macro_cycle_engine_v2` — fetch_macro_m2 + fetch_macro_lpr + fetch_macro_pboc; majority-vote phase classification (easing/tightening/expansion/contraction/uncertain).
+- `policy_sector_attribution` — policy_event_extraction + industry_attribution + fetch_sector_returns; links policy news to sector performance.
+- `seat_winrate_aggregator` — compute_seat_t3_return + percentile_rank; per-seat win-rate ranked cross-sectionally.
+- `unknown_seats_audit_loop` — percentile_rank + zscore_normalize + obase.text.fuzzy_match + obase.audit.format_audit_entry; creates audit entries for unrecognised high-volume seats.
+- `sector_strength_aggregator` — fetch_themes_daily + theme_to_sw_industry_mapping + percentile_rank; maps concept themes → SW industry strength scores.
+- `candidate_universe_builder_v3` — apply_screen_filter + percentile_rank + (oskill) candidate_pool_builder depth-1; enhanced pool with structured veto and percentile ranking.
+- `similar_context_injector` — zscore_normalize + cosine_similarity_batch + LLMCaller Protocol; top-k context retrieval injected into LLM prompt.
+- `industry_valuation_percentile` — pe_ttm_lookback_safe + percentile_rank; look-ahead-safe TTM PE with cross-sectional ranking (cheaper = lower percentile).
+- `discipline_vs_violation_winrate_compute` — compute_seat_t3_return + stop_loss_compliance_check + percentile_rank + zscore_normalize; P0 — discipline vs violation group comparison with win-rate / P&L ratio / Sharpe.
+- `system_history_aggregator` — percentile_rank + zscore_normalize + obase.audit.AuditEntry; action frequency report with anomaly detection.
+- `equity_curve_3seg_compute` — train_val_oos_splitter + percentile_rank + (oskill) market_rules_backtest_run depth-1; 3-segment equity curve evaluation with overfitting detection.
+- All 12 satisfy ≥2 oprim composition constraint; "Internal oprim composition:" docstring section present.
+- 96 tests across 12 oskills (≥8 each; discipline P0 has 12 tests); 3.7.0 → 3.8.0.
+
 ## [Unreleased]
 
 ### Changed — P7-B4 — MINOR extensions: script_writer + storyboard_planner (backward compatible)
