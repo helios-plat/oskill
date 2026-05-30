@@ -335,6 +335,43 @@ from oskill.crypto_data_skills import (
     store_market,
 )
 
+# --- B10 — Tide v4 step2 oskills (12) ---
+from oskill.macro_surprise_compute import (
+    MacroSurpriseReport,
+    MacroSurpriseItem,
+    macro_surprise_compute,
+)
+from oskill.macro_cycle_engine_v2 import MacroCycleResult, macro_cycle_engine_v2
+from oskill.policy_sector_attribution import (
+    PolicySectorAttributionResult,
+    policy_sector_attribution,
+)
+from oskill.seat_winrate_aggregator import (
+    SeatTradeInput,
+    SeatWinrateReport,
+    seat_winrate_aggregator,
+)
+from oskill.unknown_seats_audit_loop import UnknownSeatAuditResult, unknown_seats_audit_loop
+from oskill.sector_strength_aggregator import SectorStrengthReport, sector_strength_aggregator
+from oskill.candidate_universe_builder_v3 import (
+    CandidateUniverseResult,
+    candidate_universe_builder_v3,
+)
+from oskill.similar_context_injector import SimilarContextResult, similar_context_injector
+from oskill.industry_valuation_percentile import (
+    ValuationCandidateInput,
+    IndustryValuationRow,
+    industry_valuation_percentile,
+)
+from oskill.discipline_vs_violation_winrate_compute import (
+    TradeRecord,
+    DisciplineComparisonResult,
+    GroupStats,
+    discipline_vs_violation_winrate_compute,
+)
+from oskill.system_history_aggregator import SystemHistoryReport, system_history_aggregator
+from oskill.equity_curve_3seg_compute import EquityCurve3SegResult, equity_curve_3seg_compute
+
 __all__ = [
     "__version__",
     # P0-1: cost model (v2.7.0)

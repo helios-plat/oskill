@@ -179,15 +179,33 @@ ELEMENTS: list[str] = [
     "collect_sentiment",
     "store_market",
     "collect_write_event",
+    # --- B10 --- Tide v4 step2 oskills (12)
+    "macro_surprise_compute",
+    "macro_cycle_engine_v2",
+    "policy_sector_attribution",
+    "seat_winrate_aggregator",
+    "unknown_seats_audit_loop",
+    "sector_strength_aggregator",
+    "candidate_universe_builder_v3",
+    "similar_context_injector",
+    "industry_valuation_percentile",
+    "discipline_vs_violation_winrate_compute",
+    "system_history_aggregator",
+    "equity_curve_3seg_compute",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
     "performance": [
-        "bootstrap_sharpe", "psr_dsr", "factor_attribution", "regime_aware_performance",
+        "bootstrap_sharpe",
+        "psr_dsr",
+        "factor_attribution",
+        "regime_aware_performance",
     ],
     "validation": ["walk_forward_optimization", "cpcv_pipeline", "regime_aware_rolling"],
     "distribution": [
-        "distribution_shift_test", "detect_outliers_robust", "bootstrap_distribution",
+        "distribution_shift_test",
+        "detect_outliers_robust",
+        "bootstrap_distribution",
     ],
     "similarity": [
         "historical_analogy_search",
@@ -199,7 +217,9 @@ CATEGORIES: dict[str, list[str]] = {
     "signal_detection": ["adx", "cusum_detector", "platt_calibration"],
     "point_process": ["fit_hawkes"],
     "causal": [
-        "symbolic_transfer_entropy", "pcmci_causal_discovery", "structural_causal_model_fit",
+        "symbolic_transfer_entropy",
+        "pcmci_causal_discovery",
+        "structural_causal_model_fit",
     ],
     "hmm": ["gaussian_hmm"],
     "signals": ["signal_ensemble", "weighted_signal_aggregation"],
@@ -215,18 +235,26 @@ CATEGORIES: dict[str, list[str]] = {
     "rag": ["chunking_strategy_apply", "reranker_score"],
     "covariance": ["ledoit_wolf_shrinkage", "denoised_covariance"],
     "validation_phase2": [
-        "probability_of_backtest_overfitting", "deflated_sharpe_ratio",
+        "probability_of_backtest_overfitting",
+        "deflated_sharpe_ratio",
     ],
     "ml_labeling": ["triple_barrier_label"],
     "ml_finance": [
-        "meta_labeling", "sample_uniqueness_weights", "return_attribution_weights",
-        "fractional_differentiation", "cusum_filter", "bet_sizing",
+        "meta_labeling",
+        "sample_uniqueness_weights",
+        "return_attribution_weights",
+        "fractional_differentiation",
+        "cusum_filter",
+        "bet_sizing",
     ],
     "change_point": ["bocpd_bayesian", "pelt_change_point"],
     "factor": [
-        "factor_ic", "factor_quantile_returns",
-        "fama_french_5_factor_model", "carhart_4_factor_model",
-        "barra_style_decomposition", "factor_neutralization",
+        "factor_ic",
+        "factor_quantile_returns",
+        "fama_french_5_factor_model",
+        "carhart_4_factor_model",
+        "barra_style_decomposition",
+        "factor_neutralization",
     ],
     "microstructure": [
         "order_flow_imbalance",
@@ -284,6 +312,21 @@ CATEGORIES: dict[str, list[str]] = {
     ],
     "recursive_utility": ["epstein_zin_solver"],
     "state_hawkes": ["order_book_state_hawkes"],
+    # B10 — Tide v4 step2 (12)
+    "tide_step2": [
+        "macro_surprise_compute",
+        "macro_cycle_engine_v2",
+        "policy_sector_attribution",
+        "seat_winrate_aggregator",
+        "unknown_seats_audit_loop",
+        "sector_strength_aggregator",
+        "candidate_universe_builder_v3",
+        "similar_context_injector",
+        "industry_valuation_percentile",
+        "discipline_vs_violation_winrate_compute",
+        "system_history_aggregator",
+        "equity_curve_3seg_compute",
+    ],
 }
 
 STABILITY: dict[str, str] = {
