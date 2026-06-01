@@ -1,4 +1,5 @@
 """Local hybrid search: BM25 (tantivy) + dense vector (lancedb) fused with RRF."""
+
 from __future__ import annotations
 
 import asyncio
@@ -22,7 +23,10 @@ _RRF_K = 60
 
 
 class Reranker(Protocol):
-    def __call__(self, *, query: str, documents: list[str], top_k: int | None = None) -> list[Any]: ...
+    def __call__(
+        self, *, query: str, documents: list[str], top_k: int | None = None
+    ) -> list[Any]: ...
+
 
 class QueryExpander(Protocol):
     def __call__(self, *, query: str, num_variants: int) -> list[str]: ...
@@ -39,10 +43,18 @@ class SearchResult:
     citation: dict | None = None
 
 
+@dataclass
+class HybridSearchResult:
+    results: list[SearchResult]
+    query: str
+    corpus_id: str | None
+    total: int
+
+
 async def hybrid_search(
     query: str,
     *,
-    corpus_id: str,
+    corpus_id: str | None = None,
     top_k: int = 10,
     mode: Literal["strict", "augmented"] = "augmented",
     pinned_boost: float = 1.5,
@@ -75,7 +87,9 @@ async def hybrid_search(
     """
     if not query or not query.strip():
         raise OskillError("Query cannot be empty")
-    if not corpus_id or not corpus_id.strip():
+    if corpus_id is None:
+        raise OskillError("hybrid_search: corpus_id is required")
+    if not corpus_id.strip():
         raise OskillError("corpus_id cannot be empty")
 
     queries = [query]
@@ -115,7 +129,7 @@ async def hybrid_search(
         to_rerank = filtered[:rerank_top_k] if rerank_top_k else filtered
         docs_text = [r.title + "\n" + (r.highlight or "") for r in to_rerank]
         reranked_scores = rerank(query=query, documents=docs_text, top_k=top_k)
-        
+
         reranked_filtered = []
         for r_res in reranked_scores:
             idx = r_res.original_index
@@ -130,7 +144,9 @@ async def hybrid_search(
 
     log.info(
         "oskill.hybrid_search.done",
-        query=query[:80], mode=mode, view_id=view_id,
+        query=query[:80],
+        mode=mode,
+        view_id=view_id,
         corpus_id=corpus_id,
         results=len(filtered[:top_k]),
     )
@@ -139,6 +155,7 @@ async def hybrid_search(
 
 # ── View filter resolution (reads views table directly — no omodul dep) ──────
 
+
 def _load_view_filter(view_id: str | None) -> dict:
     """Return the default_filter dict for the given view."""
     db_p = meta_db_path()
@@ -146,9 +163,7 @@ def _load_view_filter(view_id: str | None) -> dict:
         return {}
     try:
         db = open_meta_db(db_p)
-        rows = db.fetchall(
-            "SELECT default_filter FROM views WHERE id = ?", [view_id]
-        )
+        rows = db.fetchall("SELECT default_filter FROM views WHERE id = ?", [view_id])
         db.close()
         if not rows or not rows[0][0]:
             return {}
@@ -159,6 +174,7 @@ def _load_view_filter(view_id: str | None) -> dict:
 
 
 # ── BM25 ──────────────────────────────────────────────────────────────────────
+
 
 def _bm25_search(query: str, top_k: int) -> list[tuple[str, float]]:
     idx_path = tantivy_path()
@@ -174,6 +190,7 @@ def _bm25_search(query: str, top_k: int) -> list[tuple[str, float]]:
 
 
 # ── Dense vector ──────────────────────────────────────────────────────────────
+
 
 async def _dense_search(query: str, top_k: int) -> list[tuple[str, float]]:
     db_path = lancedb_path()
@@ -199,6 +216,7 @@ async def _dense_search(query: str, top_k: int) -> list[tuple[str, float]]:
 
 # ── RRF ───────────────────────────────────────────────────────────────────────
 
+
 def _rrf_fuse(
     list_a: list[tuple[str, float]],
     list_b: list[tuple[str, float]],
@@ -215,6 +233,7 @@ def _rrf_fuse(
 
 
 # ── Pinned boost ──────────────────────────────────────────────────────────────
+
 
 def _boost_pinned(
     fused: list[tuple[str, float]],
@@ -246,6 +265,7 @@ def _get_pinned_ids(substrate_ids: list[str]) -> set[str]:
 
 # ── Enrich ────────────────────────────────────────────────────────────────────
 
+
 def _enrich(fused: list[tuple[str, float]], return_citations: bool = True) -> list[SearchResult]:
     """Fetch substrate metadata from DuckDB and build SearchResult list."""
     if not fused:
@@ -254,7 +274,11 @@ def _enrich(fused: list[tuple[str, float]], return_citations: bool = True) -> li
     if not db_p.exists():
         return [
             SearchResult(
-                type="substrate", id=sid, title=sid, score=sc, highlight=None,
+                type="substrate",
+                id=sid,
+                title=sid,
+                score=sc,
+                highlight=None,
                 citation=_make_citation(sid, return_citations),
             )
             for sid, sc in fused
@@ -281,24 +305,33 @@ def _enrich(fused: list[tuple[str, float]], return_citations: bool = True) -> li
                 meta = json.loads(row[2]) if row[2] else {}
             except Exception:
                 meta = {}
-            results.append(SearchResult(
-                type="substrate", id=sid,
-                title=row[1] or sid,
-                score=score,
-                highlight=None,
-                metadata={
-                    "medium": meta.get("medium"),
-                    "source_type": meta.get("source_type"),
-                    "domain": meta.get("domain"),
-                    "created_at": str(row[3]) if row[3] else None,
-                },
-                citation=_make_citation(sid, return_citations),
-            ))
+            results.append(
+                SearchResult(
+                    type="substrate",
+                    id=sid,
+                    title=row[1] or sid,
+                    score=score,
+                    highlight=None,
+                    metadata={
+                        "medium": meta.get("medium"),
+                        "source_type": meta.get("source_type"),
+                        "domain": meta.get("domain"),
+                        "created_at": str(row[3]) if row[3] else None,
+                    },
+                    citation=_make_citation(sid, return_citations),
+                )
+            )
         else:
-            results.append(SearchResult(
-                type="substrate", id=sid, title=sid, score=score, highlight=None,
-                citation=_make_citation(sid, return_citations),
-            ))
+            results.append(
+                SearchResult(
+                    type="substrate",
+                    id=sid,
+                    title=sid,
+                    score=score,
+                    highlight=None,
+                    citation=_make_citation(sid, return_citations),
+                )
+            )
     return results
 
 
@@ -316,6 +349,7 @@ def _make_citation(substrate_id: str, return_citations: bool) -> dict | None:
 
 # ── Filters ───────────────────────────────────────────────────────────────────
 
+
 def _apply_filters(
     results: list[SearchResult],
     medium_filter: list[str] | None,
@@ -329,9 +363,9 @@ def _apply_filters(
         results = [r for r in results if r.metadata.get("medium") in medium_filter]
     if domain_filter:
         results = [
-            r for r in results
-            if r.metadata.get("domain") is None
-            or r.metadata["domain"] in domain_filter
+            r
+            for r in results
+            if r.metadata.get("domain") is None or r.metadata["domain"] in domain_filter
         ]
     if time_range:
         results = _apply_time_range(results, time_range)
@@ -356,30 +390,34 @@ def _apply_time_range(results: list[SearchResult], time_range: str) -> list[Sear
         return results
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     return [
-        r for r in results
-        if r.metadata.get("created_at") is None
-        or str(r.metadata["created_at"]) >= cutoff
+        r
+        for r in results
+        if r.metadata.get("created_at") is None or str(r.metadata["created_at"]) >= cutoff
     ]
 
 
 # ── LLM augmented fallback (mode=augmented, zero substrate hits) ──────────────
 
+
 async def _llm_augmented(query: str) -> list[SearchResult]:
     try:
         from oprim.llm import llm_call
+
         response = await llm_call(
             prompt=f"Answer briefly based on your knowledge: {query}",
             provider="qwen3_dashscope",
         )
-        return [SearchResult(
-            type="llm_augmented",
-            id="llm-augmented-0",
-            title="General Knowledge",
-            score=0.5,
-            highlight=str(response)[:500],
-            metadata={"source": "llm_augmented"},
-            citation=None,
-        )]
+        return [
+            SearchResult(
+                type="llm_augmented",
+                id="llm-augmented-0",
+                title="General Knowledge",
+                score=0.5,
+                highlight=str(response)[:500],
+                metadata={"source": "llm_augmented"},
+                citation=None,
+            )
+        ]
     except Exception as e:
         log.warning("oskill.hybrid_search.llm_augment_failed", error=str(e))
         return []

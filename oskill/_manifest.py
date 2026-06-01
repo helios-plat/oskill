@@ -448,4 +448,11 @@ STABILITY: dict[str, str] = {
     "event_theme_cluster": "experimental",
     "sector_capital_rotation_detect": "experimental",
     "market_rules_backtest_run": "experimental",
+    # Stratum B2 (v3.9.0)
+    "cross_layer_search": "experimental",
+    "recommend_content": "experimental",
+    "resolve_conflict": "experimental",
+    "merge_platform_user_results": "experimental",
+    "lint_substrate_graph": "experimental",
+    "check_reference_integrity": "experimental",
 }

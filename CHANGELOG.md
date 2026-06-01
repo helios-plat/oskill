@@ -2,6 +2,25 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.9.0] - 2026-06-01 — Stratum Batch 2: 7 oskill (stateless)
+
+### Added — Stratum B2
+
+- `cross_layer_search` — RRF-fused multi-index search (tantivy + lancedb + pgvector); injected Callable managers; pinned_boost; scope filtering
+- `recommend_content` — Recency + relevance recommender; domain/concept overlap scoring; graceful empty-profile fallback
+- `resolve_conflict` — Three-way merge dispatch: highlight→merge, note→keep_both, metadata→last_write_wins
+- `merge_platform_user_results` — Pure RRF fusion with pinned_boost multiplier
+- `lint_substrate_graph` — In-memory substrate graph integrity: orphans, broken_links, stale_concepts, health_score 0–100
+- `check_reference_integrity` — Single-source referential integrity check (missing_refs / orphan_refs)
+
+### Extended — Stratum B2
+
+- `hybrid_search` — `corpus_id: str | None = None` (was required); added `HybridSearchResult` wrapper type
+
+### Notes
+- All 6 NEW oskill stateless (no I/O, deps injected as Callable protocols)
+- 43 new tests (27 group-A + 16 group-B)
+
 ## [3.8.0] - 2026-05-30 — B10 Tide v4 step2 oskills (12 oskills)
 
 ### Added — B10 Tide v4 step2

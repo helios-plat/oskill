@@ -95,7 +95,13 @@ from oskill.factor.sector_rotation import sector_capital_rotation_detect
 # Phase 7E: Generative
 from oskill.generative.ddpm_paths import ddpm_synthetic_path_generator
 from oskill.hmm import gaussian_hmm
-from oskill.hybrid_search import QueryExpander, Reranker, SearchResult, hybrid_search
+from oskill.hybrid_search import (
+    HybridSearchResult,
+    QueryExpander,
+    Reranker,
+    SearchResult,
+    hybrid_search,
+)
 
 # P6-B3 — Video Generation Workflows
 from oskill.image_to_video_workflow import ImageToVideoWorkflowError, image_to_video_workflow
@@ -371,6 +377,36 @@ from oskill.discipline_vs_violation_winrate_compute import (
 )
 from oskill.system_history_aggregator import SystemHistoryReport, system_history_aggregator
 from oskill.equity_curve_3seg_compute import EquityCurve3SegResult, equity_curve_3seg_compute
+
+# --- Stratum B2 — 7 oskill (v3.9.0) ---
+from oskill.cross_layer_search import (
+    Citation,
+    CrossLayerSearchResult,
+    FusedResult,
+    cross_layer_search,
+)
+from oskill.recommend_content import (
+    ContentMeta,
+    Recommendation,
+    UserBehaviorProfile,
+    recommend_content,
+)
+from oskill.resolve_conflict import Conflict, ResolvedResult, resolve_conflict
+from oskill.merge_platform_user_results import (
+    FusedResult as MergedFusedResult,
+    SearchResult as MergedSearchResult,
+    merge_platform_user_results,
+)
+from oskill.lint_substrate_graph import (
+    BrokenLink,
+    ConceptRef,
+    DerivativeRef,
+    LintReport,
+    NoteRef,
+    SubstrateRef,
+    lint_substrate_graph,
+)
+from oskill.check_reference_integrity import IntegrityReport, check_reference_integrity
 
 __all__ = [
     "__version__",
@@ -661,4 +697,27 @@ __all__ = [
     "store_market",
     "collect_write_event",
     "CryptoSkillError",
+    # Stratum B2 (v3.9.0)
+    "Citation",
+    "CrossLayerSearchResult",
+    "FusedResult",
+    "cross_layer_search",
+    "ContentMeta",
+    "Recommendation",
+    "UserBehaviorProfile",
+    "recommend_content",
+    "Conflict",
+    "ResolvedResult",
+    "resolve_conflict",
+    "merge_platform_user_results",
+    "lint_substrate_graph",
+    "LintReport",
+    "SubstrateRef",
+    "DerivativeRef",
+    "NoteRef",
+    "ConceptRef",
+    "BrokenLink",
+    "check_reference_integrity",
+    "IntegrityReport",
+    "HybridSearchResult",
 ]
