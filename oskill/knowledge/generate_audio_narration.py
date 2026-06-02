@@ -1,4 +1,5 @@
-"""Generate audio narration for a substrate via F5-TTS."""
+"""Generate audio narration for a substrate via oprim.tts_synthesize (edge-tts v1.1+)."""
+
 from __future__ import annotations
 
 import json
@@ -6,17 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from oprim._logging import log
-from oprim.external.clients.tts_client import TtsClient
-from oprim.external.gpu_lock import GpuLock
 from oprim.meta_db import open_meta_db
+from oprim.tts_synthesize import tts_synthesize
 
 from oskill.knowledge._context import meta_db_path, stratum_home
-def __getattr__(name: str) -> Any:
-    if name == "generate_audio_narration":
-        raise NotImplementedError(
-            "TTS unavailable v1.0: F5-TTS upstream image broken, v1.1+ evaluate"
-        )
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 _CHUNK_WORDS = 120
@@ -38,71 +32,67 @@ async def generate_audio_narration(
     speed: float = 1.0,
     chunk_words: int = _CHUNK_WORDS,
 ) -> AudioNarrationResult:
-    """Generate audio narration for a substrate, stored as audio_asset derivative.
+    """Generate audio narration for a substrate via edge-tts (oprim.tts_synthesize).
 
-    Acquires GpuLock; TTS is local so cost is 0.
-    Splits long text into chunks to stay within F5-TTS VRAM budget.
+    Uses obase.ProviderRegistry("tts", "edge_tts") — requires register_default_providers()
+    to have been called at application startup.
 
     Args:
         substrate_id: Target substrate ULID.
-        voice: TTS voice name ("default" or a voice ID from F5-TTS).
-        speed: Speech speed multiplier.
-        chunk_words: Max words per TTS chunk (controls VRAM usage).
+        voice: TTS voice name. "default" maps to zh-CN-XiaoxiaoNeural.
+               Pass any edge-tts locale voice ID (e.g. "en-US-JennyNeural").
+        speed: Speech rate multiplier. 1.0=normal, 1.2=+20%, 0.8=-20%.
+        chunk_words: Unused (kept for API compatibility; edge-tts handles long text natively).
 
     Returns:
-        AudioNarrationResult with path to concatenated audio file.
+        AudioNarrationResult with path to generated .mp3 file.
     """
     text = _fetch_substrate_text(substrate_id)
     if not text:
         raise ValueError(f"substrate {substrate_id} has no text content")
 
-    chunks = _chunk_text(text, chunk_words)
+    # Map "default" to Mandarin female voice; pass through explicit voice IDs unchanged.
+    voice_id = "zh-CN-XiaoxiaoNeural" if voice == "default" else voice
+
+    # Convert speed multiplier to edge-tts rate string (+/-N%)
+    rate_pct = round((speed - 1.0) * 100)
+    rate = f"+{rate_pct}%" if rate_pct >= 0 else f"{rate_pct}%"
+
     log.info(
         "generate_audio_narration.start",
         substrate_id=substrate_id,
-        chunks=len(chunks),
-        voice=voice,
+        voice=voice_id,
+        rate=rate,
+        text_chars=len(text),
     )
 
     audio_dir = stratum_home() / "data" / "audio"
     audio_dir.mkdir(parents=True, exist_ok=True)
 
-    audio_parts: list[bytes] = []
-    gpu_lock = GpuLock()
-    tts = TtsClient()
-    try:
-        async with gpu_lock.acquire(requester=f"audio_narration:{substrate_id}"):
-            for i, chunk in enumerate(chunks):
-                part = await tts.synthesize(chunk, voice=voice, speed=speed)
-                audio_parts.append(part)
-                log.info(
-                    "generate_audio_narration.chunk_done",
-                    substrate_id=substrate_id,
-                    chunk=i + 1,
-                    total=len(chunks),
-                    bytes=len(part),
-                )
-    finally:
-        await tts.close()
-        await gpu_lock.close()
-
     from python_ulid import ULID
 
     asset_id = str(ULID())
-    out_path = audio_dir / f"{asset_id}.wav"
-    final_audio = _concat_audio_parts(audio_parts)
-    out_path.write_bytes(final_audio)
+    out_path = audio_dir / f"{asset_id}.mp3"
 
-    duration = _estimate_duration(final_audio)
+    await tts_synthesize(
+        provider="edge_tts",
+        text=text,
+        voice=voice_id,
+        output_path=out_path,
+        rate=rate,
+    )
+
+    audio_bytes = out_path.stat().st_size
+    duration = _estimate_duration(out_path.read_bytes())
 
     _save_audio_asset(
         asset_id=asset_id,
         substrate_id=substrate_id,
         file_path=str(out_path),
         duration_seconds=duration,
-        voice=voice,
+        voice=voice_id,
         speed=speed,
-        byte_size=len(final_audio),
+        byte_size=audio_bytes,
     )
 
     log.info(
@@ -116,7 +106,7 @@ async def generate_audio_narration(
         audio_asset_id=asset_id,
         audio_path=str(out_path),
         duration_seconds=duration,
-        chunk_count=len(chunks),
+        chunk_count=1,
         cost_usd=0.0,
     )
 
@@ -146,10 +136,11 @@ def _fetch_substrate_text(substrate_id: str) -> str:
         )
         if rows and rows[0][0]:
             import re
+
             db.close()
             return re.sub(r"[#*`\[\]_]", "", rows[0][0]).strip()
         # Fall back to source_path
-        rows = db.fetchall("SELECT source_path FROM substrate WHERE id = ?", [substrate_id])
+        rows = db.fetchall("SELECT source_path FROM substrates WHERE id = ?", [substrate_id])
         db.close()
         if rows and rows[0][0]:
             p = Path(rows[0][0])
