@@ -408,6 +408,19 @@ from oskill.lint_substrate_graph import (
 )
 from oskill.check_reference_integrity import IntegrityReport, check_reference_integrity
 
+# --- AII 3O Batch 3b (v3.10.0) ---
+from oskill.hybrid_retrieve import hybrid_retrieve
+from oskill.trace_dependency import trace_dependency
+from oskill.find_consistency_issues import find_consistency_issues
+
+# --- AII 3O Batch 4b (v3.11.0) ---
+from oskill.ku_extract_pipeline import ku_extract_pipeline
+
+# --- Stratum B3 (v3.12.0) ---
+from oskill.feed_diff_pipeline import feed_diff_pipeline
+from oskill.image_qa import image_qa
+from oskill.web_search_augmented import web_search_augmented
+
 __all__ = [
     "__version__",
     # P0-1: cost model (v2.7.0)
@@ -720,4 +733,14 @@ __all__ = [
     "check_reference_integrity",
     "IntegrityReport",
     "HybridSearchResult",
+    # AII 3O Batch 3b (v3.10.0)
+    "hybrid_retrieve",
+    "trace_dependency",
+    "find_consistency_issues",
+    # AII 3O Batch 4b (v3.11.0)
+    "ku_extract_pipeline",
+    # Stratum B3 (v3.12.0)
+    "feed_diff_pipeline",
+    "image_qa",
+    "web_search_augmented",
 ]

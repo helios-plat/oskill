@@ -2,6 +2,28 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.12.0] — 2026-06-04
+
+### Added (Stratum B3)
+- `feed_diff_pipeline` — Multi-feed monitoring: fetch RSS/Atom + diff detection (oprim composition)
+- `image_qa` — Image Q&A: OCR + vision LLM + concept extraction (oprim composition)
+- `web_search_augmented` — Web search via searxng + BM25 re-ranking (needs searxng deployment)
+
+## [3.11.0] — 2026-06-04
+
+### Added (AII-3O Batch 4b)
+- `ku_extract_pipeline` — KU extraction pipeline: structural_chunk → llm_extract_ku per chunk → ku_gate_validate; returns candidates/rejected/chunks_processed
+
+## [3.10.0] — 2026-06-04
+
+### Added (AII-3O Batch 3b)
+- `hybrid_retrieve` — multi-signal BM25 + graph RRF fusion retrieval (oprim composition)
+- `trace_dependency` — multi-hop dependency chain traversal with coherence assessment
+- `find_consistency_issues` — knowledge graph consistency validation (label conflicts, contradictions, cycles)
+
+### Supporting oprim addition
+- `oprim.bm25_search` — single BM25 keyword retrieval (added to oprim v2.25.0 without version bump)
+
 ## [3.9.0] - 2026-06-01 — Stratum Batch 2: 7 oskill (stateless)
 
 ### Added — Stratum B2
