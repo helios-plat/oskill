@@ -2,6 +2,14 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.13.0] — 2026-06-05
+
+### Added (Stratum B3)
+- `researcher_workflow` — search + fetch + concept extraction pipeline (searxng_search + url_fetch_ssrf_safe + concept_extractor oprim composition)
+
+### Fixed (B0 pyproject drift)
+- pyproject.toml synced from 3.0.0 → 3.12.0 → 3.13.0 to match git tag history
+
 ## [3.12.0] — 2026-06-04
 
 ### Added (Stratum B3)

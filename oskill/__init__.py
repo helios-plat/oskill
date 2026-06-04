@@ -421,6 +421,9 @@ from oskill.feed_diff_pipeline import feed_diff_pipeline
 from oskill.image_qa import image_qa
 from oskill.web_search_augmented import web_search_augmented
 
+# --- Stratum B3 (v3.13.0) ---
+from oskill.researcher_workflow import researcher_workflow
+
 __all__ = [
     "__version__",
     # P0-1: cost model (v2.7.0)
@@ -743,4 +746,6 @@ __all__ = [
     "feed_diff_pipeline",
     "image_qa",
     "web_search_augmented",
+    # Stratum B3 (v3.13.0)
+    "researcher_workflow",
 ]
