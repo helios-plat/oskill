@@ -29,7 +29,7 @@ def _seed_substrate(db_path: Path, substrate_id: str, markdown_text: str) -> Non
     db = open_meta_db(db_path)
     db.execute(
         "CREATE TABLE IF NOT EXISTS substrates ("
-        "id TEXT PRIMARY KEY, ulid TEXT, title TEXT, mime TEXT, source_path TEXT,"
+        "id TEXT PRIMARY KEY, user_id TEXT, title TEXT, mime TEXT, source_path TEXT,"
         "file_hash TEXT, byte_size INTEGER, page_count INTEGER, parser TEXT,"
         "language TEXT, has_cjk BOOLEAN DEFAULT FALSE, is_scanned BOOLEAN DEFAULT FALSE,"
         "is_pinned BOOLEAN DEFAULT FALSE, meta_json TEXT DEFAULT '{}',"
@@ -42,9 +42,9 @@ def _seed_substrate(db_path: Path, substrate_id: str, markdown_text: str) -> Non
         "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
     )
     db.execute(
-        """INSERT INTO substrates (id, ulid, title, meta_json, created_at, updated_at)
-           VALUES (?, ?, ?, '{}', current_timestamp, current_timestamp)""",
-        [substrate_id, substrate_id, "Test"],
+        """INSERT INTO substrates (id, title, meta_json, created_at, updated_at)
+           VALUES (?, ?, '{}', current_timestamp, current_timestamp)""",
+        [substrate_id, "Test"],
     )
     from ulid import ULID
 

@@ -1,4 +1,5 @@
 """oskill.sync.apply_remote_events — pull remote changefeed events and apply to local DB."""
+
 from __future__ import annotations
 
 import json
@@ -45,20 +46,34 @@ def _save_state(path: Path, state: dict) -> None:
 
 # ── event appliers ────────────────────────────────────────────────────────────
 
+
 def _apply_substrate_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     p = event.payload
     db.execute("DELETE FROM substrates WHERE id = ?", [p.get("id")])
     db.execute(
         "INSERT INTO substrates "
-        "(id, ulid, title, mime, source_path, file_hash, byte_size, page_count, "
-        "parser, language, has_cjk, is_scanned, created_at, updated_at, meta_json) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "(id, user_id, title, mime, source_path, file_hash, byte_size, page_count, "
+        "parser, language, has_cjk, is_scanned, is_pinned, pinned_at, pin_priority, "
+        "created_at, updated_at, meta_json) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
-            p.get("id"), p.get("ulid"), p.get("title"), p.get("mime"),
-            p.get("source_path"), p.get("file_hash"), p.get("byte_size"),
-            p.get("page_count"), p.get("parser"), p.get("language"),
-            p.get("has_cjk"), p.get("is_scanned"),
-            p.get("created_at"), p.get("updated_at"),
+            p.get("id"),
+            event.user_id,
+            p.get("title"),
+            p.get("mime"),
+            p.get("source_path"),
+            p.get("file_hash"),
+            p.get("byte_size"),
+            p.get("page_count"),
+            p.get("parser"),
+            p.get("language"),
+            p.get("has_cjk"),
+            p.get("is_scanned"),
+            p.get("is_pinned", False),
+            p.get("pinned_at"),
+            p.get("pin_priority", 0),
+            p.get("created_at"),
+            p.get("updated_at"),
             p.get("meta_json", "{}"),
         ],
     )
@@ -95,9 +110,14 @@ def _apply_note_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
         "(id, title, content, wikilinks, substrate_id, meta_json, created_at, updated_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
-            p.get("id"), p.get("title"), p.get("content"),
-            p.get("wikilinks", "[]"), p.get("substrate_id"),
-            p.get("meta_json", "{}"), p.get("created_at"), p.get("updated_at"),
+            p.get("id"),
+            p.get("title"),
+            p.get("content"),
+            p.get("wikilinks", "[]"),
+            p.get("substrate_id"),
+            p.get("meta_json", "{}"),
+            p.get("created_at"),
+            p.get("updated_at"),
         ],
     )
 
@@ -112,13 +132,18 @@ def _apply_concept_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     db.execute("DELETE FROM concepts WHERE id = ?", [p.get("id")])
     db.execute(
         "INSERT INTO concepts "
-        "(id, name, aliases, description, wikilink, source_ids, meta_json, created_at, updated_at) "
+        "(id, user_id, name, type, aliases, wikilink, substrate_refs, related_concept_ids, created_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
-            p.get("id"), p.get("name"), p.get("aliases"),
-            p.get("description"), p.get("wikilink"),
-            p.get("source_ids", "[]"), p.get("meta_json", "{}"),
-            p.get("created_at"), p.get("updated_at"),
+            p.get("id"),
+            event.user_id,
+            p.get("name"),
+            p.get("type", "concept_idea"),
+            p.get("aliases"),
+            p.get("wikilink"),
+            p.get("substrate_refs"),
+            p.get("related_concept_ids"),
+            p.get("created_at"),
         ],
     )
 
@@ -129,20 +154,20 @@ def _apply_concept_delete(db: MetaDB, event: ChangefeedEvent) -> None:
 
 
 def _apply_concept_link(db: MetaDB, event: ChangefeedEvent) -> None:
-    source_ids = event.payload.get("source_ids")
-    if source_ids is not None:
+    substrate_refs = event.payload.get("substrate_refs")
+    if substrate_refs is not None:
         db.execute(
-            "UPDATE concepts SET source_ids = ? WHERE id = ?",
-            [source_ids, event.aggregate_id],
+            "UPDATE concepts SET substrate_refs = ? WHERE id = ?",
+            [substrate_refs, event.aggregate_id],
         )
 
 
 def _apply_concept_unlink(db: MetaDB, event: ChangefeedEvent) -> None:
-    source_ids = event.payload.get("source_ids")
-    if source_ids is not None:
+    substrate_refs = event.payload.get("substrate_refs")
+    if substrate_refs is not None:
         db.execute(
-            "UPDATE concepts SET source_ids = ? WHERE id = ?",
-            [source_ids, event.aggregate_id],
+            "UPDATE concepts SET substrate_refs = ? WHERE id = ?",
+            [substrate_refs, event.aggregate_id],
         )
 
 
@@ -224,9 +249,7 @@ async def apply_remote_events(
     # Filename convention: events_{device_id}_{seq_start}_{seq_end}.jsonl
     candidate_files: list[tuple[str, str]] = []
     try:
-        async for storage_file in storage_adapter.list_files(
-            "/Stratum/changefeed", recursive=True
-        ):
+        async for storage_file in storage_adapter.list_files("/Stratum/changefeed", recursive=True):
             fname = storage_file.name
             fid = storage_file.file_id
             # Skip files originating from this device
@@ -249,9 +272,7 @@ async def apply_remote_events(
         )
 
     for fname, fid in sorted(candidate_files):
-        with tempfile.NamedTemporaryFile(
-            mode="wb", suffix=".jsonl", delete=False
-        ) as tf:
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".jsonl", delete=False) as tf:
             tmp_path = tf.name
 
         try:

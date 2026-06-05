@@ -40,12 +40,12 @@ class TestBoostPinned:
         now = datetime.now(timezone.utc).isoformat()
         db = open_meta_db(meta_db_path())
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            ["PINNED01", "PINNED01", "Pinned", "", "", "h001", 0, "{}", True, now, now],
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            ["PINNED01", "test_user", "Pinned", "", "", "h001", 0, "{}", True, now, now],
         )
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            ["NORMAL01", "NORMAL01", "Normal", "", "", "h002", 0, "{}", False, now, now],
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            ["NORMAL01", "test_user", "Normal", "", "", "h002", 0, "{}", False, now, now],
         )
         db.close()
 
@@ -106,10 +106,10 @@ class TestHybridSearch:
         db = open_meta_db(db_p)
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
                 "sub001",
-                "sub001",
+                "test_user",
                 "kelly criterion finance",
                 "",
                 "",
@@ -154,10 +154,10 @@ class TestHybridSearch:
         db = open_meta_db(db_p)
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
                 "paper001",
-                "paper001",
+                "test_user",
                 "finance paper",
                 "",
                 "",
@@ -169,10 +169,10 @@ class TestHybridSearch:
             ],
         )
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
                 "book001",
-                "book001",
+                "test_user",
                 "finance book",
                 "",
                 "",
@@ -242,8 +242,8 @@ class TestHybridSearch:
         db = open_meta_db(meta_db_path())
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
-            ["cite001", "cite001", "citation test", "", "", "h001", 0, "{}", now, now],
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            ["cite001", "test_user", "citation test", "", "", "h001", 0, "{}", now, now],
         )
         db.close()
 
@@ -274,8 +274,8 @@ class TestHybridSearch:
         db = open_meta_db(meta_db_path())
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
-            ["nocite001", "nocite001", "no citation", "", "", "h001", 0, "{}", now, now],
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            ["nocite001", "test_user", "no citation", "", "", "h001", 0, "{}", now, now],
         )
         db.close()
 
@@ -313,12 +313,12 @@ class TestHybridSearch:
         db = open_meta_db(meta_db_path())
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            ["normal_a", "normal_a", "Finance Normal", "", "", "h001", 0, "{}", False, now, now],
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            ["normal_a", "test_user", "Finance Normal", "", "", "h001", 0, "{}", False, now, now],
         )
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            ["pinned_b", "pinned_b", "Finance Pinned", "", "", "h002", 0, "{}", True, now, now],
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            ["pinned_b", "test_user", "Finance Pinned", "", "", "h002", 0, "{}", True, now, now],
         )
         db.close()
 
@@ -359,9 +359,20 @@ class TestViewFilterResolution:
         import json
 
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, "
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, "
             "byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
-            [sid, sid, f"title-{sid}", "", "", f"hash-{sid}", 0, json.dumps(meta), now, now],
+            [
+                sid,
+                "test_user",
+                f"title-{sid}",
+                "",
+                "",
+                f"hash-{sid}",
+                0,
+                json.dumps(meta),
+                now,
+                now,
+            ],
         )
 
     def _insert_view(

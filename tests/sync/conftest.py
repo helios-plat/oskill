@@ -17,12 +17,24 @@ _MIGRATIONS_DIR = (
 
 _SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS substrates (
-    id TEXT PRIMARY KEY, ulid TEXT, title TEXT, mime TEXT,
-    source_path TEXT, file_hash TEXT, byte_size INTEGER,
-    page_count INTEGER, parser TEXT, language TEXT,
-    has_cjk BOOLEAN DEFAULT FALSE, is_scanned BOOLEAN DEFAULT FALSE,
-    is_pinned BOOLEAN DEFAULT FALSE, meta_json TEXT DEFAULT '{}',
-    created_at TEXT, updated_at TEXT
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL,
+    title        TEXT,
+    mime         TEXT,
+    source_path  TEXT,
+    file_hash    TEXT,
+    byte_size    BIGINT,
+    page_count   INTEGER,
+    parser       TEXT,
+    language     TEXT,
+    has_cjk      BOOLEAN DEFAULT FALSE,
+    is_scanned   BOOLEAN DEFAULT FALSE,
+    is_pinned    BOOLEAN DEFAULT FALSE,
+    pinned_at    TEXT,
+    pin_priority INTEGER DEFAULT 0,
+    created_at   TEXT,
+    updated_at   TEXT,
+    meta_json    TEXT DEFAULT '{}'
 );
 CREATE TABLE IF NOT EXISTS notes (
     id TEXT PRIMARY KEY, title TEXT, content TEXT,
@@ -30,9 +42,16 @@ CREATE TABLE IF NOT EXISTS notes (
     meta_json TEXT DEFAULT '{}', created_at TEXT, updated_at TEXT
 );
 CREATE TABLE IF NOT EXISTS concepts (
-    id TEXT PRIMARY KEY, name TEXT, aliases TEXT, description TEXT,
-    wikilink TEXT, source_ids TEXT DEFAULT '[]',
-    meta_json TEXT DEFAULT '{}', created_at TEXT, updated_at TEXT
+    id                  TEXT PRIMARY KEY,
+    user_id             TEXT NOT NULL,
+    name                TEXT NOT NULL,
+    type                TEXT NOT NULL DEFAULT 'concept_idea',
+    aliases             TEXT[],
+    wikilink            TEXT,
+    substrate_refs      TEXT[],
+    related_concept_ids TEXT[],
+    created_at          TEXT,
+    deleted_at          TEXT
 );
 CREATE TABLE IF NOT EXISTS derivative (
     id TEXT PRIMARY KEY, substrate_id TEXT, kind TEXT,
@@ -79,10 +98,10 @@ def storage():
     return _make_storage_mock()
 
 
-def seed_substrate(db, sub_id: str = "sub_1", ulid: str = "01HX") -> None:
+def seed_substrate(db, sub_id: str = "sub_1", user_id: str = "test_user") -> None:
     db.execute(
-        "INSERT INTO substrates (id, ulid, title, mime, meta_json) VALUES (?, ?, ?, ?, ?)",
-        [sub_id, ulid, "Test Doc", "application/pdf", "{}"],
+        "INSERT INTO substrates (id, user_id, title, mime, meta_json) VALUES (?, ?, ?, ?, ?)",
+        [sub_id, user_id, "Test Doc", "application/pdf", "{}"],
     )
 
 
@@ -95,9 +114,8 @@ def seed_note(db, note_id: str = "note_1", title: str = "My Note") -> None:
 
 def seed_concept(db, concept_id: str = "c_1", name: str = "Alpha") -> None:
     db.execute(
-        "INSERT INTO concepts (id, name, aliases, wikilink, source_ids, meta_json) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
-        [concept_id, name, None, name.lower(), "[]", "{}"],
+        "INSERT INTO concepts (id, user_id, name, type, wikilink) VALUES (?, ?, ?, ?, ?)",
+        [concept_id, "test_user", name, "concept_idea", name.lower()],
     )
 
 

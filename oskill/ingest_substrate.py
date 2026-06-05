@@ -1,4 +1,5 @@
 """End-to-end substrate ingestion pipeline."""
+
 from __future__ import annotations
 
 import hashlib
@@ -10,23 +11,24 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+import duckdb as _duckdb
 from ulid import ULID
 
-import oprim.meta_db as _oprim_meta_db_mod
-
 from oprim._logging import log
+from oprim.classifier.detect_mime import detect_mime
 from oprim.embedding import embed_text
-from oprim.errors import IngestError
+from oprim.errors import IngestError, MetaDBError
 from oprim.fulltext import open_fulltext_index
 from oprim.fulltext.tantivy import FulltextDoc
 from oprim.meta_db import open_meta_db
 from oprim.vector_db import open_vector_db
 from oprim.vector_db.lancedb import VectorRecord
 
-_MIGRATIONS_DIR = Path(_oprim_meta_db_mod.__file__).parent / "migrations"
-
 from oskill.knowledge._context import (
-    lancedb_path, meta_db_path, substrate_data_path, tantivy_path,
+    lancedb_path,
+    meta_db_path,
+    substrate_data_path,
+    tantivy_path,
 )
 from oskill.knowledge.classify_inbox_file import classify_inbox_file
 from oskill.knowledge.detect_duplicate_substrate import detect_duplicate_substrate
@@ -50,12 +52,15 @@ class IngestResult:
 async def ingest_substrate(
     path: Path,
     source: dict,
+    user_id_hash: str,
     target_storage: str = "local",
     user_hint: dict | None = None,
 ) -> IngestResult:
     """End-to-end ingestion: classify → deduplicate → parse → embed → index."""
     if target_storage != "local":
-        raise IngestError(f"target_storage '{target_storage}' not supported in Phase 1 (only 'local')")
+        raise IngestError(
+            f"target_storage '{target_storage}' not supported in Phase 1 (only 'local')"
+        )
 
     t0 = time.monotonic()
     if not path.exists():
@@ -69,7 +74,9 @@ async def ingest_substrate(
     if existing:
         log.info("oskill.ingest.duplicate", path=str(path), existing=existing)
         return IngestResult(
-            substrate_id=existing, medium="", duplicate_of=existing,
+            substrate_id=existing,
+            medium="",
+            duplicate_of=existing,
             elapsed_seconds=time.monotonic() - t0,
         )
 
@@ -127,37 +134,50 @@ async def ingest_substrate(
         ft_path = tantivy_path()
         ft_path.mkdir(parents=True, exist_ok=True)
         ft_idx = open_fulltext_index(ft_path)
-        ft_idx.add([FulltextDoc(
-            id=substrate_id,
-            fields={
-                "title": path.stem,
-                "content": (markdown_text or "")[:10_000],
-            },
-        )])
+        ft_idx.add(
+            [
+                FulltextDoc(
+                    id=substrate_id,
+                    fields={
+                        "title": path.stem,
+                        "content": (markdown_text or "")[:10_000],
+                    },
+                )
+            ]
+        )
     except Exception as e:
         log.warning("oskill.ingest.fulltext_failed", error=str(e))
 
     # Step 9: write meta_db
     db_p = meta_db_path()
     db_p.parent.mkdir(parents=True, exist_ok=True)
+    path_mime = detect_mime(path)
     try:
         db = open_meta_db(db_p)
-        db.migrate(_MIGRATIONS_DIR)
         now = datetime.now(timezone.utc).isoformat()
-        meta = json.dumps({
-            "medium": medium,
-            "source_type": source.get("type", "inbox_local"),
-            "source": source,
-        })
+        meta = json.dumps(
+            {
+                "medium": medium,
+                "source_type": source.get("type", "inbox_local"),
+                "source": source,
+            }
+        )
         db.execute(
             """INSERT INTO substrates
-               (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json,
+               (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json,
                 created_at, updated_at)
                VALUES (?,?,?,?,?,?,?,?,?,?)""",
             [
-                substrate_id, substrate_id, path.stem, "",
-                str(dest), file_hash, path.stat().st_size, meta,
-                now, now,
+                substrate_id,
+                user_id_hash,
+                path.stem,
+                path_mime or None,
+                str(dest),
+                file_hash,
+                path.stat().st_size,
+                meta,
+                now,
+                now,
             ],
         )
         for deriv_kind in derivatives_dict:
@@ -173,8 +193,15 @@ async def ingest_substrate(
             ["substrate", substrate_id, "insert", json.dumps({"substrate_id": substrate_id})],
         )
         db.close()
-    except Exception as e:
-        log.warning("oskill.ingest.meta_db_failed", error=str(e))
+    except MetaDBError as e:
+        if isinstance(e.__cause__, _duckdb.BinderException):
+            log.error("oskill.ingest.schema_mismatch", error=str(e))
+            raise
+        if isinstance(e.__cause__, _duckdb.ConnectionException):
+            log.warning("oskill.ingest.db_unavailable", error=str(e))
+        else:
+            log.error("oskill.ingest.meta_db_failed", error=str(e))
+            raise
 
     elapsed = time.monotonic() - t0
     log.info("oskill.ingest.done", substrate_id=substrate_id, medium=medium, elapsed=elapsed)
@@ -195,7 +222,7 @@ def _sha256(path: Path) -> str:
 
 
 def _slugify(text: str) -> str:
-    return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
 
 def _chunk_text(text: str, size: int = _CHUNK_SIZE) -> list[str]:

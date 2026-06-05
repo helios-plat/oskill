@@ -14,22 +14,24 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 _SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS substrates (
-    id          TEXT PRIMARY KEY,
-    ulid        TEXT,
-    title       TEXT,
-    mime        TEXT,
-    source_path TEXT,
-    file_hash   TEXT,
-    byte_size   INTEGER,
-    page_count  INTEGER,
-    parser      TEXT,
-    language    TEXT,
-    has_cjk     BOOLEAN DEFAULT FALSE,
-    is_scanned  BOOLEAN DEFAULT FALSE,
-    is_pinned   BOOLEAN DEFAULT FALSE,
-    meta_json   TEXT DEFAULT '{}',
-    created_at  TEXT,
-    updated_at  TEXT
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL,
+    title        TEXT,
+    mime         TEXT,
+    source_path  TEXT,
+    file_hash    TEXT,
+    byte_size    BIGINT,
+    page_count   INTEGER,
+    parser       TEXT,
+    language     TEXT,
+    has_cjk      BOOLEAN DEFAULT FALSE,
+    is_scanned   BOOLEAN DEFAULT FALSE,
+    is_pinned    BOOLEAN DEFAULT FALSE,
+    pinned_at    TEXT,
+    pin_priority INTEGER DEFAULT 0,
+    created_at   TEXT,
+    updated_at   TEXT,
+    meta_json    TEXT DEFAULT '{}'
 );
 CREATE TABLE IF NOT EXISTS derivative (
     id            TEXT PRIMARY KEY,
@@ -42,15 +44,16 @@ CREATE TABLE IF NOT EXISTS derivative (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS concepts (
-    id          TEXT PRIMARY KEY,
-    name        TEXT,
-    aliases     TEXT,
-    description TEXT,
-    wikilink    TEXT,
-    source_ids  TEXT DEFAULT '[]',
-    meta_json   TEXT DEFAULT '{}',
-    created_at  TEXT,
-    updated_at  TEXT
+    id                  TEXT PRIMARY KEY,
+    user_id             TEXT NOT NULL,
+    name                TEXT NOT NULL,
+    type                TEXT NOT NULL DEFAULT 'concept_idea',
+    aliases             TEXT[],
+    wikilink            TEXT,
+    substrate_refs      TEXT[],
+    related_concept_ids TEXT[],
+    created_at          TEXT,
+    deleted_at          TEXT
 );
 CREATE TABLE IF NOT EXISTS notes (
     id           TEXT PRIMARY KEY,

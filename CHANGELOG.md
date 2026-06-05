@@ -2,6 +2,15 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.13.2] — 2026-06-05
+
+### Fixed
+- fix: `ingest_substrate` INSERT 列对齐 Stratum migration 020 真 DDL — 去 `ulid`, 加 `user_id NOT NULL` (新必填参数 `user_id_hash: str`); mime `""` → `detect_mime(path) or None`
+- fix: 区分 schema mismatch (`BinderException` → raise) vs connection error (`ConnectionException` → warn), 不再静默吞错
+- fix: 全 sweep `apply_remote_events.py` substrates INSERT (去 ulid, 加 `event.user_id`, 补 is_pinned/pinned_at/pin_priority); concepts INSERT 对齐 migration 020 (去 description/source_ids/meta_json, 加 user_id/type/substrate_refs/related_concept_ids)
+- fix: 测试 fixture `_SCHEMA_DDL` 升级为 migration 020 真 schema (substrates: user_id NOT NULL, pin_priority; concepts: migration 020 结构)
+- test: 新增 `TestIngestV2` — user_id_hash 必填验证, user_id DB 写入验证, NULL mime 验证, BinderException raise, ConnectionException 降级 (5 新测试)
+
 ## [3.13.1] — 2026-06-05
 
 ### Fixed

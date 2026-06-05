@@ -24,11 +24,11 @@ class TestDetectDuplicateSubstrate:
         db = open_meta_db(db_p)
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, "
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, "
             "byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
                 "EXISTING01234567890123456",
-                "EXISTING01234567890123456",
+                "test_user",
                 "test",
                 "",
                 "",
