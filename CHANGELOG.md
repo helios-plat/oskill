@@ -2,6 +2,20 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.14.0] — 2026-06-05
+
+### Added — Aegis 3O Batch 3 (9 new oskill elements)
+- feat: `diagnose_pattern_match` — 纯算法信号→故障模式匹配 (5 内置: memory_pressure/cpu_saturation/queue_backlog/connection_exhaustion/disk_pressure + 自定义 patterns 支持)
+- feat: `compute_severity_score` — 多维加权严重度评分 0–100 (error_rate/latency/affected_users/resource/pattern_confidence; is_prod ×1.3 倍率; 5标签 critical→info)
+- feat: `classify_signal` — 信号类别分类 (infrastructure/application/business/security/unknown; keyword match + metric key presence)
+- feat: `retrieve_runbook` — RAG runbook 检索 (vector_encode_fn → vector_search_fn composition; over-fetch + score filter + top_k)
+- feat: `synthesize_action_plan` — LLM 行动计划合成 (症状 + runbook 上下文 + severity → JSON ActionStep 列表; list/str LLM response 双支持)
+- feat: `verify_health_after_action` / `verify_health_after_action_detail` — HTTP 健康检查轮询 (oprim.network_http_health composition; bool + HealthVerifyResult 两种返回)
+- feat: `circuit_breaker_check` — 熔断器状态机 (closed/open/half_open; error_rate + p99 latency 触发; 自定义阈值)
+- feat: `compute_capacity_forecast` — 线性回归容量预测 (OLS 外推 + 阈值突破检测 + 可选 LLM narrative)
+- feat: `caddy_route_add` — 原子添加 Caddy 路由 + 健康验证 (oprim.caddy_route_add_atomic → oprim.network_http_health composition)
+- test: 78 新测试 (test_aegis_b3_pure_algo.py 44 + test_aegis_b3_composition.py 34)
+
 ## [3.13.2] — 2026-06-05
 
 ### Fixed

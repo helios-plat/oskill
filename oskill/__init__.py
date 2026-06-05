@@ -424,6 +424,25 @@ from oskill.web_search_augmented import web_search_augmented
 # --- Stratum B3 (v3.13.0) ---
 from oskill.researcher_workflow import researcher_workflow
 
+# --- Aegis 3O Batch 3 (v3.14.0) ---
+from oskill.diagnose_pattern_match import PatternMatchResult, diagnose_pattern_match
+from oskill.compute_severity_score import SeverityResult, compute_severity_score
+from oskill.classify_signal import SignalClassification, classify_signal
+from oskill.retrieve_runbook import RetrieveRunbookResult, RunbookEntry, retrieve_runbook
+from oskill.synthesize_action_plan import ActionPlanResult, ActionStep, synthesize_action_plan
+from oskill.verify_health_after_action import (
+    HealthVerifyResult,
+    verify_health_after_action,
+    verify_health_after_action_detail,
+)
+from oskill.circuit_breaker_check import CircuitBreakerResult, circuit_breaker_check
+from oskill.compute_capacity_forecast import (
+    CapacityForecastResult,
+    ForecastPoint,
+    compute_capacity_forecast,
+)
+from oskill.caddy_route_add import CaddyRouteAddResult, caddy_route_add
+
 __all__ = [
     "__version__",
     # P0-1: cost model (v2.7.0)
@@ -748,4 +767,27 @@ __all__ = [
     "web_search_augmented",
     # Stratum B3 (v3.13.0)
     "researcher_workflow",
+    # Aegis 3O Batch 3 (v3.14.0)
+    "PatternMatchResult",
+    "diagnose_pattern_match",
+    "SeverityResult",
+    "compute_severity_score",
+    "SignalClassification",
+    "classify_signal",
+    "RetrieveRunbookResult",
+    "RunbookEntry",
+    "retrieve_runbook",
+    "ActionPlanResult",
+    "ActionStep",
+    "synthesize_action_plan",
+    "HealthVerifyResult",
+    "verify_health_after_action",
+    "verify_health_after_action_detail",
+    "CircuitBreakerResult",
+    "circuit_breaker_check",
+    "CapacityForecastResult",
+    "ForecastPoint",
+    "compute_capacity_forecast",
+    "CaddyRouteAddResult",
+    "caddy_route_add",
 ]
