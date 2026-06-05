@@ -253,7 +253,7 @@ def _get_pinned_ids(substrate_ids: list[str]) -> set[str]:
         db = open_meta_db(db_p)
         ph = ",".join("?" * len(substrate_ids))
         rows = db.fetchall(
-            f"SELECT id FROM substrate WHERE id IN ({ph}) AND is_pinned = true",
+            f"SELECT id FROM substrates WHERE id IN ({ph}) AND is_pinned = true",
             substrate_ids,
         )
         db.close()
@@ -288,7 +288,7 @@ def _enrich(fused: list[tuple[str, float]], return_citations: bool = True) -> li
         id_list = [sid for sid, _ in fused]
         placeholders = ",".join("?" * len(id_list))
         rows = db.fetchall(
-            f"SELECT id, title, meta_json, created_at FROM substrate WHERE id IN ({placeholders})",
+            f"SELECT id, title, meta_json, created_at FROM substrates WHERE id IN ({placeholders})",
             id_list,
         )
         db.close()

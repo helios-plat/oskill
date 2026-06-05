@@ -150,7 +150,7 @@ async def ingest_substrate(
             "source": source,
         })
         db.execute(
-            """INSERT INTO substrate
+            """INSERT INTO substrates
                (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json,
                 created_at, updated_at)
                VALUES (?,?,?,?,?,?,?,?,?,?)""",

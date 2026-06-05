@@ -114,7 +114,7 @@ def _lint_concept(db) -> list[LintIssue]:
     issues = []
     substrate_ids = {r[0] for r in db.fetchall("SELECT id FROM substrates")}
     try:
-        rows = db.fetchall("SELECT id, source_ids FROM concept")
+        rows = db.fetchall("SELECT id, source_ids FROM concepts")
     except Exception:
         return issues
     for cid, refs_json in rows:

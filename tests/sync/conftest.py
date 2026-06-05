@@ -1,4 +1,5 @@
 """Shared fixtures for oskill.sync tests."""
+
 from __future__ import annotations
 
 import json
@@ -11,15 +12,48 @@ from oprim.meta_db.duckdb import open_meta_db
 from oprim.storage.protocol import StorageFile, UploadResult
 
 _MIGRATIONS_DIR = (
-    Path(__file__).parent.parent.parent.parent
-    / "oprim" / "oprim" / "meta_db" / "migrations"
+    Path(__file__).parent.parent.parent.parent / "oprim" / "oprim" / "meta_db" / "migrations"
 )
+
+_SCHEMA_DDL = """
+CREATE TABLE IF NOT EXISTS substrates (
+    id TEXT PRIMARY KEY, ulid TEXT, title TEXT, mime TEXT,
+    source_path TEXT, file_hash TEXT, byte_size INTEGER,
+    page_count INTEGER, parser TEXT, language TEXT,
+    has_cjk BOOLEAN DEFAULT FALSE, is_scanned BOOLEAN DEFAULT FALSE,
+    is_pinned BOOLEAN DEFAULT FALSE, meta_json TEXT DEFAULT '{}',
+    created_at TEXT, updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY, title TEXT, content TEXT,
+    wikilinks TEXT DEFAULT '[]', substrate_id TEXT,
+    meta_json TEXT DEFAULT '{}', created_at TEXT, updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS concepts (
+    id TEXT PRIMARY KEY, name TEXT, aliases TEXT, description TEXT,
+    wikilink TEXT, source_ids TEXT DEFAULT '[]',
+    meta_json TEXT DEFAULT '{}', created_at TEXT, updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS derivative (
+    id TEXT PRIMARY KEY, substrate_id TEXT, kind TEXT,
+    content TEXT, embedding_id TEXT, embedding_dim INTEGER,
+    meta_json TEXT DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE SEQUENCE IF NOT EXISTS changefeed_seq;
+CREATE TABLE IF NOT EXISTS changefeed_local (
+    seq BIGINT, table_name TEXT, row_id TEXT, op TEXT, payload TEXT
+);
+"""
 
 
 @pytest.fixture()
 def db(tmp_path: Path):
     m = open_meta_db(tmp_path / "meta.duckdb")
-    m.migrate(_MIGRATIONS_DIR)
+    for stmt in _SCHEMA_DDL.strip().split(";"):
+        stmt = stmt.strip()
+        if stmt:
+            m.execute(stmt)
     yield m
     m.close()
 
@@ -47,21 +81,21 @@ def storage():
 
 def seed_substrate(db, sub_id: str = "sub_1", ulid: str = "01HX") -> None:
     db.execute(
-        "INSERT INTO substrate (id, ulid, title, mime, meta_json) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO substrates (id, ulid, title, mime, meta_json) VALUES (?, ?, ?, ?, ?)",
         [sub_id, ulid, "Test Doc", "application/pdf", "{}"],
     )
 
 
 def seed_note(db, note_id: str = "note_1", title: str = "My Note") -> None:
     db.execute(
-        "INSERT INTO note (id, title, content, wikilinks, meta_json) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO notes (id, title, content, wikilinks, meta_json) VALUES (?, ?, ?, ?, ?)",
         [note_id, title, "content", "[]", "{}"],
     )
 
 
 def seed_concept(db, concept_id: str = "c_1", name: str = "Alpha") -> None:
     db.execute(
-        "INSERT INTO concept (id, name, aliases, wikilink, source_ids, meta_json) "
+        "INSERT INTO concepts (id, name, aliases, wikilink, source_ids, meta_json) "
         "VALUES (?, ?, ?, ?, ?, ?)",
         [concept_id, name, None, name.lower(), "[]", "{}"],
     )

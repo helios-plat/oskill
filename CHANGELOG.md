@@ -2,6 +2,11 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.13.1] — 2026-06-05
+
+### Fixed
+- fix: SQL 表名修 substrate→substrates (SPEC v1.1 §M2 重命名后未跟进, advisor R-3 真测试暴露). 同步扫 note→notes, concept→concepts. 单元测试改用真 DuckDB fixture, 不再纯 mock.
+
 ## [3.13.0] — 2026-06-05
 
 ### Added (Stratum B3)

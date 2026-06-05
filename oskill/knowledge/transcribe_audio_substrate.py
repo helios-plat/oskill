@@ -111,7 +111,7 @@ def _fetch_audio_path(substrate_id: str) -> Path | None:
     try:
         db = open_meta_db(db_path)
         rows = db.fetchall(
-            "SELECT source_path FROM substrate WHERE id = ?",
+            "SELECT source_path FROM substrates WHERE id = ?",
             [substrate_id],
         )
         db.close()

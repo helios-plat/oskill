@@ -143,7 +143,7 @@ def _fetch_title_snippet(substrate_id: str, fragment_id: str | None) -> tuple[st
     try:
         db = open_meta_db(db_path)
         rows = db.fetchall(
-            "SELECT title FROM substrate WHERE id = ?",
+            "SELECT title FROM substrates WHERE id = ?",
             [substrate_id],
         )
         title = (rows[0][0] if rows and rows[0][0] else substrate_id)

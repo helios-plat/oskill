@@ -1,4 +1,5 @@
 """Tests for apply_remote_events skill."""
+
 from __future__ import annotations
 
 import json
@@ -35,8 +36,8 @@ def _make_storage_with_files(files: dict[str, str]) -> MagicMock:
     async def list_files(folder=None, recursive=False):
         for name in files:
             yield StorageFile(
-                file_id=name,   # used as download handle in tests
-                name=name,      # just the filename
+                file_id=name,  # used as download handle in tests
+                name=name,  # just the filename
                 size=len(files[name]),
                 mime_type="application/x-ndjson",
                 created_at=None,  # type: ignore[arg-type]
@@ -61,9 +62,7 @@ class TestApplyRemoteNoFiles:
         assert result.skipped_count == 0
 
     async def test_own_device_files_skipped(self, db, tmp_path):
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_A}_1_1.jsonl": ""}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_A}_1_1.jsonl": ""})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 0
 
@@ -74,18 +73,19 @@ class TestApplySubstrate:
             "substrate.created",
             "sub_1",
             {
-                "id": "sub_1", "ulid": "01HX", "title": "Remote Doc",
-                "mime": "application/pdf", "meta_json": "{}",
+                "id": "sub_1",
+                "ulid": "01HX",
+                "title": "Remote Doc",
+                "mime": "application/pdf",
+                "meta_json": "{}",
             },
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
 
-        rows = db.fetchall("SELECT id, title FROM substrate WHERE id = 'sub_1'")
+        rows = db.fetchall("SELECT id, title FROM substrates WHERE id = 'sub_1'")
         assert len(rows) == 1
         assert rows[0][1] == "Remote Doc"
 
@@ -98,12 +98,10 @@ class TestApplySubstrate:
             {"id": "sub_1", "ulid": "01HX", "title": "Updated Title", "meta_json": "{}"},
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
-        rows = db.fetchall("SELECT title FROM substrate WHERE id = 'sub_1'")
+        rows = db.fetchall("SELECT title FROM substrates WHERE id = 'sub_1'")
         assert rows[0][0] == "Updated Title"
 
     async def test_substrate_deleted_removes_row(self, db, tmp_path):
@@ -115,12 +113,10 @@ class TestApplySubstrate:
             {"id": "sub_1"},
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
-        rows = db.fetchall("SELECT id FROM substrate WHERE id = 'sub_1'")
+        rows = db.fetchall("SELECT id FROM substrates WHERE id = 'sub_1'")
         assert rows == []
 
     async def test_substrate_pin_updates_meta_json(self, db, tmp_path):
@@ -132,13 +128,11 @@ class TestApplySubstrate:
             {"meta_json": '{"pinned": true}'},
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
-        rows = db.fetchall("SELECT meta_json FROM substrate WHERE id = 'sub_1'")
-        assert '\"pinned\"' in rows[0][0] or "pinned" in rows[0][0]
+        rows = db.fetchall("SELECT meta_json FROM substrates WHERE id = 'sub_1'")
+        assert '"pinned"' in rows[0][0] or "pinned" in rows[0][0]
 
     async def test_substrate_unpin_updates_meta_json(self, db, tmp_path):
         seed_substrate(db, "sub_1", "01HX")
@@ -149,9 +143,7 @@ class TestApplySubstrate:
             {"meta_json": "{}"},
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
 
@@ -160,15 +152,19 @@ class TestApplyNote:
         ev = make_event_dict(
             "note.created",
             "note_1",
-            {"id": "note_1", "title": "Note A", "content": "Hello", "wikilinks": "[]", "meta_json": "{}"},
+            {
+                "id": "note_1",
+                "title": "Note A",
+                "content": "Hello",
+                "wikilinks": "[]",
+                "meta_json": "{}",
+            },
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
-        rows = db.fetchall("SELECT title FROM note WHERE id = 'note_1'")
+        rows = db.fetchall("SELECT title FROM notes WHERE id = 'note_1'")
         assert rows[0][0] == "Note A"
 
     async def test_note_updated(self, db, tmp_path):
@@ -176,26 +172,26 @@ class TestApplyNote:
         ev = make_event_dict(
             "note.updated",
             "note_1",
-            {"id": "note_1", "title": "New Title", "content": "x", "wikilinks": "[]", "meta_json": "{}"},
+            {
+                "id": "note_1",
+                "title": "New Title",
+                "content": "x",
+                "wikilinks": "[]",
+                "meta_json": "{}",
+            },
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
-        rows = db.fetchall("SELECT title FROM note WHERE id = 'note_1'")
+        rows = db.fetchall("SELECT title FROM notes WHERE id = 'note_1'")
         assert rows[0][0] == "New Title"
 
     async def test_note_deleted(self, db, tmp_path):
         seed_note(db, "note_1")
-        ev = make_event_dict(
-            "note.deleted", "note_1", {"id": "note_1"}, device_id=DEVICE_B
-        )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        ev = make_event_dict("note.deleted", "note_1", {"id": "note_1"}, device_id=DEVICE_B)
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
-        rows = db.fetchall("SELECT id FROM note WHERE id = 'note_1'")
+        rows = db.fetchall("SELECT id FROM notes WHERE id = 'note_1'")
         assert rows == []
 
 
@@ -204,27 +200,27 @@ class TestApplyConcept:
         ev = make_event_dict(
             "concept.created",
             "c_1",
-            {"id": "c_1", "name": "Alpha", "wikilink": "alpha", "source_ids": "[]", "meta_json": "{}"},
+            {
+                "id": "c_1",
+                "name": "Alpha",
+                "wikilink": "alpha",
+                "source_ids": "[]",
+                "meta_json": "{}",
+            },
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
-        rows = db.fetchall("SELECT name FROM concept WHERE id = 'c_1'")
+        rows = db.fetchall("SELECT name FROM concepts WHERE id = 'c_1'")
         assert rows[0][0] == "Alpha"
 
     async def test_concept_deleted(self, db, tmp_path):
         seed_concept(db, "c_1", "Alpha")
-        ev = make_event_dict(
-            "derivative.deleted", "c_1", {"id": "c_1"}, device_id=DEVICE_B
-        )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        ev = make_event_dict("derivative.deleted", "c_1", {"id": "c_1"}, device_id=DEVICE_B)
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
-        rows = db.fetchall("SELECT id FROM concept WHERE id = 'c_1'")
+        rows = db.fetchall("SELECT id FROM concepts WHERE id = 'c_1'")
         assert rows == []
 
     async def test_concept_linked(self, db, tmp_path):
@@ -235,11 +231,9 @@ class TestApplyConcept:
             {"source_ids": '["sub_1"]'},
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
-        rows = db.fetchall("SELECT source_ids FROM concept WHERE id = 'c_1'")
+        rows = db.fetchall("SELECT source_ids FROM concepts WHERE id = 'c_1'")
         assert "sub_1" in rows[0][0]
 
     async def test_concept_unlinked(self, db, tmp_path):
@@ -250,32 +244,24 @@ class TestApplyConcept:
             {"source_ids": "[]"},
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
 
 
 class TestApplyEdgeCases:
     async def test_unknown_event_type_skipped(self, db, tmp_path):
         ev = make_event_dict("unknown.type", None, {}, device_id=DEVICE_B)
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.skipped_count >= 1
 
     async def test_malformed_jsonl_line_skipped(self, db, tmp_path):
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": "not json\n{broken"}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": "not json\n{broken"})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 0
 
     async def test_empty_jsonl_file_handled(self, db, tmp_path):
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": ""}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": ""})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 0
 
@@ -331,12 +317,16 @@ class TestApplyEdgeCases:
         ev = make_event_dict(
             "derivative.created",
             "c_1",
-            {"id": "c_1", "name": "Beta", "wikilink": "beta", "source_ids": "[]", "meta_json": "{}"},
+            {
+                "id": "c_1",
+                "name": "Beta",
+                "wikilink": "beta",
+                "source_ids": "[]",
+                "meta_json": "{}",
+            },
             device_id=DEVICE_B,
         )
-        storage = _make_storage_with_files(
-            {f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)}
-        )
+        storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         result = await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
         assert result.applied_count == 1
 

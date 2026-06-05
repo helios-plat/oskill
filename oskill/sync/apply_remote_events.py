@@ -47,9 +47,9 @@ def _save_state(path: Path, state: dict) -> None:
 
 def _apply_substrate_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     p = event.payload
-    db.execute("DELETE FROM substrate WHERE id = ?", [p.get("id")])
+    db.execute("DELETE FROM substrates WHERE id = ?", [p.get("id")])
     db.execute(
-        "INSERT INTO substrate "
+        "INSERT INTO substrates "
         "(id, ulid, title, mime, source_path, file_hash, byte_size, page_count, "
         "parser, language, has_cjk, is_scanned, created_at, updated_at, meta_json) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -66,14 +66,14 @@ def _apply_substrate_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
 
 def _apply_substrate_delete(db: MetaDB, event: ChangefeedEvent) -> None:
     row_id = event.aggregate_id or event.payload.get("id")
-    db.execute("DELETE FROM substrate WHERE id = ?", [row_id])
+    db.execute("DELETE FROM substrates WHERE id = ?", [row_id])
 
 
 def _apply_substrate_pin(db: MetaDB, event: ChangefeedEvent) -> None:
     meta = event.payload.get("meta_json")
     if meta is not None:
         db.execute(
-            "UPDATE substrate SET meta_json = ? WHERE id = ?",
+            "UPDATE substrates SET meta_json = ? WHERE id = ?",
             [meta, event.aggregate_id],
         )
 
@@ -82,16 +82,16 @@ def _apply_substrate_unpin(db: MetaDB, event: ChangefeedEvent) -> None:
     meta = event.payload.get("meta_json")
     if meta is not None:
         db.execute(
-            "UPDATE substrate SET meta_json = ? WHERE id = ?",
+            "UPDATE substrates SET meta_json = ? WHERE id = ?",
             [meta, event.aggregate_id],
         )
 
 
 def _apply_note_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     p = event.payload
-    db.execute("DELETE FROM note WHERE id = ?", [p.get("id")])
+    db.execute("DELETE FROM notes WHERE id = ?", [p.get("id")])
     db.execute(
-        "INSERT INTO note "
+        "INSERT INTO notes "
         "(id, title, content, wikilinks, substrate_id, meta_json, created_at, updated_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
@@ -104,14 +104,14 @@ def _apply_note_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
 
 def _apply_note_delete(db: MetaDB, event: ChangefeedEvent) -> None:
     row_id = event.aggregate_id or event.payload.get("id")
-    db.execute("DELETE FROM note WHERE id = ?", [row_id])
+    db.execute("DELETE FROM notes WHERE id = ?", [row_id])
 
 
 def _apply_concept_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     p = event.payload
-    db.execute("DELETE FROM concept WHERE id = ?", [p.get("id")])
+    db.execute("DELETE FROM concepts WHERE id = ?", [p.get("id")])
     db.execute(
-        "INSERT INTO concept "
+        "INSERT INTO concepts "
         "(id, name, aliases, description, wikilink, source_ids, meta_json, created_at, updated_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
@@ -125,14 +125,14 @@ def _apply_concept_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
 
 def _apply_concept_delete(db: MetaDB, event: ChangefeedEvent) -> None:
     row_id = event.aggregate_id or event.payload.get("id")
-    db.execute("DELETE FROM concept WHERE id = ?", [row_id])
+    db.execute("DELETE FROM concepts WHERE id = ?", [row_id])
 
 
 def _apply_concept_link(db: MetaDB, event: ChangefeedEvent) -> None:
     source_ids = event.payload.get("source_ids")
     if source_ids is not None:
         db.execute(
-            "UPDATE concept SET source_ids = ? WHERE id = ?",
+            "UPDATE concepts SET source_ids = ? WHERE id = ?",
             [source_ids, event.aggregate_id],
         )
 
@@ -141,7 +141,7 @@ def _apply_concept_unlink(db: MetaDB, event: ChangefeedEvent) -> None:
     source_ids = event.payload.get("source_ids")
     if source_ids is not None:
         db.execute(
-            "UPDATE concept SET source_ids = ? WHERE id = ?",
+            "UPDATE concepts SET source_ids = ? WHERE id = ?",
             [source_ids, event.aggregate_id],
         )
 

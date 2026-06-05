@@ -23,7 +23,7 @@ async def detect_duplicate_substrate(
     try:
         db = open_meta_db(db_path)
         rows = db.fetchall(
-            "SELECT id FROM substrate WHERE file_hash = ?", [file_hash]
+            "SELECT id FROM substrates WHERE file_hash = ?", [file_hash]
         )
         db.close()
     except Exception as e:

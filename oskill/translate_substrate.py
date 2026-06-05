@@ -88,7 +88,7 @@ async def translate_substrate(
     db.migrate(_MIGRATIONS_DIR)
 
     rows = db.execute(
-        "SELECT id, source_path, meta_json FROM substrate WHERE id = ?",
+        "SELECT id, source_path, meta_json FROM substrates WHERE id = ?",
         [substrate_id],
     ).fetchall()
     if not rows:

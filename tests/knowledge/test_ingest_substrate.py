@@ -1,4 +1,5 @@
 """Tests for ingest_substrate pipeline."""
+
 from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch, AsyncMock, MagicMock
@@ -44,6 +45,7 @@ class TestHelpers:
 class TestIngestSubstrate:
     async def test_unsupported_storage_raises(self, tmp_path, simple_txt):
         from oprim.errors import IngestError
+
         with pytest.raises(IngestError, match="not supported"):
             await ingest_substrate(simple_txt, source={"type": "test"}, target_storage="s3")
 
@@ -51,31 +53,42 @@ class TestIngestSubstrate:
         with pytest.raises(FileNotFoundError):
             await ingest_substrate(Path("/nonexistent/file.txt"), source={"type": "test"})
 
-    async def test_duplicate_returns_duplicate_of(self, stratum_home, simple_txt):
+    async def test_duplicate_returns_duplicate_of(self, stratum_schema, simple_txt):
         """If file was already ingested, IngestResult.duplicate_of is set."""
         from oprim.meta_db import open_meta_db
         from oskill.knowledge._context import meta_db_path
         from datetime import datetime, timezone
-        import hashlib
 
         file_hash = _sha256(simple_txt)
         db_p = meta_db_path()
         db = open_meta_db(db_p)
-        db.migrate(Path("/home/soffy/projects/platform/oprim/oprim/meta_db/migrations"))
         now = datetime.now(timezone.utc).isoformat()
         db.execute(
-            "INSERT INTO substrate (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
-            ["EXISTINGID012345678901234", "EXISTINGID012345678901234", "existing", "", "", file_hash, 0, '{"medium":"markdown_note"}', now, now]
+            "INSERT INTO substrates (id, ulid, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            [
+                "EXISTINGID012345678901234",
+                "EXISTINGID012345678901234",
+                "existing",
+                "",
+                "",
+                file_hash,
+                0,
+                '{"medium":"markdown_note"}',
+                now,
+                now,
+            ],
         )
         db.close()
 
         result = await ingest_substrate(simple_txt, source={"type": "test"})
         assert result.duplicate_of == "EXISTINGID012345678901234"
 
-    async def test_successful_ingest_text_file(self, stratum_home, simple_txt):
+    async def test_successful_ingest_text_file(self, stratum_schema, simple_txt):
         """End-to-end ingest of a text file (mocking embedding)."""
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
+            with patch(
+                "oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"
+            ):
                 result = await ingest_substrate(simple_txt, source={"type": "inbox_local"})
 
         assert result.substrate_id
@@ -83,27 +96,31 @@ class TestIngestSubstrate:
         assert result.duplicate_of is None
         assert result.elapsed_seconds > 0
 
-    async def test_ingest_creates_substrate_in_db(self, stratum_home, simple_md):
+    async def test_ingest_creates_substrate_in_db(self, stratum_schema, simple_md):
         """After ingest, substrate should be in meta_db."""
         from oprim.meta_db import open_meta_db
         from oskill.knowledge._context import meta_db_path
 
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
+            with patch(
+                "oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"
+            ):
                 result = await ingest_substrate(simple_md, source={"type": "inbox_local"})
 
         db = open_meta_db(meta_db_path())
-        rows = db.fetchall("SELECT id FROM substrate WHERE id = ?", [result.substrate_id])
+        rows = db.fetchall("SELECT id FROM substrates WHERE id = ?", [result.substrate_id])
         db.close()
         assert len(rows) == 1
 
-    async def test_ingest_creates_fulltext_index_entry(self, stratum_home, simple_md):
+    async def test_ingest_creates_fulltext_index_entry(self, stratum_schema, simple_md):
         """After ingest, substrate should be searchable via tantivy."""
         from oprim.fulltext import open_fulltext_index
         from oskill.knowledge._context import tantivy_path
 
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
-            with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
+            with patch(
+                "oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"
+            ):
                 result = await ingest_substrate(simple_md, source={"type": "inbox_local"})
 
         ft_idx = open_fulltext_index(tantivy_path())
