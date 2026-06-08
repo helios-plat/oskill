@@ -1,9 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import Literal, Any, cast
-
-from pydantic import BaseModel
+from typing import Literal, cast
 
 from oprim import docker_container_inspect, http_health_probe
+from pydantic import BaseModel
 
 
 class CheckResult(BaseModel):
@@ -39,10 +38,7 @@ def container_health_aggregate(
             aggregate_health_score=0.0
         )
 
-    state = cast(dict[str, Any], inspect_info.get("State", {}))
-    is_running = cast(bool, state.get("Running", False))
-    
-    if not is_running:
+    if inspect_info.state != "running":
         return HealthAggregateResult(
             container_id=container_id,
             overall_status="down",
@@ -50,11 +46,10 @@ def container_health_aggregate(
         )
 
     # Check container health status if available
-    health = cast(dict[str, Any], state.get("Health", {}))
-    container_health_status = cast(str, health.get("Status", "healthy")) # default to healthy if no healthcheck
-    
+    container_health_status = inspect_info.health or "none"
+
     results: list[CheckResult] = []
-    
+
     def run_probe(url: str) -> CheckResult:
         try:
             probe = http_health_probe(url=url, timeout_sec=timeout_sec)
@@ -80,7 +75,7 @@ def container_health_aggregate(
 
     passing = [r for r in results if r.healthy]
     failing = [r for r in results if not r.healthy]
-    
+
     # Internal healthcheck influence
     if container_health_status == "unhealthy":
         failing.append(CheckResult(
@@ -92,10 +87,10 @@ def container_health_aggregate(
         ))
 
     total_checks = len(results) + (1 if container_health_status == "unhealthy" else 0)
-    
+
     score: float
     overall_status: Literal["healthy", "degraded", "down"]
-    
+
     if total_checks == 0:
         overall_status = "healthy"
         score = 1.0

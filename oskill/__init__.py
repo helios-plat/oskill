@@ -2,6 +2,7 @@
 
 # Aegis Batch 2, 3, 4 (v2.10.0)
 from oskill._llm_caller import LLMCaller
+from oskill._schemas import SubjectRef  # canonical location (P7-B4)
 from oskill._signal import Signal
 from oskill._version import __version__
 from oskill.agentic_investigate_loop import (
@@ -10,11 +11,22 @@ from oskill.agentic_investigate_loop import (
     agentic_investigate_loop,
 )
 
+# Aegis Gap Elements — Batch B (v3.16.0)
+from oskill.app_upgrade_preflight import (
+    AppUpgradePreflightResult,
+    PreflightCheck,
+    app_upgrade_preflight,
+)
+
 # Phase 6D: Advanced backtest
 from oskill.backtest.embargo_cv import embargo_purged_cv
 from oskill.backtest.market_rules_backtest import market_rules_backtest_run
 from oskill.backtest.random_subsampling import random_subsampling_validation
 from oskill.backtest.walk_forward_optimization import walk_forward_optimization_pipeline
+from oskill.backup_schedule_check import (
+    BackupScheduleCheckResult,
+    backup_schedule_check,
+)
 from oskill.bayesian.gp_regression import gaussian_process_regression
 from oskill.bayesian.hierarchical import hierarchical_bayes_normal
 
@@ -27,6 +39,11 @@ from oskill.behavioral.cpt_analytical import cpt_portfolio_analytical
 # Phase 10: Behavioral Portfolio
 from oskill.behavioral.cpt_portfolio import cpt_portfolio_optimize
 from oskill.behavioral.salience_pricing import salience_asset_pricing
+from oskill.caddy_route_add import CaddyRouteAddResult, caddy_route_add
+from oskill.candidate_universe_builder_v3 import (
+    CandidateUniverseResult,
+    candidate_universe_builder_v3,
+)
 from oskill.causal import symbolic_transfer_entropy
 
 # Phase 7D: Causal Discovery
@@ -35,7 +52,29 @@ from oskill.causal_discovery import pcmci_causal_discovery
 # Phase 4 prerequisites: change_point
 from oskill.change_point.bayesian_online import bocpd_bayesian
 from oskill.change_point.pelt import pelt_change_point
+from oskill.character_consistency_workflow import (
+    CharacterConsistencyError,
+    CharacterConsistencyResult,
+    character_consistency_workflow,
+)
+
+# P7-B3 — Visual Generation Workflows
+from oskill.character_three_view import (
+    CharacterThreeViewError,
+    ThreeViewResult,
+    character_three_view,
+)
+from oskill.check_reference_integrity import IntegrityReport, check_reference_integrity
+from oskill.circuit_breaker_check import CircuitBreakerResult, circuit_breaker_check
 from oskill.classifier.rule_based import rule_based_classifier, rule_based_veto_check
+from oskill.classify_signal import SignalClassification, classify_signal
+from oskill.comic_to_animation_workflow import ComicToAnimationError, comic_to_animation_workflow
+from oskill.compute_capacity_forecast import (
+    CapacityForecastResult,
+    ForecastPoint,
+    compute_capacity_forecast,
+)
+from oskill.compute_severity_score import SeverityResult, compute_severity_score
 from oskill.conformal.adaptive_cp import adaptive_conformal_inference
 from oskill.conformal.change_point_cp import conformal_with_change_points
 
@@ -47,14 +86,87 @@ from oskill.container_health_aggregate import (
     container_health_aggregate,
 )
 
+# Aegis Gap Elements — Batch A (v3.15.0)
+from oskill.container_resource_rank import (
+    ContainerResourceEntry,
+    ContainerResourceRankResult,
+    container_resource_rank,
+)
+
+# Aegis Gap Elements — Batch C (v3.17.0)
+from oskill.container_swap import ContainerSwapResult, container_swap
+
 # P0-1 fix (v2.7.0): sigmoid market impact model
 from oskill.cost import crypto_market_impact_sigmoid
 from oskill.covariance.denoising import denoised_covariance
 
 # Phase 2: Covariance
 from oskill.covariance.shrinkage import ledoit_wolf_shrinkage
+
+# --- Stratum B2 — 7 oskill (v3.9.0) ---
+from oskill.cross_layer_search import (
+    Citation,
+    CrossLayerSearchResult,
+    FusedResult,
+    cross_layer_search,
+)
+from oskill.crypto_data_skills import (
+    CryptoSkillError,
+    collect_cycle,
+    collect_sectors,
+    collect_sentiment,
+    collect_write_event,
+    compute_signal_quality,
+    dex_cex_check,
+    evaluate_stale,
+    fear_greed_fetch_all,
+    get_30d_returns_stddev,
+    get_etf_inflow_7d,
+    get_symbol_basis,
+    get_symbol_daily_klines,
+    get_symbol_max_pain,
+    get_symbol_onchain_metrics,
+    get_symbol_options_skew,
+    proxy_check_and_notify,
+    stale_check_and_notify,
+    store_market,
+)
+from oskill.crypto_environ_processors import (
+    EnvironProcessorSkillError,
+    derivatives_agg_compute,
+    dex_truth_compute,
+    dex_truth_dydx_compute,
+    dex_truth_gmx_compute,
+    etf_flow_compute,
+    etf_flow_per_ticker_compute,
+    exchange_netflow_compute,
+    macro_environ_compute,
+    onchain_aggregate_compute,
+    options_environ_compute,
+)
+
+# --- Helios Wave 01: Crypto Skills ---
+from oskill.crypto_fusion_scorers import (
+    FusionScorerError,
+    derivatives_score,
+    flow_score,
+    macro_score,
+    onchain_score,
+    sentiment_score,
+    support_resistance_score,
+    trend_score,
+)
 from oskill.data import point_in_time_join
 from oskill.data.calendar_surprise_detect import calendar_surprise_detect
+
+# --- Aegis 3O Batch 3 (v3.14.0) ---
+from oskill.diagnose_pattern_match import PatternMatchResult, diagnose_pattern_match
+from oskill.discipline_vs_violation_winrate_compute import (
+    DisciplineComparisonResult,
+    GroupStats,
+    TradeRecord,
+    discipline_vs_violation_winrate_compute,
+)
 from oskill.distribution import (
     bootstrap_distribution,
     detect_outliers_robust,
@@ -65,6 +177,7 @@ from oskill.distributional_rl.iqn import implicit_quantile_loss
 # Phase 7C: Distributional RL
 from oskill.distributional_rl.quantile_regression import quantile_regression_loss
 from oskill.dsl.evaluator import dsl_rule_evaluate, dsl_rule_validate
+from oskill.equity_curve_3seg_compute import EquityCurve3SegResult, equity_curve_3seg_compute
 from oskill.event_trail_correlate import CorrelatedEvents, event_trail_correlate
 
 # Phase 3 P18: OKX Demo exchange client
@@ -92,9 +205,16 @@ from oskill.factor.neutralization import factor_neutralization
 from oskill.factor.quantile_returns import factor_quantile_returns
 from oskill.factor.sector_rotation import sector_capital_rotation_detect
 
+# --- Stratum B3 (v3.12.0) ---
+from oskill.feed_diff_pipeline import feed_diff_pipeline
+from oskill.find_consistency_issues import find_consistency_issues
+
 # Phase 7E: Generative
 from oskill.generative.ddpm_paths import ddpm_synthetic_path_generator
 from oskill.hmm import gaussian_hmm
+
+# --- AII 3O Batch 3b (v3.10.0) ---
+from oskill.hybrid_retrieve import hybrid_retrieve
 from oskill.hybrid_search import (
     HybridSearchResult,
     QueryExpander,
@@ -102,10 +222,28 @@ from oskill.hybrid_search import (
     SearchResult,
     hybrid_search,
 )
+from oskill.image_qa import image_qa
 
 # P6-B3 — Video Generation Workflows
 from oskill.image_to_video_workflow import ImageToVideoWorkflowError, image_to_video_workflow
+from oskill.industry_valuation_percentile import (
+    IndustryValuationRow,
+    ValuationCandidateInput,
+    industry_valuation_percentile,
+)
 from oskill.ingest_substrate import ingest_substrate
+
+# --- AII 3O Batch 4b (v3.11.0) ---
+from oskill.ku_extract_pipeline import ku_extract_pipeline
+from oskill.lint_substrate_graph import (
+    BrokenLink,
+    ConceptRef,
+    DerivativeRef,
+    LintReport,
+    NoteRef,
+    SubstrateRef,
+    lint_substrate_graph,
+)
 from oskill.llm.batch_classify import llm_batch_classify
 from oskill.llm.consistency import llm_response_consistency
 from oskill.llm.cot import chain_of_thought_extractor
@@ -126,10 +264,27 @@ from oskill.llm_client import (
     LLMUnavailable,
     deepseek_call,
 )
+from oskill.macro_cycle_engine_v2 import MacroCycleResult, macro_cycle_engine_v2
+
+# --- B10 — Tide v4 step2 oskills (12) ---
+from oskill.macro_surprise_compute import (
+    MacroSurpriseItem,
+    MacroSurpriseReport,
+    macro_surprise_compute,
+)
 
 # Phase 9A: Market Making
 from oskill.market_making.avellaneda_stoikov import avellaneda_stoikov_quotes
 from oskill.market_making.cartea_jaimungal import cartea_jaimungal_optimal_quotes
+from oskill.merge_platform_user_results import (
+    FusedResult as MergedFusedResult,
+)
+from oskill.merge_platform_user_results import (
+    SearchResult as MergedSearchResult,
+)
+from oskill.merge_platform_user_results import (
+    merge_platform_user_results,
+)
 from oskill.metric_baseline_compare import (
     BaselineCompareResult,
     MetricDelta,
@@ -156,11 +311,26 @@ from oskill.ml_finance.sample_weights import return_attribution_weights, sample_
 
 # Phase 4 prerequisites + Phase 5B: ml_finance
 from oskill.ml_finance.triple_barrier import triple_barrier_label
+from oskill.multi_angle_9 import MultiAngleError, multi_angle_9
+from oskill.multi_node_health_sweep import (
+    MultiNodeSweepResult,
+    NodeHealthReport,
+    multi_node_health_sweep,
+)
+from oskill.multi_shot_storyboard_workflow import (
+    MultiShotStoryboard,
+    MultiShotStoryboardError,
+    multi_shot_storyboard_workflow,
+)
 
 # Phase 10: Networks + Systemic Risk
 from oskill.networks.centrality import financial_network_centrality
 from oskill.networks.clearing import eisenberg_noe_clearing
 from oskill.networks.contagion import contagion_simulate
+from oskill.node_register_probe import (
+    NodeRegisterProbeResult,
+    node_register_probe,
+)
 
 # Phase 9A: Operational Risk
 from oskill.operational_risk.lda import operational_risk_lda
@@ -175,6 +345,10 @@ from oskill.performance import (
     trade_pnl_statistics,
 )
 from oskill.point_process import fit_hawkes
+from oskill.policy_sector_attribution import (
+    PolicySectorAttributionResult,
+    policy_sector_attribution,
+)
 from oskill.portfolio.hrp import hierarchical_risk_parity_v2
 from oskill.portfolio.ssd_milp import ssd_milp_optimizer
 from oskill.prediction import calibration_analysis
@@ -182,6 +356,12 @@ from oskill.prediction import calibration_analysis
 # Phase 3: RAG
 from oskill.rag.chunking import chunking_strategy_apply
 from oskill.rag.reranking import reranker_score
+from oskill.recommend_content import (
+    ContentMeta,
+    Recommendation,
+    UserBehaviorProfile,
+    recommend_content,
+)
 
 # Phase 10: Recursive Utility
 from oskill.recursive_utility.ez_solver import epstein_zin_solver
@@ -191,15 +371,21 @@ from oskill.regime_conditional_score_weighted import regime_conditional_score_we
 # Tide v4 — Regime Elements (v3.7.0)
 from oskill.regime_smoothing import regime_smoothing
 from oskill.render_template import TemplateVariableSpec, render_template
+
+# --- Stratum B3 (v3.13.0) ---
+from oskill.researcher_workflow import researcher_workflow
+from oskill.resolve_conflict import Conflict, ResolvedResult, resolve_conflict
 from oskill.restart_and_verify import (
     RestartAndVerifyOutcome,
     restart_and_verify,
 )
+from oskill.restore_from_backup import RestoreResult, restore_from_backup
 from oskill.retrieve_and_synthesize import (
     RetrievedDoc,
     SynthesizedResult,
     retrieve_and_synthesize,
 )
+from oskill.retrieve_runbook import RetrieveRunbookResult, RunbookEntry, retrieve_runbook
 from oskill.risk.systemic import systemic_risk_metrics
 from oskill.robust.maxmin_eu import maxmin_expected_utility_portfolio
 
@@ -213,6 +399,12 @@ from oskill.runbook_match import (
 )
 from oskill.scm_fit import structural_causal_model_fit
 from oskill.screening import candidate_pool_builder
+from oskill.seat_winrate_aggregator import (
+    SeatTradeInput,
+    SeatWinrateReport,
+    seat_winrate_aggregator,
+)
+from oskill.sector_strength_aggregator import SectorStrengthReport, sector_strength_aggregator
 from oskill.signal_detection import adx, cusum_detector, platt_calibration
 from oskill.signals.aggregation import weighted_signal_aggregation
 from oskill.signals.ensemble import signal_ensemble
@@ -223,6 +415,7 @@ from oskill.signals.forward_returns import aggregate_signal_returns
 # Phase 9A: Signature
 from oskill.signature.kernel import signature_kernel
 from oskill.signature.pricing import signature_based_pricing
+from oskill.similar_context_injector import SimilarContextResult, similar_context_injector
 from oskill.similarity import (
     commodity_ratio_analytics,
     forward_outcome_distribution,
@@ -240,15 +433,19 @@ from oskill.spectral.laplacian import graph_laplacian_compute
 # Phase 4: State Space
 from oskill.state_space.kalman import kalman_filter_pipeline, kalman_smoother
 from oskill.state_space.particle import particle_filter_pipeline
+from oskill.storyboard_grid import StoryboardGridError, storyboard_grid
 from oskill.structured_log_anomaly_cluster import (
     LogAnomalyClusters,
     LogCluster,
     structured_log_anomaly_cluster,
 )
+from oskill.synthesize_action_plan import ActionPlanResult, ActionStep, synthesize_action_plan
+from oskill.system_history_aggregator import SystemHistoryReport, system_history_aggregator
 from oskill.tool_call_loop import (
     ToolHandler,
     tool_call_loop,
 )
+from oskill.trace_dependency import trace_dependency
 from oskill.translate_substrate import translate_substrate
 from oskill.types import (
     DimContribution,
@@ -257,6 +454,7 @@ from oskill.types import (
     SmoothingConfig,
     SmoothingResult,
 )
+from oskill.unknown_seats_audit_loop import UnknownSeatAuditResult, unknown_seats_audit_loop
 from oskill.validation import (
     cpcv_pipeline,
     regime_aware_rolling,
@@ -272,176 +470,13 @@ from oskill.validation.haircut import haircut_sharpe
 # Phase 2: Validation
 from oskill.validation.pbo import probability_of_backtest_overfitting
 from oskill.validation.trial_correction import bonferroni_holm_correction
-from oskill.video_self_assess import VideoQualityScore, VideoSelfAssessError, video_self_assess
-
-# P7-B3 — Visual Generation Workflows
-from oskill.character_three_view import (
-    CharacterThreeViewError,
-    ThreeViewResult,
-    character_three_view,
-)
-from oskill.storyboard_grid import StoryboardGridError, storyboard_grid
-from oskill.multi_angle_9 import MultiAngleError, multi_angle_9
-from oskill.comic_to_animation_workflow import ComicToAnimationError, comic_to_animation_workflow
-from oskill.character_consistency_workflow import (
-    CharacterConsistencyError,
-    CharacterConsistencyResult,
-    character_consistency_workflow,
-)
-from oskill.multi_shot_storyboard_workflow import (
-    MultiShotStoryboard,
-    MultiShotStoryboardError,
-    multi_shot_storyboard_workflow,
-)
-from oskill._schemas import SubjectRef  # canonical location (P7-B4)
-
-# --- Helios Wave 01: Crypto Skills ---
-from oskill.crypto_fusion_scorers import (
-    FusionScorerError,
-    derivatives_score,
-    flow_score,
-    macro_score,
-    onchain_score,
-    sentiment_score,
-    support_resistance_score,
-    trend_score,
-)
-from oskill.crypto_environ_processors import (
-    EnvironProcessorSkillError,
-    derivatives_agg_compute,
-    dex_truth_compute,
-    dex_truth_dydx_compute,
-    dex_truth_gmx_compute,
-    etf_flow_compute,
-    etf_flow_per_ticker_compute,
-    exchange_netflow_compute,
-    macro_environ_compute,
-    onchain_aggregate_compute,
-    options_environ_compute,
-)
-from oskill.crypto_data_skills import (
-    CryptoSkillError,
-    collect_cycle,
-    collect_sectors,
-    collect_sentiment,
-    collect_write_event,
-    compute_signal_quality,
-    dex_cex_check,
-    evaluate_stale,
-    fear_greed_fetch_all,
-    get_30d_returns_stddev,
-    get_etf_inflow_7d,
-    get_symbol_basis,
-    get_symbol_daily_klines,
-    get_symbol_max_pain,
-    get_symbol_onchain_metrics,
-    get_symbol_options_skew,
-    proxy_check_and_notify,
-    stale_check_and_notify,
-    store_market,
-)
-
-# --- B10 — Tide v4 step2 oskills (12) ---
-from oskill.macro_surprise_compute import (
-    MacroSurpriseReport,
-    MacroSurpriseItem,
-    macro_surprise_compute,
-)
-from oskill.macro_cycle_engine_v2 import MacroCycleResult, macro_cycle_engine_v2
-from oskill.policy_sector_attribution import (
-    PolicySectorAttributionResult,
-    policy_sector_attribution,
-)
-from oskill.seat_winrate_aggregator import (
-    SeatTradeInput,
-    SeatWinrateReport,
-    seat_winrate_aggregator,
-)
-from oskill.unknown_seats_audit_loop import UnknownSeatAuditResult, unknown_seats_audit_loop
-from oskill.sector_strength_aggregator import SectorStrengthReport, sector_strength_aggregator
-from oskill.candidate_universe_builder_v3 import (
-    CandidateUniverseResult,
-    candidate_universe_builder_v3,
-)
-from oskill.similar_context_injector import SimilarContextResult, similar_context_injector
-from oskill.industry_valuation_percentile import (
-    ValuationCandidateInput,
-    IndustryValuationRow,
-    industry_valuation_percentile,
-)
-from oskill.discipline_vs_violation_winrate_compute import (
-    TradeRecord,
-    DisciplineComparisonResult,
-    GroupStats,
-    discipline_vs_violation_winrate_compute,
-)
-from oskill.system_history_aggregator import SystemHistoryReport, system_history_aggregator
-from oskill.equity_curve_3seg_compute import EquityCurve3SegResult, equity_curve_3seg_compute
-
-# --- Stratum B2 — 7 oskill (v3.9.0) ---
-from oskill.cross_layer_search import (
-    Citation,
-    CrossLayerSearchResult,
-    FusedResult,
-    cross_layer_search,
-)
-from oskill.recommend_content import (
-    ContentMeta,
-    Recommendation,
-    UserBehaviorProfile,
-    recommend_content,
-)
-from oskill.resolve_conflict import Conflict, ResolvedResult, resolve_conflict
-from oskill.merge_platform_user_results import (
-    FusedResult as MergedFusedResult,
-    SearchResult as MergedSearchResult,
-    merge_platform_user_results,
-)
-from oskill.lint_substrate_graph import (
-    BrokenLink,
-    ConceptRef,
-    DerivativeRef,
-    LintReport,
-    NoteRef,
-    SubstrateRef,
-    lint_substrate_graph,
-)
-from oskill.check_reference_integrity import IntegrityReport, check_reference_integrity
-
-# --- AII 3O Batch 3b (v3.10.0) ---
-from oskill.hybrid_retrieve import hybrid_retrieve
-from oskill.trace_dependency import trace_dependency
-from oskill.find_consistency_issues import find_consistency_issues
-
-# --- AII 3O Batch 4b (v3.11.0) ---
-from oskill.ku_extract_pipeline import ku_extract_pipeline
-
-# --- Stratum B3 (v3.12.0) ---
-from oskill.feed_diff_pipeline import feed_diff_pipeline
-from oskill.image_qa import image_qa
-from oskill.web_search_augmented import web_search_augmented
-
-# --- Stratum B3 (v3.13.0) ---
-from oskill.researcher_workflow import researcher_workflow
-
-# --- Aegis 3O Batch 3 (v3.14.0) ---
-from oskill.diagnose_pattern_match import PatternMatchResult, diagnose_pattern_match
-from oskill.compute_severity_score import SeverityResult, compute_severity_score
-from oskill.classify_signal import SignalClassification, classify_signal
-from oskill.retrieve_runbook import RetrieveRunbookResult, RunbookEntry, retrieve_runbook
-from oskill.synthesize_action_plan import ActionPlanResult, ActionStep, synthesize_action_plan
 from oskill.verify_health_after_action import (
     HealthVerifyResult,
     verify_health_after_action,
     verify_health_after_action_detail,
 )
-from oskill.circuit_breaker_check import CircuitBreakerResult, circuit_breaker_check
-from oskill.compute_capacity_forecast import (
-    CapacityForecastResult,
-    ForecastPoint,
-    compute_capacity_forecast,
-)
-from oskill.caddy_route_add import CaddyRouteAddResult, caddy_route_add
+from oskill.video_self_assess import VideoQualityScore, VideoSelfAssessError, video_self_assess
+from oskill.web_search_augmented import web_search_augmented
 
 __all__ = [
     "__version__",
@@ -790,4 +825,56 @@ __all__ = [
     "compute_capacity_forecast",
     "CaddyRouteAddResult",
     "caddy_route_add",
+    # Aegis Gap Elements — Batch A (v3.15.0)
+    "ContainerResourceEntry",
+    "ContainerResourceRankResult",
+    "container_resource_rank",
+    "MultiNodeSweepResult",
+    "NodeHealthReport",
+    "multi_node_health_sweep",
+    # Aegis Gap Elements — Batch B (v3.16.0)
+    "AppUpgradePreflightResult",
+    "PreflightCheck",
+    "app_upgrade_preflight",
+    "BackupScheduleCheckResult",
+    "backup_schedule_check",
+    "NodeRegisterProbeResult",
+    "node_register_probe",
+    # Aegis Gap Elements — Batch C (v3.17.0)
+    "ContainerSwapResult",
+    "container_swap",
+    "RestoreResult",
+    "restore_from_backup",
+    # Additional exports to resolve linting issues
+    "CandidateUniverseResult",
+    "candidate_universe_builder_v3",
+    "DisciplineComparisonResult",
+    "GroupStats",
+    "TradeRecord",
+    "discipline_vs_violation_winrate_compute",
+    "EquityCurve3SegResult",
+    "equity_curve_3seg_compute",
+    "IndustryValuationRow",
+    "ValuationCandidateInput",
+    "industry_valuation_percentile",
+    "MacroCycleResult",
+    "macro_cycle_engine_v2",
+    "MacroSurpriseItem",
+    "MacroSurpriseReport",
+    "macro_surprise_compute",
+    "MergedFusedResult",
+    "MergedSearchResult",
+    "PolicySectorAttributionResult",
+    "policy_sector_attribution",
+    "SeatTradeInput",
+    "SeatWinrateReport",
+    "seat_winrate_aggregator",
+    "SectorStrengthReport",
+    "sector_strength_aggregator",
+    "SimilarContextResult",
+    "similar_context_injector",
+    "SystemHistoryReport",
+    "system_history_aggregator",
+    "UnknownSeatAuditResult",
+    "unknown_seats_audit_loop",
 ]
