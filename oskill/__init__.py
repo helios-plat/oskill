@@ -40,6 +40,7 @@ from oskill.behavioral.cpt_analytical import cpt_portfolio_analytical
 from oskill.behavioral.cpt_portfolio import cpt_portfolio_optimize
 from oskill.behavioral.salience_pricing import salience_asset_pricing
 from oskill.caddy_route_add import CaddyRouteAddResult, caddy_route_add
+from oskill.cognitive import cognitive_update
 from oskill.candidate_universe_builder_v3 import (
     CandidateUniverseResult,
     candidate_universe_builder_v3,
@@ -825,7 +826,9 @@ __all__ = [
     "compute_capacity_forecast",
     "CaddyRouteAddResult",
     "caddy_route_add",
-    # Aegis Gap Elements — Batch A (v3.15.0)
+    "cognitive_update",
+    # Aegis Gap Elements — Batch B (v3.16.0)
+
     "ContainerResourceEntry",
     "ContainerResourceRankResult",
     "container_resource_rank",
