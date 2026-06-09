@@ -39,17 +39,17 @@ def cognitive_update(
     # 1. 计算当前可提取性 R
     r = fsrs_retrievability(card_dict=card_dict, now=now)
 
-    # 2. 错误分类 (使用更新前的状态)
-    error_type = None
-    if not is_correct:
-        error_type = bkt_classify_error(state=kc_state)
-
-    # 3. BKT 更新 (forgetting-aware)
+    # 2. BKT 更新 (forgetting-aware)
     bkt_update(
         state=kc_state,
         is_correct=is_correct,
         retrievability=r
     )
+
+    # 3. 错误分类 (使用更新后的状态)
+    error_type = None
+    if not is_correct:
+        error_type = bkt_classify_error(state=kc_state)
 
     # 4. FSRS 卡片更新
     rating = fsrs_map_rating(

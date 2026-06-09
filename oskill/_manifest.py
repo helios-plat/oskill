@@ -327,6 +327,9 @@ CATEGORIES: dict[str, list[str]] = {
         "system_history_aggregator",
         "equity_curve_3seg_compute",
     ],
+    "cognitive": [
+        "cognitive_update",
+    ],
 }
 
 STABILITY: dict[str, str] = {
@@ -455,4 +458,5 @@ STABILITY: dict[str, str] = {
     "merge_platform_user_results": "experimental",
     "lint_substrate_graph": "experimental",
     "check_reference_integrity": "experimental",
+    "cognitive_update": "experimental",
 }

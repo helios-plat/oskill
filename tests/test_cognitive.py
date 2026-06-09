@@ -22,8 +22,8 @@ def test_cognitive_update_correct():
     assert res["error_type"] is None
 
 def test_cognitive_update_careless():
-    """Incorrect answer with high mastery is careless."""
-    kc = KCState(kc_id="test", p_mastery=0.9, p_slip=0.1, p_guess=0.1)
+    """Incorrect answer with very high mastery is careless even after BKT update."""
+    kc = KCState(kc_id="test", p_mastery=0.99, p_slip=0.1, p_guess=0.1, p_transit=0.2)
     card = fsrs_new_card()
     
     res = cognitive_update(kc_state=kc, card_dict=card, is_correct=False)
