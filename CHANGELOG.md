@@ -2,9 +2,10 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
-## [2.17.0] — 2026-06-12
+## [3.15.0] — 2026-06-12
 
-### Added — Tide 清算级联风险 (1 new oskill element)
+### Changed — 版本序列纠偏
+- chore: 修正版本序列: 此前 v2.16.0/v2.17.0 系 067871d 错误回退所致; v3.15.0 接续 v3.14.0 真实序列。代码内容 = v2.17.0 (含 liquidation_cascade_risk), 仅版本号纠偏。废弃 v2.16.0/v2.17.0 两个 tag (保留不删)。
 - feat: `liquidation_cascade_risk` — 清算级联风险评估: OI历史分位 + funding极端度 + 拥挤度 + 基差背离 → risk_level (low/elevated/high/extreme) + direction_bias (long_squeeze/short_squeeze/neutral); 复用 oprim.percentile_rank; 12 测试 100% 覆盖
 
 ## [3.14.0] — 2026-06-05
