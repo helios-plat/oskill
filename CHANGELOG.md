@@ -2,6 +2,11 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.16.0] — 2026-06-12
+
+### Added (AII 3O Batch 6 — 1 new element)
+- feat: `formal_proof_verify` — 既有定理形式化确证: 查 Mathlib 是否有该定理形式化条目, 唯一命中则判 proven。依赖注入 oprim.mathlib_lookup。守 "proven 非 LLM 自信", 信任已有证明。
+
 ## [3.15.0] — 2026-06-12
 
 ### Changed — 版本序列纠偏

@@ -11,6 +11,9 @@ from oskill.liquidation_cascade_risk import (
 from oskill._llm_caller import LLMCaller
 from oskill._schemas import SubjectRef  # canonical location (P7-B4)
 from oskill._signal import Signal
+# AII 3O Batch 6 (v3.16.0)
+from oskill.formal_proof_verify import FormalProofResult, formal_proof_verify
+
 from oskill._version import __version__
 from oskill.agentic_investigate_loop import (
     InvestigationOutcome,
@@ -887,8 +890,7 @@ __all__ = [
     "system_history_aggregator",
     "UnknownSeatAuditResult",
     "unknown_seats_audit_loop",
-    # Tide v4 — Liquidation Cascade Risk (v2.17.0)
-    "LiquidationCascadeInput",
-    "LiquidationCascadeResult",
-    "liquidation_cascade_risk",
+    # AII 3O Batch 6 (v3.16.0)
+    "formal_proof_verify",
+    "FormalProofResult",
 ]
