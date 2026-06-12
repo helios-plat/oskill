@@ -2,6 +2,11 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [2.17.0] — 2026-06-12
+
+### Added — Tide 清算级联风险 (1 new oskill element)
+- feat: `liquidation_cascade_risk` — 清算级联风险评估: OI历史分位 + funding极端度 + 拥挤度 + 基差背离 → risk_level (low/elevated/high/extreme) + direction_bias (long_squeeze/short_squeeze/neutral); 复用 oprim.percentile_rank; 12 测试 100% 覆盖
+
 ## [3.14.0] — 2026-06-05
 
 ### Added — Aegis 3O Batch 3 (9 new oskill elements)

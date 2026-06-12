@@ -1,5 +1,12 @@
 """oskill — Composite financial analysis workflows built on oprim atomic operations."""
 
+# Tide v4 — Liquidation Cascade Risk (v2.17.0)
+from oskill.liquidation_cascade_risk import (
+    LiquidationCascadeInput,
+    LiquidationCascadeResult,
+    liquidation_cascade_risk,
+)
+
 # Aegis Batch 2, 3, 4 (v2.10.0)
 from oskill._llm_caller import LLMCaller
 from oskill._schemas import SubjectRef  # canonical location (P7-B4)
@@ -880,4 +887,8 @@ __all__ = [
     "system_history_aggregator",
     "UnknownSeatAuditResult",
     "unknown_seats_audit_loop",
+    # Tide v4 — Liquidation Cascade Risk (v2.17.0)
+    "LiquidationCascadeInput",
+    "LiquidationCascadeResult",
+    "liquidation_cascade_risk",
 ]
