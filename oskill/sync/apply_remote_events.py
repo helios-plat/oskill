@@ -18,7 +18,7 @@ _DEFAULT_STATE_DIR = Path.home() / ".stratum"
 
 
 @dataclass
-class ApplyResult:
+class SyncApplyResult:
     applied_count: int
     skipped_count: int
     conflict_count: int
@@ -218,7 +218,7 @@ async def apply_remote_events(
     *,
     since_seq: int = 0,
     state_dir: Path | None = None,
-) -> ApplyResult:
+) -> SyncApplyResult:
     """Download remote changefeed JSONL files and apply events to local DB.
 
     Lists all files under /Stratum/changefeed/ in storage, skips files from the
@@ -264,7 +264,7 @@ async def apply_remote_events(
 
     if not candidate_files:
         log.info("apply_remote_nothing_new", user_id=user_id, device_id=device_id)
-        return ApplyResult(
+        return SyncApplyResult(
             applied_count=0,
             skipped_count=0,
             conflict_count=0,
@@ -330,7 +330,7 @@ async def apply_remote_events(
         conflicts=conflict_count,
         user_id=user_id,
     )
-    return ApplyResult(
+    return SyncApplyResult(
         applied_count=applied_count,
         skipped_count=skipped_count,
         conflict_count=conflict_count,

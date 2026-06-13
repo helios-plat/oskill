@@ -501,3 +501,14 @@ All future Phase releases must:
 
 - `calendar_surprise_detect(events, importance_filter)` — Detect economic calendar surprises.
 - `llm_batch_classify(items, labels, llm, batch_size, multi_label)` — Batch LLM classification.
+
+## [3.20.0] — 2026-06-13
+### Added
+- hicode 批次 D: apply_edit_block/apply_unified_diff/three_way_merge/syntax_check
+  validate_edit/generate_patch_preview/chunk_code/extract_symbols/repo_map_build
+  resolve_mentions/summarize_file/compress_context/plan_decompose/rank_relevant_files
+  build_repo_context/semantic_search/format_diagnostics/parse_llm_tool_calls
+  select_tools/merge_config/evaluate_hooks/match_permission_rule
+  escalate_thinking_budget/plan_to_todos/apply_todo_update/compose_plugin_manifest
+  build_subagent_prompt/merge_subagent_result/select_skill/load_skill_progressive
+  resolve_memory_hierarchy/dedup_edits/build_undo_plan (共 34 个新元素)
