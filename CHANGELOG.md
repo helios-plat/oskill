@@ -2,6 +2,14 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.18.0] — 2026-06-13
+
+### Added (hevi v2 — M5/M6 新建 + M7 扩展)
+- feat: `select_reference` — 从 timeline_history 选 best reference frame (LLM 语义匹配)
+- feat: `mllm_frame_consistency_check` — VLM 视觉一致性评分 (候选帧 → best_frame + passed)
+- feat: `script_writer` +`chapter_mode=True` — 多章节 ChapterScript + SpeakerLine 多角色对话; chapter_mode=False 不变
+- types: `_schemas.py` 新增 SpeakerLine / ShotFrame / ReferenceSet / FrameConsistencyResult / Chapter / ChapterScript
+
 ## [3.17.0] — 2026-06-12
 
 ### Changed — L2 枢纽惰性化
