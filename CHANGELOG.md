@@ -2,6 +2,11 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [3.19.0] — 2026-06-13
+
+### Fixed
+- fix: oprim 依赖约束 `>=2.2.0,<3.0.0` → `>=3.0.0`，解除与 oprim v3.x 系列的安装冲突（上限 <3.0.0 为历史遗留错误）
+
 ## [3.18.0] — 2026-06-13
 
 ### Added (hevi v2 — M5/M6 新建 + M7 扩展)
