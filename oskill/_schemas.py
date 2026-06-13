@@ -115,3 +115,58 @@ class SubjectRef(BaseModel):
     name: str
     description: str = ""  # optional; injected into LLM prompt when non-empty
     image_path: Path | None = None  # optional reference image
+
+
+# ── hevi-v2 types (added v3.18.0) ──────────────────────────────────────────
+
+
+class SpeakerLine(BaseModel):
+    """One speaker's line in a multi-speaker script."""
+
+    speaker_id: str
+    text: str
+    voice_ref: Path | None = None  # zero-shot clone reference; None = default voice
+
+
+class ShotFrame(BaseModel):
+    """A generated video frame recorded in the timeline history."""
+
+    shot_id: str
+    scene_id: str
+    timeline_index: int  # ordering across the full timeline
+    frame_path: Path
+    characters_present: list[str]
+    environment_id: str
+
+
+class ReferenceSet(BaseModel):
+    """Selected reference frames for a shot (output of select_reference)."""
+
+    character_refs: dict[str, Path]   # character_id → best reference frame
+    environment_refs: dict[str, Path]
+    selected_from: list[str]          # source shot_ids (traceability)
+
+
+class FrameConsistencyResult(BaseModel):
+    """VLM visual consistency evaluation of candidate frames."""
+
+    best_frame: Path
+    scores: dict[str, float]  # frame_path str → consistency score [0, 1]
+    passed: bool               # best score ≥ threshold in criteria
+
+
+class Chapter(BaseModel):
+    """A chapter in a long-form video script."""
+
+    chapter_id: str
+    title: str
+    scenes: list[dict]              # scene descriptors (flexible for multi-genre)
+    dialogues: list[SpeakerLine]
+
+
+class ChapterScript(BaseModel):
+    """Multi-chapter script output from script_writer(chapter_mode=True)."""
+
+    chapters: list[Chapter]
+    total_duration_s: float
+    characters: list[str]
