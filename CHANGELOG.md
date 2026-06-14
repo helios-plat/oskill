@@ -512,3 +512,7 @@ All future Phase releases must:
   escalate_thinking_budget/plan_to_todos/apply_todo_update/compose_plugin_manifest
   build_subagent_prompt/merge_subagent_result/select_skill/load_skill_progressive
   resolve_memory_hierarchy/dedup_edits/build_undo_plan (共 34 个新元素)
+
+## [3.25.1] — 2026-06-14
+### Fixed
+- cognitive_state: import KCState from oprim (not oprim.types)
