@@ -87,6 +87,11 @@ from oskill._dedup_edits import dedup_edits
 from oskill._generate_patch_preview import generate_patch_preview
 from oskill._build_undo_plan import build_undo_plan
 from oskill._format_diagnostics import format_diagnostics
+from oskill.socratic_guide_v2 import socratic_guide_v2, SocraticStateV2
+from oskill.metacog_scaffold import metacog_scaffold
+from oskill.cold_start_single import cold_start_single
+from oskill.variant_for_review import variant_for_review
+from oskill.essay_guide import essay_guide
 from oskill._parse_llm_tool_calls import parse_llm_tool_calls
 from oskill._merge_config import merge_config
 from oskill._evaluate_hooks import evaluate_hooks

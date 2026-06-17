@@ -516,3 +516,10 @@ All future Phase releases must:
 ## [3.25.1] — 2026-06-14
 ### Fixed
 - cognitive_state: import KCState from oprim (not oprim.types)
+
+## [3.25.2] — 2026-06-17
+### Added
+- trend_signal_compose: SuperTrend+EMA+ADX+MACD confluence 趋势信号 (R7)
+- mean_reversion_compose: VWAP+BB+RSI+Stoch confluence 均值回归信号 (R7)
+### Fixed
+- 去掉 try/except ImportError 静默降级，改为直接 import

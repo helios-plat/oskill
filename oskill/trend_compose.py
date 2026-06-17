@@ -10,10 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 
-try:
-    from oprim.technical import adx_series, ema, macd, supertrend
-except ImportError:
-    adx_series = supertrend = ema = macd = None
+from oprim.technical import adx_series, ema, macd, supertrend
 
 
 def trend_signal_compose(

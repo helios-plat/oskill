@@ -98,7 +98,7 @@ async def script_writer(
         {"role": "user", "content": f"Write a video script about: {topic}"},
     ]
 
-    result = llm(messages=messages)
+    result = await llm(messages=messages)
     content = result.get("content", "")
 
     try:
@@ -140,7 +140,7 @@ async def _script_writer_chapter(
         {"role": "user", "content": f"Write a multi-chapter video script about: {topic}"},
     ]
 
-    result = llm(messages=messages)
+    result = await llm(messages=messages)
     content = result.get("content", "")
 
     try:

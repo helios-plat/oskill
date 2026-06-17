@@ -11,10 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
-try:
-    from oprim.technical import bollinger_bands, rsi_normalized, stochastic_oscillator, vwap
-except ImportError:
-    bollinger_bands = rsi_normalized = stochastic_oscillator = vwap = None
+from oprim.technical import bollinger_bands, rsi_normalized, stochastic_oscillator, vwap
 
 
 def mean_reversion_compose(
