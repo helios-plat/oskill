@@ -523,3 +523,7 @@ All future Phase releases must:
 - mean_reversion_compose: VWAP+BB+RSI+Stoch confluence 均值回归信号 (R7)
 ### Fixed
 - 去掉 try/except ImportError 静默降级，改为直接 import
+
+## [3.25.5] — 2026-06-18
+### Fixed
+- storyboard_planner: result = await llm(...) (同 script_writer v3.25.2 修复)

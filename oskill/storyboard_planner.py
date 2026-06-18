@@ -100,7 +100,7 @@ async def storyboard_planner(
         },
     ]
 
-    result = llm(messages=messages)
+    result = await llm(messages=messages)
     content = result.get("content", "")
 
     try:
