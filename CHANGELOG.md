@@ -541,3 +541,10 @@ All future Phase releases must:
 - ingest_substrate: bundle 书 file_hash=None（无独立文件），title 从 metadata 取
 - ingest_substrate: derivative 写入 content（bundle 路径内容不丢）
 - classify_inbox_file: .epub 扩展名短路（detect_mime 把 epub 识别成 zip 的 bug）
+
+## [3.25.11] — 2026-06-19
+### Added
+- ingest_substrate: D-assert bundle 衍生项入口去重断言（WARN 模式，不阻断）
+  content_override 路径检测 bundle_file_hash 是否已存在
+  覆盖盲区：API 直传路径绕过 folder_watcher 前置拦截的重复入库
+  _detect_bundle_duplicate 辅助函数（查 meta_json.bundle_file_hash）

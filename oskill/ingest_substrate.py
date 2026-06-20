@@ -49,6 +49,28 @@ class IngestResult:
     cost_usd: float = 0.0
 
 
+
+async def _detect_bundle_duplicate(bundle_file_hash: str, user_id_hash: str) -> int:
+    """检测同一 bundle_file_hash 是否已有衍生项入库（D-assert 用）。
+    返回已有记录数，0 表示首次入库。
+    """
+    try:
+        db_p = meta_db_path()
+        if not db_p.exists():
+            return 0
+        db = open_meta_db(db_p)
+        rows = db.execute(
+            """SELECT COUNT(*) FROM substrates
+               WHERE user_id = ?
+               AND json_extract(meta_json, '$.bundle_file_hash') = ?""",
+            [user_id_hash, bundle_file_hash],
+        ).fetchone()
+        return int(rows[0]) if rows else 0
+    except Exception as e:
+        log.warning("D-assert._detect_bundle_duplicate failed", error=str(e))
+        return 0
+
+
 async def ingest_substrate(
     path: Path,
     source: dict,
@@ -88,6 +110,21 @@ async def ingest_substrate(
                 duplicate_of=existing,
                 elapsed_seconds=time.monotonic() - t0,
             )
+    else:
+        # D-assert: bundle 衍生项入口去重（WARN 模式，不阻断）
+        # bundle 单本 file_hash=NULL，三道信号盲区在此兜底
+        _bundle_file_hash = (metadata_override or {}).get("bundle_file_hash")
+        if _bundle_file_hash:
+            _dup_count = await _detect_bundle_duplicate(_bundle_file_hash, user_id_hash)
+            if _dup_count > 0:
+                log.warning(
+                    "D-assert: bundle dup via non-folder path",
+                    bundle_file_hash=_bundle_file_hash[:16],
+                    user_id_hash=user_id_hash,
+                    dup_count=_dup_count,
+                )
+                # 计数 +1（可观测，不阻断）
+                # Owner 裁定阻断时改为 return IngestResult(duplicate_of=...)
 
     # Step 3: classify
     hint = user_hint or {}
