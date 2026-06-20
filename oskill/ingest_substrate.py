@@ -55,8 +55,16 @@ async def ingest_substrate(
     user_id_hash: str,
     target_storage: str = "local",
     user_hint: dict | None = None,
+    content_override: str | None = None,
+    metadata_override: dict | None = None,
 ) -> IngestResult:
-    """End-to-end ingestion: classify → deduplicate → parse → embed → index."""
+    """End-to-end ingestion: classify → deduplicate → parse → embed → index.
+
+    Args:
+        content_override: 直接使用此内容作为 markdown（跳过文件解析）。
+            用于 EPUB 套装拆分，每本书传入 book.content，不重新解析原文件。
+        metadata_override: 覆盖 meta_db 中的元数据字段（如 title/author）。
+    """
     if target_storage != "local":
         raise IngestError(
             f"target_storage '{target_storage}' not supported in Phase 1 (only 'local')"
@@ -155,11 +163,11 @@ async def ingest_substrate(
     try:
         db = open_meta_db(db_p)
         now = datetime.now(timezone.utc).isoformat()
-        meta = json.dumps(
-            {
+        _meta_dict = {
                 "medium": medium,
                 "source_type": source.get("type", "inbox_local"),
                 "source": source,
+                **_meta_extra,
             }
         )
         db.execute(

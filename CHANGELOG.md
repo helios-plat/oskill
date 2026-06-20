@@ -527,3 +527,9 @@ All future Phase releases must:
 ## [3.25.5] — 2026-06-18
 ### Fixed
 - storyboard_planner: result = await llm(...) (同 script_writer v3.25.2 修复)
+
+## [3.25.9] — 2026-06-19
+### Fixed
+- ingest_substrate: 加 content_override/metadata_override 参数
+  content_override 非 None 时跳过文件解析，直接用传入 markdown
+  → 修复 EPUB 套装拆分路径（process_inbox_substrate bundle 模式）
