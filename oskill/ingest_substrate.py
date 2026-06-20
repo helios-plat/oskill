@@ -197,8 +197,9 @@ async def ingest_substrate(
         )
         for deriv_kind, deriv_content in derivatives_dict.items():
             deriv_id = str(ULID())
-            if content_override is not None and deriv_content is not None:
-                # Bundle book: write content directly; stratum _fill_derivative_content won't reach sub-books
+            if deriv_content is not None:
+                # Write content for both bundle books (content_override path) and
+                # normal books where generate_derivative returned non-null content.
                 db.execute(
                     "INSERT INTO derivative (id, substrate_id, kind, content) VALUES (?,?,?,?)",
                     [deriv_id, substrate_id, deriv_kind, deriv_content],

@@ -75,6 +75,19 @@ def _classify_by_extension(path: Path) -> ClassifyResult:
                 candidates=[(prefix, 0.98)],
             )
 
+    # Extension-based short-circuit before MIME detection:
+    # detect_mime() sees .epub as generic application/zip (EPUB is a ZIP container),
+    # so the mime == "application/epub+zip" branch below never fires.
+    ext = path.suffix.lower()
+    if ext == ".epub":
+        return ClassifyResult(
+            medium="book",
+            confidence=0.93,
+            layer="extension",
+            reason=".epub extension (detect_mime returns application/zip for EPUBs)",
+            candidates=[("book", 0.93)],
+        )
+
     mime = detect_mime(path)
 
     if mime.startswith("audio/"):
