@@ -77,16 +77,17 @@ async def ingest_substrate(
     # Step 1: sha256
     file_hash = _sha256(path)
 
-    # Step 2: deduplicate
-    existing = await detect_duplicate_substrate(file_hash)
-    if existing:
-        log.info("oskill.ingest.duplicate", path=str(path), existing=existing)
-        return IngestResult(
-            substrate_id=existing,
-            medium="",
-            duplicate_of=existing,
-            elapsed_seconds=time.monotonic() - t0,
-        )
+    # Step 2: deduplicate (skip when content_override: bundle books share the same source file)
+    if content_override is None:
+        existing = await detect_duplicate_substrate(file_hash)
+        if existing:
+            log.info("oskill.ingest.duplicate", path=str(path), existing=existing)
+            return IngestResult(
+                substrate_id=existing,
+                medium="",
+                duplicate_of=existing,
+                elapsed_seconds=time.monotonic() - t0,
+            )
 
     # Step 3: classify
     hint = user_hint or {}
@@ -105,8 +106,12 @@ async def ingest_substrate(
     shutil.copy2(path, dest)
 
     # Step 6: generate derivatives
-    derivatives_dict = await generate_derivative(substrate_id, dest, medium)
-    markdown_text = derivatives_dict.get("markdown", "")
+    if content_override is not None:
+        derivatives_dict = {"markdown": content_override, "plaintext": None, "chapters": None}
+        markdown_text = content_override
+    else:
+        derivatives_dict = await generate_derivative(substrate_id, dest, medium)
+        markdown_text = derivatives_dict.get("markdown", "")
 
     # Step 7: chunk + embed
     chunks = _chunk_text(markdown_text)
@@ -163,13 +168,15 @@ async def ingest_substrate(
     try:
         db = open_meta_db(db_p)
         now = datetime.now(timezone.utc).isoformat()
+        _meta_extra = metadata_override or {}
         _meta_dict = {
                 "medium": medium,
                 "source_type": source.get("type", "inbox_local"),
                 "source": source,
                 **_meta_extra,
             }
-        )
+        meta = json.dumps(_meta_dict, ensure_ascii=False)
+        title = _meta_extra.get("book_title") or _meta_extra.get("title") or path.stem
         db.execute(
             """INSERT INTO substrates
                (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json,
@@ -178,22 +185,29 @@ async def ingest_substrate(
             [
                 substrate_id,
                 user_id_hash,
-                path.stem,
+                title,
                 path_mime or None,
                 str(dest),
-                file_hash,
+                file_hash if content_override is None else None,
                 path.stat().st_size,
                 meta,
                 now,
                 now,
             ],
         )
-        for deriv_kind in derivatives_dict:
+        for deriv_kind, deriv_content in derivatives_dict.items():
             deriv_id = str(ULID())
-            db.execute(
-                "INSERT INTO derivative (id, substrate_id, kind) VALUES (?,?,?)",
-                [deriv_id, substrate_id, deriv_kind],
-            )
+            if content_override is not None and deriv_content is not None:
+                # Bundle book: write content directly; stratum _fill_derivative_content won't reach sub-books
+                db.execute(
+                    "INSERT INTO derivative (id, substrate_id, kind, content) VALUES (?,?,?,?)",
+                    [deriv_id, substrate_id, deriv_kind, deriv_content],
+                )
+            else:
+                db.execute(
+                    "INSERT INTO derivative (id, substrate_id, kind) VALUES (?,?,?)",
+                    [deriv_id, substrate_id, deriv_kind],
+                )
         # Step 10: changefeed_local
         db.execute(
             """INSERT INTO changefeed_local (seq, table_name, row_id, op, payload)
