@@ -533,3 +533,11 @@ All future Phase releases must:
 - ingest_substrate: 加 content_override/metadata_override 参数
   content_override 非 None 时跳过文件解析，直接用传入 markdown
   → 修复 EPUB 套装拆分路径（process_inbox_substrate bundle 模式）
+
+## [3.25.10] — 2026-06-19
+### Fixed
+- ingest_substrate: content_override 时跳过去重（bundle 多本共享源文件）
+- ingest_substrate: content_override 路径直接用传入内容不重解析
+- ingest_substrate: bundle 书 file_hash=None（无独立文件），title 从 metadata 取
+- ingest_substrate: derivative 写入 content（bundle 路径内容不丢）
+- classify_inbox_file: .epub 扩展名短路（detect_mime 把 epub 识别成 zip 的 bug）
