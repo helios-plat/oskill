@@ -105,3 +105,6 @@ from oskill._resolve_mentions import resolve_mentions
 from oskill._resolve_memory_hierarchy import resolve_memory_hierarchy
 from oskill._load_skill_progressive import load_skill_progressive
 from oskill._three_way_merge import three_way_merge
+
+from oskill._physics_force_analysis_guide import physics_force_analysis_guide, ForceAnalysisResult
+from oskill._reading_comprehension_guide import reading_comprehension_guide, ReadingGuideResult

@@ -548,3 +548,10 @@ All future Phase releases must:
   content_override 路径检测 bundle_file_hash 是否已存在
   覆盖盲区：API 直传路径绕过 folder_watcher 前置拦截的重复入库
   _detect_bundle_duplicate 辅助函数（查 meta_json.bundle_file_hash）
+
+## [3.25.12] — 2026-06-19
+### Added
+- physics_force_analysis_guide: 物理受力分析苏格拉底引导
+  （识别力→选定律→列方程，不直接给答案，错误反问引导）
+- reading_comprehension_guide: 阅读理解引导（english/chinese）
+  （定位关键句→推理，防元认知懒惰，Fan 2024 实证）
