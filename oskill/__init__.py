@@ -108,3 +108,14 @@ from oskill._three_way_merge import three_way_merge
 
 from oskill._physics_force_analysis_guide import physics_force_analysis_guide, ForceAnalysisResult
 from oskill._reading_comprehension_guide import reading_comprehension_guide, ReadingGuideResult
+# ── AII Graph Capability (K-G1 … K-G5) ──────────────────────────────────────
+# K-G1: LLM-confirmed conflict resolution (grade hardcoded unverified)
+from oskill._conflict_resolution import conflict_resolution
+# K-G2: two-pass CoT knowledge extraction (analyze → generate, no free-play)
+from oskill._two_step_ingest import two_step_ingest
+# K-G3: composite KU relevance scoring (direct/source/adamic/type weights)
+from oskill._relevance_compute import relevance_compute
+# K-G4: BFS graph expansion with relevance pruning
+from oskill._graph_expand_retrieval import graph_expand_retrieval
+# K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
+from oskill._cascade_delete import cascade_delete
