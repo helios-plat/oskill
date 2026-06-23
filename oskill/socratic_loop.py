@@ -8,8 +8,11 @@ Version: oskill v3.21.0
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -105,10 +108,20 @@ async def process_socratic_turn(
     result = await socratic_turn(inp, caller=caller, model=model)
     text = result.text
 
-    # Red line: filter answer leakage
-    answer_leaked = state.correct_answer in text
+    # Red line: filter answer leakage.
+    # Guard: only check when correct_answer is non-empty — empty string is a
+    # substring of every string in Python, which would cause a false positive
+    # on every turn when there is no known answer (e.g. KU explanation sessions).
+    _answer = (state.correct_answer or "").strip()
+    answer_leaked = bool(_answer) and (_answer in text)
     if answer_leaked:
         state.violation_count += 1
+        logger.warning(
+            "socratic red-line: answer leaked in turn %d (answer=%r, preview=%r)",
+            state.turn_count,
+            _answer[:20],
+            text[:60],
+        )
         text = "这道题你再想想，思路是什么？"
 
     state.messages.append({"role": "assistant", "content": text})
