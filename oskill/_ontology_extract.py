@@ -91,8 +91,13 @@ Classification priority (apply in order — first match wins):
 4. no truth value / relative position / opinion → knowledge_type = "positional"
    ⚠ MUST set stance_holder (non-empty string, who holds this position)
 5. essence / principle / definition → knowledge_type = "conceptual"
-   Fill sub_type from: classification|principle|theory|skill|technique|
-                        conditional|strategic|task_knowledge|self_knowledge
+   sub_type (conceptual ONLY): classification | principle | theory | conditional
+   (if uncertain → leave sub_type NULL, do NOT guess)
+   procedural sub_type: skill | technique | conditional
+   metacognitive sub_type: strategic | task_knowledge | self_knowledge
+   factual / explanatory / positional → sub_type MUST be NULL
+   ⚠ sub_type must be one of the values above for its knowledge_type, or NULL.
+     NEVER invent values like "definition", "concept", "formula" — they will be rejected.
 6. verifiable fact              → knowledge_type = "factual"
 
 GATE (strictly enforced):

@@ -555,3 +555,9 @@ All future Phase releases must:
   （识别力→选定律→列方程，不直接给答案，错误反问引导）
 - reading_comprehension_guide: 阅读理解引导（english/chinese）
   （定位关键句→推理，防元认知懒惰，Fan 2024 实证）
+
+## [3.25.15] — 2026-06-24
+### Fixed
+- ontology_extract: 缺陷A — edge端點同步（temp_id→new_id映射表，edge source/target同步重寫）
+- ontology_extract: 缺陷B — sub_type按knowledge_type分類約束，prompt內嵌合法值清單
+  + 代碼層coerce：非法sub_type自動置NULL（不整條丟棄KU）
