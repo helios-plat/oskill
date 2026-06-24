@@ -561,3 +561,10 @@ All future Phase releases must:
 - ontology_extract: 缺陷A — edge端點同步（temp_id→new_id映射表，edge source/target同步重寫）
 - ontology_extract: 缺陷B — sub_type按knowledge_type分類約束，prompt內嵌合法值清單
   + 代碼層coerce：非法sub_type自動置NULL（不整條丟棄KU）
+
+## [3.25.16] — 2026-06-24
+### Changed
+- ontology_extract: prompt 改為可注入參數（Layer 4 可注入領域 prompt）
+  pass1_chunk_tmpl/system, pass1_outline_tmpl/system,
+  pass2_chunk_tmpl, pass2_system, six_class_rules
+  全部 optional，不注入則用內置默認（保留已驗證的六分類+grade unverified+論據降級邏輯）

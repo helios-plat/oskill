@@ -182,23 +182,23 @@ async def ontology_extract(
     # ------------------------------------------------------------------
     chunk_analyses: list[dict] = []
     for chunk in chunks:
-        prompt = _PASS1_CHUNK_TMPL.format(chunk_text=chunk)
+        prompt = _p1_chunk.format(chunk_text=chunk)
         resp = await llm(
             messages=[{"role": "user", "content": prompt}],
-            system=_PASS1_CHUNK_SYSTEM,
+            system=_p1_chunk_sys,
             max_tokens=512,
         )
         analysis = _parse_json(resp) or {"concepts": [], "topics": [], "chapter": ""}
         chunk_analyses.append(analysis)
 
-    outline_prompt = _PASS1_OUTLINE_TMPL.format(
+    outline_prompt = _p1_outline.format(
         doc_type=doc_type,
         source_credibility=source_credibility,
         chunk_analyses=json.dumps(chunk_analyses, ensure_ascii=False, indent=2),
     )
     outline_resp = await llm(
         messages=[{"role": "user", "content": outline_prompt}],
-        system=_PASS1_OUTLINE_SYSTEM,
+        system=_p1_outline_sys,
         max_tokens=1024,
     )
     outline = _parse_json(outline_resp) or {
@@ -216,14 +216,14 @@ async def ontology_extract(
     outline_str = json.dumps(outline, ensure_ascii=False, indent=2)
 
     for chunk_idx, chunk in enumerate(chunks):
-        prompt = _PASS2_CHUNK_TMPL.format(
+        prompt = _p2_chunk.format(
             outline=outline_str,
             chunk_text=chunk,
-            six_class_rules=_SIX_CLASS_RULES,
+            six_class_rules=_rules,
         )
         resp = await llm(
             messages=[{"role": "user", "content": prompt}],
-            system=_PASS2_SYSTEM,
+            system=_p2_sys,
             max_tokens=2048,
         )
         data = _parse_json(resp) or {}
