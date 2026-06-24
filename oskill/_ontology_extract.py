@@ -1,25 +1,25 @@
-"""K-ONT-1: ontology_extract — two-pass LLM knowledge ontology extraction.
+"""K-ONT-1: ontology_extract — generic two-pass LLM extraction framework (v4).
 
-Two passes (MUST):
-  Pass 1 (global map): chunk text → per-chunk concept/topic extraction →
-          aggregate into full-book outline (chapters, core_concepts, main_thread,
-          stance, doc_type, source_credibility)
-  Pass 2 (KU extraction with outline context): per-chunk + outline →
-          6-class KU candidates + edge candidates + concept candidates
+MAJOR v4.0.0 breaking change:
+  All prompts are now REQUIRED injected parameters. The framework provides
+  ONLY the two-pass orchestration mechanism (chunk → Pass1 → outline → Pass2
+  → collect/validate/id-sync). Business semantics (6-class rules, grade policy,
+  argument demotion, etc.) live entirely in the caller's injected prompts.
 
-Six-class priority (hardcoded in prompt):
-  why/mechanism         → explanatory
-  how/steps             → procedural
-  learning/reflection   → metacognitive
-  no truth/positional   → positional  (stance_holder REQUIRED)
-  essence/principle     → conceptual  (sub_type filled)
-  verifiable fact       → factual
+Mechanism (the only thing this element owns):
+  Pass 1 (map): each chunk → llm(pass1_chunk) → aggregate → llm(pass1_outline)
+  Pass 2 (extract): each chunk + outline → llm(pass2_chunk) →
+          collect ku/edge/concept candidates with:
+            - grade forced to "unverified" (structural invariant, not business)
+            - knowledge_type validated against VALID_KNOWLEDGE_TYPES
+            - positional KU without stance_holder dropped
+            - sub_type coerced to NULL if not in VALID_SUB_TYPES
+            - edge endpoints synced via temp_id → new_id map (defect A fix)
+            - invalid relation_type discarded
 
-Gate (MUST): arguments/cases → demote to 'example' field or 'supported_by' edge;
-             never a standalone KU
-Active why-extraction: each concept → explanatory KU + explains edge
-grade: always hardcoded "unverified" after LLM, regardless of LLM output
-relation_type: invalid ones silently discarded (must be in VALID_RELATION_TYPES)
+The validation invariants above are STRUCTURAL (enforce the data contract of
+OntologyExtractResult), not business classification — they stay in the element.
+What the LLM should classify and how lives in the injected prompts.
 """
 from __future__ import annotations
 
@@ -30,141 +30,66 @@ from oprim._aii_graph_types import (
     OntologyExtractResult,
     VALID_RELATION_TYPES,
     VALID_KNOWLEDGE_TYPES,
+    VALID_SUB_TYPES,
 )
-
-# ---------------------------------------------------------------------------
-# Prompts
-# ---------------------------------------------------------------------------
-
-_PASS1_CHUNK_SYSTEM = (
-    "You are a knowledge analyst. Extract structured information from text chunks. "
-    "Output valid JSON only."
-)
-
-_PASS1_CHUNK_TMPL = """\
-Analyze this text chunk and extract structured knowledge metadata.
-
-Text chunk:
-{chunk_text}
-
-Output JSON with:
-{{
-  "concepts": ["list of core concepts mentioned"],
-  "topics": ["main topics covered"],
-  "chapter": "chapter or section heading if identifiable, else empty string"
-}}"""
-
-_PASS1_OUTLINE_SYSTEM = (
-    "You are a knowledge architect. Synthesize chunk analyses into a coherent book outline. "
-    "Output valid JSON only."
-)
-
-_PASS1_OUTLINE_TMPL = """\
-Synthesize these chunk analyses into a full-book outline.
-
-doc_type: {doc_type}
-source_credibility: {source_credibility}
-
-Chunk analyses:
-{chunk_analyses}
-
-Output JSON with:
-{{
-  "chapters": ["list of chapter/section names inferred"],
-  "core_concepts": ["unified list of core concepts"],
-  "main_thread": "one-sentence description of the main argument/thread",
-  "stance": "author's overall stance or perspective",
-  "doc_type": "{doc_type}",
-  "source_credibility": "{source_credibility}"
-}}"""
-
-_PASS2_SYSTEM = (
-    "You are a knowledge unit extractor. Extract structured KUs from text using strict classification rules. "
-    "Output valid JSON only."
-)
-
-_SIX_CLASS_RULES = """\
-Classification priority (apply in order — first match wins):
-1. why / mechanism / reason    → knowledge_type = "explanatory"
-2. how / steps / procedure     → knowledge_type = "procedural"
-3. learning strategy/reflection → knowledge_type = "metacognitive"
-4. no truth value / relative position / opinion → knowledge_type = "positional"
-   ⚠ MUST set stance_holder (non-empty string, who holds this position)
-5. essence / principle / definition → knowledge_type = "conceptual"
-   sub_type (conceptual ONLY): classification | principle | theory | conditional
-   (if uncertain → leave sub_type NULL, do NOT guess)
-   procedural sub_type: skill | technique | conditional
-   metacognitive sub_type: strategic | task_knowledge | self_knowledge
-   factual / explanatory / positional → sub_type MUST be NULL
-   ⚠ sub_type must be one of the values above for its knowledge_type, or NULL.
-     NEVER invent values like "definition", "concept", "formula" — they will be rejected.
-6. verifiable fact              → knowledge_type = "factual"
-
-GATE (strictly enforced):
-- Arguments, examples, supporting evidence → NOT standalone KUs
-  → Demote: add as 'example' field on a KU, or create a 'supported_by' edge
-- Do NOT create KUs for mere illustrations or anecdotes
-
-ACTIVE WHY-EXTRACTION (required):
-- For each key concept found, ask WHY it works / what mechanism underlies it
-- If a mechanism exists → create an explanatory KU + an 'explains' edge
-
-grade: always set to "unverified" regardless of evidence strength"""
-
-_PASS2_CHUNK_TMPL = """\
-Extract knowledge units from this text chunk.
-
-Full-book outline (context):
-{outline}
-
-Text chunk:
-{chunk_text}
-
-{six_class_rules}
-
-Output JSON with:
-{{
-  "ku_candidates": [
-    {{
-      "id": "temp_<n>",
-      "title": "concise KU title",
-      "content": "KU content",
-      "knowledge_type": "<one of six types>",
-      "grade": "unverified",
-      "sub_type": "<sub_type or null>",
-      "stance_holder": "<required for positional, else null>",
-      "example": "<supporting example if demoted, else null>",
-      "concepts": ["referenced concepts"]
-    }}
-  ],
-  "edge_candidates": [
-    {{"source": "<ku_id>", "target": "<ku_id or concept>", "relation_type": "<controlled type>"}}
-  ],
-  "concept_candidates": ["new concepts discovered in this chunk"]
-}}"""
 
 
 # ---------------------------------------------------------------------------
 # Main function
 # ---------------------------------------------------------------------------
-
 async def ontology_extract(
     *,
     source_text: str,
-    chunk_size: int = 2000,
     llm,
+    pass1_chunk_tmpl: str,
+    pass1_chunk_system: str,
+    pass1_outline_tmpl: str,
+    pass1_outline_system: str,
+    pass2_chunk_tmpl: str,
+    pass2_system: str,
+    chunk_size: int = 2000,
     doc_type: str = "textbook",
     source_credibility: str = "medium",
     existing_ku_summaries: list[str] | None = None,
 ) -> OntologyExtractResult:
-    """Two-pass LLM knowledge ontology extraction.
+    """Generic two-pass LLM ontology extraction. All prompts are REQUIRED.
 
-    Pass 1: chunk → per-chunk metadata → full-book outline
-    Pass 2: chunk + outline → 6-class KU candidates + edges + concepts
+    The element owns ONLY the orchestration + structural validation. All
+    business classification logic must be supplied via the injected prompts.
 
-    All ku_candidates.grade hardcoded to 'unverified'.
-    Invalid relation_types silently discarded.
-    positional KUs without stance_holder are dropped.
+    Prompt parameters (all REQUIRED — no built-in business defaults):
+        pass1_chunk_tmpl:    Pass1 per-chunk prompt. Must contain {chunk_text}.
+        pass1_chunk_system:  Pass1 per-chunk system prompt.
+        pass1_outline_tmpl:  Pass1 outline synthesis prompt. Must contain
+                             {doc_type}, {source_credibility}, {chunk_analyses}.
+        pass1_outline_system: Pass1 outline system prompt.
+        pass2_chunk_tmpl:    Pass2 KU extraction prompt. Must contain {outline},
+                             {chunk_text}. (Inject classification rules here.)
+        pass2_system:        Pass2 system prompt.
+
+    Structural invariants enforced by the element (not business logic):
+        - ku.grade forced to "unverified"
+        - ku.knowledge_type must be in VALID_KNOWLEDGE_TYPES (else → "factual")
+        - positional ku without stance_holder dropped
+        - ku.sub_type coerced to NULL if not in VALID_SUB_TYPES (defect B)
+        - edge endpoints synced via temp_id → new_id map (defect A)
+        - edge.relation_type not in VALID_RELATION_TYPES discarded
+
+    Returns:
+        OntologyExtractResult with ku_candidates / edge_candidates /
+        concept_candidates / outline / stats.
+
+    Example:
+        >>> result = await ontology_extract(
+        ...     source_text="...",
+        ...     llm=llm_caller,
+        ...     pass1_chunk_tmpl="Analyze: {chunk_text} ...",
+        ...     pass1_chunk_system="You are an analyst...",
+        ...     pass1_outline_tmpl="Synthesize {chunk_analyses} for {doc_type}/{source_credibility}...",
+        ...     pass1_outline_system="You are an architect...",
+        ...     pass2_chunk_tmpl="Extract KUs. Outline: {outline}. Text: {chunk_text}. Rules: ...",
+        ...     pass2_system="You are a KU extractor...",
+        ... )
     """
     if not source_text.strip():
         return OntologyExtractResult(
@@ -182,23 +107,23 @@ async def ontology_extract(
     # ------------------------------------------------------------------
     chunk_analyses: list[dict] = []
     for chunk in chunks:
-        prompt = _p1_chunk.format(chunk_text=chunk)
+        prompt = pass1_chunk_tmpl.format(chunk_text=chunk)
         resp = await llm(
             messages=[{"role": "user", "content": prompt}],
-            system=_p1_chunk_sys,
+            system=pass1_chunk_system,
             max_tokens=512,
         )
         analysis = _parse_json(resp) or {"concepts": [], "topics": [], "chapter": ""}
         chunk_analyses.append(analysis)
 
-    outline_prompt = _p1_outline.format(
+    outline_prompt = pass1_outline_tmpl.format(
         doc_type=doc_type,
         source_credibility=source_credibility,
         chunk_analyses=json.dumps(chunk_analyses, ensure_ascii=False, indent=2),
     )
     outline_resp = await llm(
         messages=[{"role": "user", "content": outline_prompt}],
-        system=_p1_outline_sys,
+        system=pass1_outline_system,
         max_tokens=1024,
     )
     outline = _parse_json(outline_resp) or {
@@ -212,44 +137,54 @@ async def ontology_extract(
     all_ku_candidates: list[dict] = []
     all_edge_candidates: list[dict] = []
     all_concept_candidates: list[str] = []
-
     outline_str = json.dumps(outline, ensure_ascii=False, indent=2)
 
     for chunk_idx, chunk in enumerate(chunks):
-        prompt = _p2_chunk.format(
+        prompt = pass2_chunk_tmpl.format(
             outline=outline_str,
             chunk_text=chunk,
-            six_class_rules=_rules,
         )
         resp = await llm(
             messages=[{"role": "user", "content": prompt}],
-            system=_p2_sys,
+            system=pass2_system,
             max_tokens=2048,
         )
         data = _parse_json(resp) or {}
 
-        # Collect KU candidates
+        # Collect KU candidates — build temp_id → new_id map for edge sync
+        chunk_id_map: dict[str, str] = {}
         for ku in data.get("ku_candidates", []):
             if not isinstance(ku, dict):
                 continue
-            # Enforce grade = "unverified"
+            # Structural invariant: grade always "unverified"
             ku["grade"] = "unverified"
-            # Validate knowledge_type
+            # Structural: validate knowledge_type
             if ku.get("knowledge_type") not in VALID_KNOWLEDGE_TYPES:
                 ku["knowledge_type"] = "factual"
-            # positional must have stance_holder
+            # Structural: positional must have stance_holder
             if ku.get("knowledge_type") == "positional" and not ku.get("stance_holder"):
-                continue  # drop KU — violates mandate
-            # Reassign unique id
-            ku["id"] = f"ku_c{chunk_idx}_{len(all_ku_candidates)}"
+                continue
+            # Structural: coerce invalid sub_type to NULL (defect B)
+            raw_sub = ku.get("sub_type")
+            if raw_sub and raw_sub not in VALID_SUB_TYPES:
+                ku["sub_type"] = None
+            # Reassign unique id — record temp → new mapping (defect A)
+            temp_id = ku.get("id", "")
+            new_id = f"ku_c{chunk_idx}_{len(all_ku_candidates)}"
+            chunk_id_map[temp_id] = new_id
+            ku["id"] = new_id
             all_ku_candidates.append(ku)
 
-        # Collect edge candidates — discard invalid relation_types
+        # Collect edge candidates — sync endpoints via map (defect A)
         for edge in data.get("edge_candidates", []):
             if not isinstance(edge, dict):
                 continue
             if edge.get("relation_type") not in VALID_RELATION_TYPES:
                 continue
+            src = edge.get("source", "")
+            dst = edge.get("target", "")
+            edge["source"] = chunk_id_map.get(src, src)
+            edge["target"] = chunk_id_map.get(dst, dst)
             all_edge_candidates.append(edge)
 
         # Collect concept candidates
@@ -264,11 +199,9 @@ async def ontology_extract(
     for ku in all_ku_candidates:
         kt = ku.get("knowledge_type", "unknown")
         by_type[kt] = by_type.get(kt, 0) + 1
-
     explains_count = sum(
         1 for e in all_edge_candidates if e.get("relation_type") == "explains"
     )
-
     stats = {
         "total": len(all_ku_candidates),
         "by_type": by_type,
@@ -287,7 +220,6 @@ async def ontology_extract(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 def _split_chunks(text: str, chunk_size: int) -> list[str]:
     """Split text into chunks of approximately chunk_size characters."""
     if len(text) <= chunk_size:
@@ -297,7 +229,6 @@ def _split_chunks(text: str, chunk_size: int) -> list[str]:
     while start < len(text):
         end = start + chunk_size
         if end < len(text):
-            # Try to split at a sentence boundary
             boundary = text.rfind("。", start, end)
             if boundary == -1:
                 boundary = text.rfind(". ", start, end)

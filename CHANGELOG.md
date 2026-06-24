@@ -568,3 +568,14 @@ All future Phase releases must:
   pass1_chunk_tmpl/system, pass1_outline_tmpl/system,
   pass2_chunk_tmpl, pass2_system, six_class_rules
   全部 optional，不注入則用內置默認（保留已驗證的六分類+grade unverified+論據降級邏輯）
+
+## [4.0.0] — 2026-06-24
+### BREAKING
+- ontology_extract: prompt 改为必填参数（移除所有内置业务 prompt）
+  元素只保留两遍法编排机制 + 结构性校验（grade/knowledge_type/sub_type/edge同步）
+  六分类判据等业务语义全部由调用方注入
+  必填参数：pass1_chunk_tmpl/system, pass1_outline_tmpl/system, pass2_chunk_tmpl, pass2_system
+  迁移：调用方需自行提供 prompt（业务判据从主库移到 Layer 4）
+### Fixed
+- 修复 v3.25.15/16 未生效的缺陷A（edge端点同步 temp_id→new_id）
+- 修复缺陷B（sub_type 非法值 coerce 为 NULL，不丢弃 KU）
