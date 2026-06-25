@@ -51,6 +51,9 @@ async def ontology_extract(
     doc_type: str = "textbook",
     source_credibility: str = "medium",
     existing_ku_summaries: list[str] | None = None,
+    valid_knowledge_types: frozenset[str] | None = None,
+    valid_sub_types: frozenset[str] | None = None,
+    valid_relation_types: frozenset[str] | None = None,
 ) -> OntologyExtractResult:
     """Generic two-pass LLM ontology extraction. All prompts are REQUIRED.
 
@@ -69,11 +72,16 @@ async def ontology_extract(
 
     Structural invariants enforced by the element (not business logic):
         - ku.grade forced to "unverified"
-        - ku.knowledge_type must be in VALID_KNOWLEDGE_TYPES (else → "factual")
+        - ku.knowledge_type must be in valid_knowledge_types (else → "factual")
         - positional ku without stance_holder dropped
-        - ku.sub_type coerced to NULL if not in VALID_SUB_TYPES (defect B)
+        - ku.sub_type coerced to NULL if not in valid_sub_types (defect B)
         - edge endpoints synced via temp_id → new_id map (defect A)
-        - edge.relation_type not in VALID_RELATION_TYPES discarded
+        - edge.relation_type not in valid_relation_types discarded
+
+    Vocabulary injection (backward-compatible — all default to built-in sets):
+        valid_knowledge_types: override VALID_KNOWLEDGE_TYPES (Layer4 can extend)
+        valid_sub_types:       override VALID_SUB_TYPES
+        valid_relation_types:  override VALID_RELATION_TYPES
 
     Returns:
         OntologyExtractResult with ku_candidates / edge_candidates /
@@ -91,6 +99,10 @@ async def ontology_extract(
         ...     pass2_system="You are a KU extractor...",
         ... )
     """
+    _vkt = valid_knowledge_types or VALID_KNOWLEDGE_TYPES
+    _vst = valid_sub_types or VALID_SUB_TYPES
+    _vrt = valid_relation_types or VALID_RELATION_TYPES
+
     if not source_text.strip():
         return OntologyExtractResult(
             outline={},
@@ -159,14 +171,14 @@ async def ontology_extract(
             # Structural invariant: grade always "unverified"
             ku["grade"] = "unverified"
             # Structural: validate knowledge_type
-            if ku.get("knowledge_type") not in VALID_KNOWLEDGE_TYPES:
+            if ku.get("knowledge_type") not in _vkt:
                 ku["knowledge_type"] = "factual"
             # Structural: positional must have stance_holder
             if ku.get("knowledge_type") == "positional" and not ku.get("stance_holder"):
                 continue
             # Structural: coerce invalid sub_type to NULL (defect B)
             raw_sub = ku.get("sub_type")
-            if raw_sub and raw_sub not in VALID_SUB_TYPES:
+            if raw_sub and raw_sub not in _vst:
                 ku["sub_type"] = None
             # Reassign unique id — record temp → new mapping (defect A)
             temp_id = ku.get("id", "")
@@ -179,7 +191,7 @@ async def ontology_extract(
         for edge in data.get("edge_candidates", []):
             if not isinstance(edge, dict):
                 continue
-            if edge.get("relation_type") not in VALID_RELATION_TYPES:
+            if edge.get("relation_type") not in _vrt:
                 continue
             src = edge.get("source", "")
             dst = edge.get("target", "")

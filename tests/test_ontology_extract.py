@@ -307,3 +307,32 @@ class TestOntologyExtract:
         llm = _const_llm(_KU_FACTUAL)
         with pytest.raises(TypeError):
             await ontology_extract(source_text="x", llm=llm)
+
+    async def test_valid_types_injectable(self):
+        # Custom vocab: "rationale" accepted; "explanatory" not in set → remapped to "factual"
+        custom_vkt = frozenset(["factual", "conceptual", "rationale", "positional",
+                                 "procedural", "metacognitive"])
+        ku_data = {
+            "ku_candidates": [
+                {"id": "t1", "title": "Why X", "content": "reason",
+                 "knowledge_type": "rationale", "grade": "unverified",
+                 "sub_type": None, "stance_holder": None, "example": None, "concepts": []},
+                {"id": "t2", "title": "Fact Y", "content": "fact",
+                 "knowledge_type": "explanatory", "grade": "unverified",
+                 "sub_type": None, "stance_holder": None, "example": None, "concepts": []},
+            ],
+            "edge_candidates": [],
+            "concept_candidates": [],
+        }
+        llm = _llm_sequence(_CHUNK_ANALYSIS, _OUTLINE, ku_data)
+        result = await _extract(
+            source_text="Some text.",
+            llm=llm,
+            valid_knowledge_types=custom_vkt,
+        )
+        types = {ku["knowledge_type"] for ku in result.ku_candidates}
+        # "rationale" passes through — it's in the custom vocab
+        assert "rationale" in types
+        # "explanatory" not in custom vocab → remapped to "factual"
+        assert "explanatory" not in types
+        assert "factual" in types

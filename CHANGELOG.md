@@ -579,3 +579,9 @@ All future Phase releases must:
 ### Fixed
 - 修复 v3.25.15/16 未生效的缺陷A（edge端点同步 temp_id→new_id）
 - 修复缺陷B（sub_type 非法值 coerce 为 NULL，不丢弃 KU）
+
+## [4.1.0] — 2026-06-25
+### Added
+- ontology_extract: valid_knowledge_types / valid_sub_types / valid_relation_types injectable params
+  (backward-compatible defaults to built-in VALID_* sets from oprim._aii_graph_types)
+  Layer4 can now inject domain-specific vocabulary without modifying core element
