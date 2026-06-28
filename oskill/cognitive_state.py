@@ -29,6 +29,7 @@ class CognitiveUpdateInput(BaseModel):
     struggled: bool = False
     effortless: bool = False
     is_interleaved: bool = False
+    difficulty: float | None = None   # 题目难度 b∈[0,1]（IRT）；None 时不改变行为
     now: datetime | None = None
 
 class CognitiveUpdateResult(BaseModel):
@@ -61,13 +62,13 @@ def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
     # 1. 算 R (遗忘因子)
     R = fsrs_retrievability(card_dict=input.card_dict, now=now)
     
-    # 2. BKT 更新 (forgetting-aware)
-    bkt_update(state=input.state, is_correct=input.is_correct, retrievability=R)
-    
+    # 2. BKT 更新 (forgetting-aware + 难度感知)
+    bkt_update(state=input.state, is_correct=input.is_correct, retrievability=R, difficulty=input.difficulty)
+
     # 3. 错误分类
     error_type = None
     if not input.is_correct:
-        error_type = classify_error(state=input.state)
+        error_type = classify_error(state=input.state, difficulty=input.difficulty)
         
     # 4. FSRS 更新
     rating = fsrs_map_rating(
