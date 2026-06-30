@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert
 
+from oprim.answer_judge import judge_answer
 from oprim.llm_oprims import grade_question, profiler_analyze, GradeResult, ProfilerResult
 from services.models import WrongQuestion, ErrorType
 from data.guangdong_math_kc import KC_LIST
@@ -37,15 +38,23 @@ async def process_single_question(
     - oprim.profiler_analyze
     """
     
-    # 1. 批改
-    grade_res: GradeResult = await grade_question(
-        question_text=question_text,
-        student_answer=student_answer,
-        correct_answer=correct_answer
-    )
-    
-    if grade_res.is_correct:
-        return {"status": "correct", "grade_method": grade_res.method}
+    # 1. 批改（确定性优先红线）：试卷自带标准答案(correct_answer)是真值，
+    #    故先用确定性比对 judge_answer（选择题/可规范化短答），只有它 unsure
+    #    时才退回 LLM 等价判定——杜绝"可确定性判定的题由 LLM 误判"。
+    verdict = judge_answer(student_answer, correct_answer)["verdict"]
+    if verdict == "correct":
+        return {"status": "correct", "grade_method": "deterministic"}
+    if verdict == "wrong":
+        grade_method = "deterministic"
+    else:  # unsure → 自由作答/长答，退回 LLM 等价判定
+        grade_res: GradeResult = await grade_question(
+            question_text=question_text,
+            student_answer=student_answer,
+            correct_answer=correct_answer
+        )
+        if grade_res.is_correct:
+            return {"status": "correct", "grade_method": grade_res.method}
+        grade_method = grade_res.method
         
     # 2. 错题分析
     # 获取候选 KC 列表供 LLM 参考 (全量 KC ID)
@@ -79,6 +88,7 @@ async def process_single_question(
     return {
         "status": "wrong",
         "wq_id": str(wq_id),
+        "grade_method": grade_method,
         "error_type": profiler_res.error_type,
         "knowledge_points": profiler_res.knowledge_points,
         "parent_note": profiler_res.parent_note

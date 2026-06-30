@@ -31,6 +31,10 @@ class CognitiveUpdateInput(BaseModel):
     is_interleaved: bool = False
     difficulty: float | None = None   # 题目难度 b∈[0,1]（IRT）；None 时不改变行为
     now: datetime | None = None
+    # 集中练习去抖：距上次 FSRS 复习不足该时长(小时)的重复作答视为"集中练习"，
+    # 只更新掌握度(BKT)、不推进间隔重复调度，避免同卷连对把卡片排到几天后→遗忘。
+    # 默认 0.0：完全不改变行为（逐位等价旧实现），仅调用方显式开启时生效。
+    min_review_interval_hours: float = 0.0
 
 class CognitiveUpdateResult(BaseModel):
     """认知更新结果。"""
@@ -40,6 +44,24 @@ class CognitiveUpdateResult(BaseModel):
     rating: str
     rating_val: int
     effective_mastery: float
+
+def _should_advance_schedule(card_dict: dict, now: datetime, min_interval_hours: float) -> bool:
+    """是否推进 FSRS 调度。min_interval_hours<=0（默认）恒 True，行为不变。
+    新卡片(无 last_review)必推进(首次复习需建立调度)；否则距上次复习≥阈值才推进。"""
+    if min_interval_hours <= 0.0:
+        return True
+    last = card_dict.get("last_review") if isinstance(card_dict, dict) else None
+    if not last:
+        return True
+    try:
+        last_dt = datetime.fromisoformat(last) if isinstance(last, str) else last
+        if last_dt.tzinfo is None:
+            last_dt = last_dt.replace(tzinfo=timezone.utc)
+        elapsed_h = (now - last_dt).total_seconds() / 3600.0
+        return elapsed_h >= min_interval_hours
+    except (ValueError, TypeError):
+        return True
+
 
 def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
     """forgetting-aware BKT + FSRS 统一更新算法（纯函数）。
@@ -77,10 +99,27 @@ def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
         struggled=input.struggled, 
         effortless=input.effortless
     )
-    new_card = fsrs_review(card_dict=input.card_dict, rating=rating, now=now)
-    
-    # TODO: 5. Recognition 更新 (等 12.1 实现)
-    
+    if _should_advance_schedule(input.card_dict, now, input.min_review_interval_hours):
+        new_card = fsrs_review(card_dict=input.card_dict, rating=rating, now=now)
+    else:
+        # 集中练习去抖：保持原调度（不推进 due/stability），掌握度已在步骤2更新。
+        new_card = input.card_dict
+
+    # 5. Recognition 维度更新 (M-G §4.5)：仅交错(混合)情境训练/测量"识别该用哪个 KC"。
+    #    交错做对 → 成功识别，p_recognition 上升；交错做错 → 惰性知识，p_recognition 下降。
+    #    单 KC 专项(非交错)只提升 mastery、不动 recognition。
+    #    独立维度，不触碰已验证的 forgetting-aware BKT / FSRS（p_mastery 路径不变）。
+    if input.is_interleaved:
+        pr = input.state.p_recognition
+        if pr is None:
+            pr = input.state.p_recognition_init or 0.20
+        pt = input.state.p_transit
+        if input.is_correct:
+            pr = pr + (1.0 - pr) * pt
+        else:
+            pr = pr * (1.0 - pt)
+        input.state.p_recognition = max(0.001, min(0.97, pr))  # 与 mastery 同封顶 0.97
+
     input.state.last_interaction_ts = now.timestamp()
     
     eff = (input.state.long_term_mastery or input.state.current()) * R
