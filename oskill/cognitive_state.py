@@ -35,6 +35,8 @@ class CognitiveUpdateInput(BaseModel):
     # 只更新掌握度(BKT)、不推进间隔重复调度，避免同卷连对把卡片排到几天后→遗忘。
     # 默认 0.0：完全不改变行为（逐位等价旧实现），仅调用方显式开启时生效。
     min_review_interval_hours: float = 0.0
+    # 个性化 FSRS 权重（按群体/学生从真实复习日志优化）；None → 全局默认（行为不变）。
+    fsrs_parameters: tuple | None = None
 
 class CognitiveUpdateResult(BaseModel):
     """认知更新结果。"""
@@ -80,9 +82,10 @@ def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
     4. FSRS review
     """
     now = input.now or datetime.now(timezone.utc)
-    
+    fsrs_params = tuple(input.fsrs_parameters) if input.fsrs_parameters else None
+
     # 1. 算 R (遗忘因子)
-    R = fsrs_retrievability(card_dict=input.card_dict, now=now)
+    R = fsrs_retrievability(card_dict=input.card_dict, now=now, parameters=fsrs_params)
     
     # 2. BKT 更新 (forgetting-aware + 难度感知)
     bkt_update(state=input.state, is_correct=input.is_correct, retrievability=R, difficulty=input.difficulty)
@@ -100,7 +103,7 @@ def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
         effortless=input.effortless
     )
     if _should_advance_schedule(input.card_dict, now, input.min_review_interval_hours):
-        new_card = fsrs_review(card_dict=input.card_dict, rating=rating, now=now)
+        new_card = fsrs_review(card_dict=input.card_dict, rating=rating, now=now, parameters=fsrs_params)
     else:
         # 集中练习去抖：保持原调度（不推进 due/stability），掌握度已在步骤2更新。
         new_card = input.card_dict
