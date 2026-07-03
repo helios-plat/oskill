@@ -96,7 +96,12 @@ async def storyboard_planner(
         {"role": "system", "content": system_content},
         {
             "role": "user",
-            "content": json.dumps([s.model_dump() for s in script.scenes], ensure_ascii=False),
+            # B7: script.scenes 可能是 list[dict](Chapter.scenes)或 list[Scene](Script.scenes);
+            # dict 无 model_dump,故按需转换,不再无条件调用 .model_dump()。
+            "content": json.dumps(
+                [s.model_dump() if hasattr(s, "model_dump") else s for s in script.scenes],
+                ensure_ascii=False,
+            ),
         },
     ]
 

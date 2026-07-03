@@ -20,6 +20,15 @@ class ScriptWriterError(Exception):
     """Script writing failed."""
 
 
+def _narration_words_target(duration_s: float, *, words_per_min: int = 150) -> int:
+    """按语速估算目标旁白字数(B8:治旁白过薄 —— LLM 需被明确告知要写多少)。
+
+    此前 prompt 只给 target duration、不给字数量级,LLM 常严重欠写(如 1-5min 只出 ~7s
+    旁白 → 成片被压缩)。据此给出 ~字数目标写进 prompt。
+    """
+    return max(20, int(duration_s / 60.0 * words_per_min))
+
+
 async def script_writer(
     *,
     topic: str,
@@ -30,7 +39,7 @@ async def script_writer(
     subjects: list[SubjectRef] | None = None,
     chapter_mode: bool = False,
     num_characters: int = 1,
-) -> "Script | ChapterScript":
+) -> Script | ChapterScript:
     """Generate a video script using LLM.
 
     Args:
@@ -86,6 +95,13 @@ async def script_writer(
         "Return valid JSON with keys: title, description, scenes, estimated_duration_s. "
         "Each scene has: index, narration, duration_s, visual_description."
     )
+    if template_prompt is None:
+        # B8: 给出目标旁白字数,避免 LLM 欠写。
+        _words = _narration_words_target(target_duration_s)
+        system += (
+            f" Write enough narration to fill ~{target_duration_s:.0f}s of speech "
+            f"(aim for ~{_words} words total across all scenes); do not under-write."
+        )
 
     if subjects:
         char_lines = "\n".join(
@@ -129,10 +145,17 @@ async def _script_writer_chapter(
         f"Target total duration: {target_duration_s}s. "
         f"Divide into {num_chapters} chapters. "
         f"Characters: {', '.join(char_ids)}. "
-        "Return JSON: {\"chapters\": [{\"chapter_id\", \"title\", \"scenes\": [...], "
-        "\"dialogues\": [{\"speaker_id\", \"text\"}]}], "
-        "\"total_duration_s\": float, \"characters\": [str]}. "
+        'Return JSON: {"chapters": [{"chapter_id", "title", "scenes": [...], '
+        '"dialogues": [{"speaker_id", "text"}]}], '
+        '"total_duration_s": float, "characters": [str]}. '
         "Each dialogue item has speaker_id (one of the characters) and text."
+    )
+    # B8: 给出目标旁白字数(总量 + 每章),避免 LLM 欠写导致成片被压缩。
+    _words = _narration_words_target(target_duration_s)
+    _per_ch = max(1, _words // max(1, num_chapters))
+    system += (
+        f" Write enough dialogue to fill ~{target_duration_s:.0f}s of speech "
+        f"(~{_words} words total, ~{_per_ch} per chapter); do not under-write."
     )
 
     messages: list[dict[str, Any]] = [
@@ -177,10 +200,10 @@ async def _script_writer_chapter(
 
 def _chapters_for_duration(duration_s: float) -> int:
     """Adaptive chapter count by duration archetype."""
-    if duration_s < 300:       # < 5 min
+    if duration_s < 300:  # < 5 min
         return 2
-    if duration_s < 900:       # 5–15 min
+    if duration_s < 900:  # 5–15 min
         return 4
-    if duration_s < 2700:      # 15–45 min
+    if duration_s < 2700:  # 15–45 min
         return 8
-    return 16                  # 45+ min
+    return 16  # 45+ min
