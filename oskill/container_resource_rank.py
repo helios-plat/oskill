@@ -4,7 +4,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
-from oprim import docker_container_list, docker_container_stats
+from obase.docker import docker_container_list, docker_container_stats
 from pydantic import BaseModel
 
 

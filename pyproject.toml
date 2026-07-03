@@ -1,6 +1,6 @@
 [project]
 name = "oskill"
-version = "4.3.2"
+version = "4.3.3"
 description = "Composite financial analysis workflows built on oprim atomic operations"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -10,6 +10,7 @@ keywords = ["finance", "quantitative", "meta-skills", "bootstrap-sharpe", "cpcv"
 
 dependencies = [
     "oprim>=3.0.0",
+    "obase>=0.12.1",
     "numpy>=1.24",
     "scipy>=1.11",
     "pandas>=2.0",

@@ -2,6 +2,11 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.3.3] — 2026-07-03
+
+### Fixed
+- fix: `docker_*` 原语导入路径修正 —— 这些原语已在 oprim v3.0.0 迁至 obase，但 7 个模块（container_resource_rank / multi_node_health_sweep / node_register_probe / container_health_aggregate / app_upgrade_preflight / restore_from_backup / restart_and_verify）仍 `from oprim import docker_*`，在当前 main 上 ImportError（自 v2.15.0 起潜伏，因 CI 从未成功运行而未被发现）。改为 `from obase.docker import ...`，并补 `obase>=0.12.1` 直接依赖。解除 omodul 测试套件 6 个模块的 collection 失败。
+
 ## [3.19.0] — 2026-06-13
 
 ### Fixed

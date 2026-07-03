@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal, cast
 
-from oprim import docker_container_inspect, http_health_probe
+from obase.docker import docker_container_inspect
+from oprim import http_health_probe
 from pydantic import BaseModel
 
 

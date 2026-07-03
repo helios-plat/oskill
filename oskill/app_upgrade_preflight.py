@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from oprim import docker_container_inspect, fs_disk_usage, http_request_once
+from obase.docker import docker_container_inspect
+from oprim import fs_disk_usage, http_request_once
 from pydantic import BaseModel
 
 from oskill.backup_schedule_check import backup_schedule_check
