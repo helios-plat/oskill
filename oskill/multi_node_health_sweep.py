@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from oprim import docker_container_list, docker_node_info
+from obase.docker import docker_container_list, docker_node_info
 from pydantic import BaseModel
 
 

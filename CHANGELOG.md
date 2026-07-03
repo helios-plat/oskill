@@ -2,6 +2,13 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.4.0] — 2026-07-03
+
+### Fixed
+- fix: `docker_*` 原语导入路径修正 —— 这些原语已在 oprim v3.0.0 迁至 obase，但 7 个模块（container_resource_rank / multi_node_health_sweep / node_register_probe / container_health_aggregate / app_upgrade_preflight / restore_from_backup / restart_and_verify）仍 `from oprim import docker_*`，在当前 main 上 ImportError（自 v2.15.0 起潜伏，因 CI 从未成功运行而未被发现）。改为 `from obase.docker import ...`，并补 `obase>=0.12.1` 直接依赖。解除 omodul 测试套件 6 个模块的 collection 失败。
+- fix(B7): `storyboard_planner` 不再无条件对 `script.scenes` 调 `.model_dump()` —— `Chapter.scenes` 是 `list[dict]`(dict 无 model_dump),此前传 Chapter 即 AttributeError。改为按需转换(dict 直用 / model 才 model_dump),拆掉 hevi 的 ScriptWrapper 猴补丁。
+- feat(B8): `script_writer` 按 target_duration 在 prompt 中给出**目标旁白字数**(总量 + 每章),避免 LLM 欠写(此前只给 target duration,常严重欠写 → 如 1-5min 只出 ~7s 旁白、成片被压)。
+
 ## [3.19.0] — 2026-06-13
 
 ### Fixed

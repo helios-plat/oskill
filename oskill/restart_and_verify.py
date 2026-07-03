@@ -103,7 +103,7 @@ def restart_and_verify(
     rolled_back = False
     if not healthy and rollback_on_failure:
         try:
-            from oprim import docker_container_stop
+            from obase.docker import docker_container_stop
             docker_container_stop(container_id=container_id, docker_host=docker_host)
             rolled_back = True
         except Exception:

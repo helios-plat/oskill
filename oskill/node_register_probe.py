@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 from typing import Literal
 
-from oprim import docker_node_info, ssh_exec, tcp_port_check
+from obase.docker import docker_node_info
+from oprim import ssh_exec, tcp_port_check
 from pydantic import BaseModel
 
 

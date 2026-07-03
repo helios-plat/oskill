@@ -9,7 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import boto3
-from oprim import OprimConnectionError, OprimNotFoundError, OprimValidationError, docker_volume_list
+from obase.docker import docker_volume_list
+from oprim import OprimConnectionError, OprimNotFoundError, OprimValidationError
 from pydantic import BaseModel
 
 
