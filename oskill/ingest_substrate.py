@@ -30,6 +30,11 @@ from oskill.knowledge._context import (
     substrate_data_path,
     tantivy_path,
 )
+from oskill.knowledge._pg_meta import (
+    detect_bundle_duplicate_pg,
+    pg_enabled,
+    write_substrate_pg,
+)
 from oskill.knowledge.classify_inbox_file import classify_inbox_file
 from oskill.knowledge.detect_duplicate_substrate import detect_duplicate_substrate
 from oskill.knowledge.generate_derivative import generate_derivative
@@ -49,12 +54,13 @@ class IngestResult:
     cost_usd: float = 0.0
 
 
-
 async def _detect_bundle_duplicate(bundle_file_hash: str, user_id_hash: str) -> int:
     """检测同一 bundle_file_hash 是否已有衍生项入库（D-assert 用）。
     返回已有记录数，0 表示首次入库。
     """
     try:
+        if pg_enabled():
+            return detect_bundle_duplicate_pg(bundle_file_hash, user_id_hash)
         db_p = meta_db_path()
         if not db_p.exists():
             return 0
@@ -198,70 +204,84 @@ async def ingest_substrate(
     except Exception as e:
         log.warning("oskill.ingest.fulltext_failed", error=str(e))
 
-    # Step 9: write meta_db
-    db_p = meta_db_path()
-    db_p.parent.mkdir(parents=True, exist_ok=True)
+    # Step 9: write meta store — PostgreSQL when configured (STRATUM_PG_*),
+    # else legacy DuckDB meta_db (being retired).
     path_mime = detect_mime(path)
-    try:
-        db = open_meta_db(db_p)
-        now = datetime.now(timezone.utc).isoformat()
-        _meta_extra = metadata_override or {}
-        _meta_dict = {
-                "medium": medium,
-                "source_type": source.get("type", "inbox_local"),
-                "source": source,
-                **_meta_extra,
-            }
-        meta = json.dumps(_meta_dict, ensure_ascii=False)
-        title = _meta_extra.get("book_title") or _meta_extra.get("title") or path.stem
-        db.execute(
-            """INSERT INTO substrates
-               (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json,
-                created_at, updated_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?)""",
-            [
-                substrate_id,
-                user_id_hash,
-                title,
-                path_mime or None,
-                str(dest),
-                file_hash if content_override is None else None,
-                path.stat().st_size,
-                meta,
-                now,
-                now,
-            ],
+    _meta_extra = metadata_override or {}
+    _meta_dict = {
+        "medium": medium,
+        "source_type": source.get("type", "inbox_local"),
+        "source": source,
+        **_meta_extra,
+    }
+    title = _meta_extra.get("book_title") or _meta_extra.get("title") or path.stem
+    if pg_enabled():
+        write_substrate_pg(
+            substrate_id=substrate_id,
+            user_id_hash=user_id_hash,
+            title=title,
+            mime=path_mime or None,
+            source_path=str(dest),
+            file_hash=file_hash if content_override is None else None,
+            byte_size=path.stat().st_size,
+            meta_json=_meta_dict,
+            derivatives=derivatives_dict,
         )
-        for deriv_kind, deriv_content in derivatives_dict.items():
-            deriv_id = str(ULID())
-            if deriv_content is not None:
-                # Write content for both bundle books (content_override path) and
-                # normal books where generate_derivative returned non-null content.
-                db.execute(
-                    "INSERT INTO derivative (id, substrate_id, kind, content) VALUES (?,?,?,?)",
-                    [deriv_id, substrate_id, deriv_kind, deriv_content],
-                )
+    else:
+        db_p = meta_db_path()
+        db_p.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            db = open_meta_db(db_p)
+            now = datetime.now(timezone.utc).isoformat()
+            meta = json.dumps(_meta_dict, ensure_ascii=False)
+            db.execute(
+                """INSERT INTO substrates
+                   (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json,
+                    created_at, updated_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                [
+                    substrate_id,
+                    user_id_hash,
+                    title,
+                    path_mime or None,
+                    str(dest),
+                    file_hash if content_override is None else None,
+                    path.stat().st_size,
+                    meta,
+                    now,
+                    now,
+                ],
+            )
+            for deriv_kind, deriv_content in derivatives_dict.items():
+                deriv_id = str(ULID())
+                if deriv_content is not None:
+                    # Write content for both bundle books (content_override path) and
+                    # normal books where generate_derivative returned non-null content.
+                    db.execute(
+                        "INSERT INTO derivative (id, substrate_id, kind, content) VALUES (?,?,?,?)",
+                        [deriv_id, substrate_id, deriv_kind, deriv_content],
+                    )
+                else:
+                    db.execute(
+                        "INSERT INTO derivative (id, substrate_id, kind) VALUES (?,?,?)",
+                        [deriv_id, substrate_id, deriv_kind],
+                    )
+            # Step 10: changefeed_local
+            db.execute(
+                """INSERT INTO changefeed_local (seq, table_name, row_id, op, payload)
+                   VALUES (nextval('changefeed_seq'),?,?,?,?)""",
+                ["substrate", substrate_id, "insert", json.dumps({"substrate_id": substrate_id})],
+            )
+            db.close()
+        except MetaDBError as e:
+            if isinstance(e.__cause__, _duckdb.BinderException):
+                log.error("oskill.ingest.schema_mismatch", error=str(e))
+                raise
+            if isinstance(e.__cause__, _duckdb.ConnectionException):
+                log.warning("oskill.ingest.db_unavailable", error=str(e))
             else:
-                db.execute(
-                    "INSERT INTO derivative (id, substrate_id, kind) VALUES (?,?,?)",
-                    [deriv_id, substrate_id, deriv_kind],
-                )
-        # Step 10: changefeed_local
-        db.execute(
-            """INSERT INTO changefeed_local (seq, table_name, row_id, op, payload)
-               VALUES (nextval('changefeed_seq'),?,?,?,?)""",
-            ["substrate", substrate_id, "insert", json.dumps({"substrate_id": substrate_id})],
-        )
-        db.close()
-    except MetaDBError as e:
-        if isinstance(e.__cause__, _duckdb.BinderException):
-            log.error("oskill.ingest.schema_mismatch", error=str(e))
-            raise
-        if isinstance(e.__cause__, _duckdb.ConnectionException):
-            log.warning("oskill.ingest.db_unavailable", error=str(e))
-        else:
-            log.error("oskill.ingest.meta_db_failed", error=str(e))
-            raise
+                log.error("oskill.ingest.meta_db_failed", error=str(e))
+                raise
 
     elapsed = time.monotonic() - t0
     log.info("oskill.ingest.done", substrate_id=substrate_id, medium=medium, elapsed=elapsed)
