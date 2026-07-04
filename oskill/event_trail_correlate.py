@@ -19,6 +19,7 @@ def event_trail_correlate(
     time_window_sec: int = 300,
     causal_keys: tuple[str, ...] = ("parent_id", "root_cause_id"),
     change_event_types: tuple[str, ...] | None = None,
+    change_confidence: float = 0.7,
 ) -> CorrelatedEvents:
     """按因果链 + 时间窗关联事件, 并对变更事件按邻近度加权.
 
@@ -26,9 +27,9 @@ def event_trail_correlate(
 
     change_event_types 给定时(如 deploy/upgrade/rollback/policy_change/secret_change),
     时间窗内 type/event_type 命中的事件额外收进 change_correlated(按 |Δt| 升序), 且无因果链
-    但有邻近变更时 confidence 提升到 0.7(高于纯时间窗 0.5)—— 业界七八成事故由变更引发,
-    确定性地把"变更邻近"作为更强的相关信号(仍停在相关, 不附会因果, DESIGN §10.2/I5)。
-    不给该参数时行为与原实现完全一致(向后兼容)。
+    但有邻近变更时 confidence 提升到 change_confidence(默认 0.7,可注入覆盖,高于纯时间窗 0.5)
+    —— 业界七八成事故由变更引发,确定性地把"变更邻近"作为更强的相关信号(仍停在相关,
+    不附会因果, DESIGN §10.2/I5)。不给 change_event_types 时行为与原实现完全一致(向后兼容)。
     """
     event_map = {
         str(e.get("id") or e.get("event_id")): e
@@ -127,7 +128,7 @@ def event_trail_correlate(
     if causal_list:
         confidence = 1.0
     elif change_list:
-        confidence = 0.7
+        confidence = change_confidence
     elif time_list:
         confidence = 0.5
     else:

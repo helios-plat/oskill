@@ -158,3 +158,14 @@ def test_causal_chain_still_wins_over_change():
         target_event_id="E1", all_events=events, change_event_types=("deploy",)
     )
     assert r.confidence == 1.0  # 有因果链,confidence 仍 1.0(因果优先于变更)
+
+
+def test_change_confidence_injectable():
+    # 默认 0.7,可注入覆盖(六口径 ④:confidence 做可注入参数)
+    r = event_trail_correlate(
+        target_event_id="E1",
+        all_events=_CHANGE_EVENTS,
+        change_event_types=("deploy",),
+        change_confidence=0.85,
+    )
+    assert r.confidence == 0.85
