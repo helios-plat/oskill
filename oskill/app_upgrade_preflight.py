@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from obase.docker import docker_container_inspect
-from oprim import fs_disk_usage, http_request_once
+from oprim import disk_usage as fs_disk_usage  # v3 alias removed
+from oprim import http_request_once
 from pydantic import BaseModel
 
 from oskill.backup_schedule_check import backup_schedule_check
@@ -62,20 +63,14 @@ def app_upgrade_preflight(
 
     # 2. Container Healthy
     try:
-        inspect = docker_container_inspect(
-            container_id=container_id, docker_host=docker_host
-        )
-        passed = inspect.state == "running" and (
-            inspect.health in (None, "healthy", "starting")
-        )
+        inspect = docker_container_inspect(container_id=container_id, docker_host=docker_host)
+        passed = inspect.state == "running" and (inspect.health in (None, "healthy", "starting"))
         detail = f"State: {inspect.state}, Health: {inspect.health}"
     except Exception as exc:
         passed = False
         detail = str(exc)
 
-    checks.append(
-        PreflightCheck(name="container_healthy", passed=passed, detail=detail)
-    )
+    checks.append(PreflightCheck(name="container_healthy", passed=passed, detail=detail))
     if not passed and go:
         go = False
         blocking_reason = "Current container is not healthy"
