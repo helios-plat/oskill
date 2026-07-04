@@ -3,10 +3,7 @@ from typing import Literal, Any, cast
 
 from pydantic import BaseModel
 
-from oprim import (
-    docker_container_inspect,
-    docker_container_restart
-)
+from obase.docker import docker_container_inspect, docker_container_restart
 from oprim import http_health_probe
 
 
@@ -22,7 +19,8 @@ class RestartAndVerifyOutcome(BaseModel):
 def restart_and_verify(
     *,
     container_id: str,
-    health_check_url: str | None = None,    # 若 None, 不做 HTTP health check, 仅检查容器 state=running
+    health_check_url: str
+    | None = None,  # 若 None, 不做 HTTP health check, 仅检查容器 state=running
     timeout_sec: int = 60,
     health_check_interval_sec: int = 5,
     rollback_on_failure: bool = True,
@@ -30,7 +28,7 @@ def restart_and_verify(
 ) -> RestartAndVerifyOutcome:
     """重启容器 + 等健康 + 失败回滚 (复合操作, 不是 oprim)."""
     start_time = time.time()
-    
+
     # 1. Record state before
     try:
         docker_container_inspect(container_id=container_id, docker_host=docker_host)
@@ -41,7 +39,7 @@ def restart_and_verify(
             health_check_attempts=0,
             health_check_results=[{"error": f"Inspect before failed: {e}"}],
             rolled_back=False,
-            elapsed_ms=int((time.time() - start_time) * 1000)
+            elapsed_ms=int((time.time() - start_time) * 1000),
         )
 
     # 2. Restart
@@ -55,29 +53,33 @@ def restart_and_verify(
             health_check_attempts=0,
             health_check_results=[{"error": f"Restart failed: {e}"}],
             rolled_back=False,
-            elapsed_ms=int((time.time() - start_time) * 1000)
+            elapsed_ms=int((time.time() - start_time) * 1000),
         )
 
     # 3. Verify Health
     attempts = 0
     results: list[dict[str, Any]] = []
     healthy = False
-    
+
     if health_check_interval_sec <= 0:
         health_check_interval_sec = 1
-        
+
     max_attempts = timeout_sec // health_check_interval_sec
-    
+
     while attempts < max_attempts:
         attempts += 1
         time.sleep(health_check_interval_sec)
-        
+
         # Check container state
         try:
-            inspect_now = docker_container_inspect(container_id=container_id, docker_host=docker_host)
+            inspect_now = docker_container_inspect(
+                container_id=container_id, docker_host=docker_host
+            )
             state = cast(dict[str, Any], inspect_now.get("State", {}))
             if not cast(bool, state.get("Running", False)):
-                results.append({"step": attempts, "healthy": False, "error": "Container not running"})
+                results.append(
+                    {"step": attempts, "healthy": False, "error": "Container not running"}
+                )
                 continue
         except Exception as e:
             results.append({"step": attempts, "healthy": False, "error": str(e)})
@@ -86,8 +88,12 @@ def restart_and_verify(
         # Check HTTP health if URL provided
         if health_check_url:
             try:
-                probe = http_health_probe(url=health_check_url, timeout_sec=health_check_interval_sec)
-                results.append({"step": attempts, "healthy": cast(bool, probe["healthy"]), "probe": probe})
+                probe = http_health_probe(
+                    url=health_check_url, timeout_sec=health_check_interval_sec
+                )
+                results.append(
+                    {"step": attempts, "healthy": cast(bool, probe["healthy"]), "probe": probe}
+                )
                 if cast(bool, probe["healthy"]):
                     healthy = True
                     break
@@ -104,6 +110,7 @@ def restart_and_verify(
     if not healthy and rollback_on_failure:
         try:
             from obase.docker import docker_container_stop
+
             docker_container_stop(container_id=container_id, docker_host=docker_host)
             rolled_back = True
         except Exception:
@@ -115,5 +122,5 @@ def restart_and_verify(
         health_check_attempts=attempts,
         health_check_results=results,
         rolled_back=rolled_back,
-        elapsed_ms=int((time.time() - start_time) * 1000)
+        elapsed_ms=int((time.time() - start_time) * 1000),
     )

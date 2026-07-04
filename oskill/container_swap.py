@@ -6,7 +6,7 @@ import time
 from datetime import UTC, datetime
 from typing import Literal
 
-from oprim import (
+from obase.docker import (
     docker_container_inspect,
     docker_container_rename,
     docker_container_start,

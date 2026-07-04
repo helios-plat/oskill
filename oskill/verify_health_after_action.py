@@ -11,7 +11,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from oprim import network_http_health
+from oprim._network import network_http_health  # v3 not top-level
 
 
 class HealthVerifyResult(BaseModel):
