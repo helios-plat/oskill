@@ -92,3 +92,24 @@ def test_strong_agreement_executes():
     c = engine_consensus(sigs, weights={"ta": 1.0, "ml": 1.0}, base_threshold=0.4)
     assert c["should_execute"] is True
     assert c["is_divergent"] is False
+
+
+# ── risk_on_off_signal + macro_bias ─────────────────────────────────────────
+from oskill.signal.sentiment_onchain_synthesis import risk_on_off_signal  # noqa: E402
+
+
+def test_risk_on_equities_up_dollar_down():
+    r = risk_on_off_signal(equity_returns=[0.01, 0.008], dxy_returns=[-0.003])
+    assert r["bias"] > 0 and r["regime"] == "risk_on"
+
+
+def test_risk_off_equities_down_dollar_up():
+    r = risk_on_off_signal(equity_returns=[-0.02, -0.01], dxy_returns=[0.005])
+    assert r["bias"] < 0 and r["regime"] == "risk_off"
+
+
+def test_macro_bias_nudges_consensus():
+    sigs = [_sig("ta", 0.4, True)]
+    base = engine_consensus(sigs, weights={"ta": 1.0}, base_threshold=0.4)
+    up = engine_consensus(sigs, weights={"ta": 1.0}, base_threshold=0.4, macro_bias=1.0)
+    assert up["consensus_score"] > base["consensus_score"]

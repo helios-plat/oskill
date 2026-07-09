@@ -29,6 +29,7 @@ def engine_consensus(
     regime_state: str = "range",
     sentiment_bias: float = 0.0,
     onchain_bias: float = 0.0,
+    macro_bias: float = 0.0,
     ttl_seconds: float = 3600.0,
     base_threshold: float = 0.45,
     max_kelly: float = 0.20,
@@ -93,7 +94,12 @@ def engine_consensus(
     observe_score = (obs_num / obs_den) if obs_den > 0 else 0.0
 
     # sentiment / on-chain nudge on the live score, then bound to [-1,1]
-    nudged = live_score + nudge_weight * sentiment_bias + nudge_weight * onchain_bias
+    nudged = (
+        live_score
+        + nudge_weight * sentiment_bias
+        + nudge_weight * onchain_bias
+        + nudge_weight * macro_bias
+    )
     consensus_score = float(clip_with_warning(nudged, -1.0, 1.0))
 
     # divergence among live (promoted) engines
