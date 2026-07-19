@@ -15,6 +15,8 @@ def cvar_optimal_weights(
     *,
     alpha: float = 0.05,
     min_obs: int = 50,
+    max_weight: float = 0.5,
+    min_weight: float = 0.15,
 ) -> dict:
     """CVaR-Sharpe optimal portfolio weights, falling back to equal-weight.
 
@@ -36,6 +38,18 @@ def cvar_optimal_weights(
         diagnostic CVaR computed on the resulting weighted-return series.
     min_obs : int
         Minimum aligned observations required to attempt optimization.
+    max_weight : float
+        Per-asset weight cap in (0, 1], default 0.5 — forces the optimizer to
+        hold at least two assets meaningfully instead of collapsing to
+        near-100% in whichever had the best trailing Sharpe/CVaR over the
+        sample (see oprim.risk.cvar_portfolio_optimize's max_weight docstring).
+    min_weight : float
+        Per-asset weight floor, default 0.15 — a cap alone still lets the
+        optimizer starve one asset to ~0 while two others sit at the cap; a
+        floor forces every asset to hold at least this much. If
+        `len(symbols) * min_weight > 1` the constraint is infeasible and the
+        optimizer failure is caught by the existing equal-weight fallback below
+        (same as any other convergence failure).
 
     Returns
     -------
@@ -69,7 +83,9 @@ def cvar_optimal_weights(
         return _equal_weight(f"need >= {min_obs} obs, got {n_obs}")
 
     try:
-        result = cvar_portfolio_optimize(clean, alpha=alpha)
+        result = cvar_portfolio_optimize(
+            clean, alpha=alpha, max_weight=max_weight, min_weight=min_weight
+        )
         weights = result["weights"]
     except Exception as e:  # noqa: BLE001 — any optimizer failure must fall back
         return _equal_weight(f"optimizer failed: {e}")
