@@ -10,15 +10,19 @@ from oskill._version import __version__
 _ELEMENT_MAP: dict[str, str] = {}
 _SUBMODULE_SET: set[str] = set()
 
+
 def _build_element_map() -> None:
     pkg_dir = Path(__file__).parent
     pkg_name = __package__ or "oskill"
     for py in sorted(pkg_dir.rglob("*.py")):
         rel_path = py.relative_to(pkg_dir)
-        if rel_path.parts == ("__init__.py",): continue
+        if rel_path.parts == ("__init__.py",):
+            continue
         mod_parts = list(rel_path.with_suffix("").parts)
-        if mod_parts[-1] == "__init__": mod_parts.pop()
-        if not mod_parts: continue
+        if mod_parts[-1] == "__init__":
+            mod_parts.pop()
+        if not mod_parts:
+            continue
         mod_path = pkg_name + "." + ".".join(mod_parts)
         stem = mod_parts[-1]
         _SUBMODULE_SET.add(stem)
@@ -30,42 +34,66 @@ def _build_element_map() -> None:
                     names.append(node.name)
                 elif isinstance(node, ast.ImportFrom) and rel_path.name == "__init__.py":
                     for alias in node.names:
-                        if alias.name != "*": names.append(alias.asname or alias.name)
+                        if alias.name != "*":
+                            names.append(alias.asname or alias.name)
                 for name in names:
                     if not name.startswith("_"):
                         # Heuristic: prefer non-prefixed modules, or if mapping to private, allow overwrite by public
                         if name not in _ELEMENT_MAP or (
-                            not mod_path.split(".")[-1].startswith("_") and _ELEMENT_MAP[name].split(".")[-1].startswith("_")
+                            not mod_path.split(".")[-1].startswith("_")
+                            and _ELEMENT_MAP[name].split(".")[-1].startswith("_")
                         ):
                             _ELEMENT_MAP[name] = mod_path
-        except Exception: continue
+        except Exception:
+            continue
+
 
 _build_element_map()
 
+
 def __getattr__(name: str) -> Any:
-    if name == "__version__": return __version__
+    if name == "__version__":
+        return __version__
     if name in _ELEMENT_MAP:
         mod = importlib.import_module(_ELEMENT_MAP[name])
         # Special case for FusedResult/SearchResult aliases in merge_platform_user_results
         actual_name = name
-        if name == "MergedFusedResult": actual_name = "FusedResult"
-        if name == "MergedSearchResult": actual_name = "SearchResult"
+        if name == "MergedFusedResult":
+            actual_name = "FusedResult"
+        if name == "MergedSearchResult":
+            actual_name = "SearchResult"
         return getattr(mod, actual_name)
     if name in _SUBMODULE_SET:
         pkg_name = __package__ or "oskill"
         return importlib.import_module(f"{pkg_name}.{name}")
     raise AttributeError(f"module '{__name__}' has no attribute {name!r}")
 
+
 def __dir__() -> list[str]:
     return sorted(set(list(_ELEMENT_MAP.keys()) + list(_SUBMODULE_SET) + ["__version__"]))
+
 
 __all__ = sorted(_ELEMENT_MAP.keys())
 
 # --- Explicit re-exports (Pinning) ---
 from oskill._types import (
-    OskillError, EditOskillError, ParseOskillError, LLMOskillError, ConfigOskillError,
-    EditBlock, ApplyResult, Chunk, Symbol, RepoFile, RepoMap, TodoItem, SubTask, ToolCall,
-    PluginManifest, UndoPlan, HookCmd
+    OskillError,
+    EditOskillError,
+    ParseOskillError,
+    LLMOskillError,
+    ConfigOskillError,
+    EditBlock,
+    ApplyResult,
+    Chunk,
+    Symbol,
+    RepoFile,
+    RepoMap,
+    TodoItem,
+    SubTask,
+    ToolCall,
+    PluginManifest,
+    UndoPlan,
+    HookCmd,
 )
 from oskill._apply_edit_block import apply_edit_block
 from oskill._apply_unified_diff import apply_unified_diff
@@ -108,14 +136,31 @@ from oskill._three_way_merge import three_way_merge
 
 from oskill._physics_force_analysis_guide import physics_force_analysis_guide, ForceAnalysisResult
 from oskill._reading_comprehension_guide import reading_comprehension_guide, ReadingGuideResult
+
 # ── AII Graph Capability (K-G1 … K-G5) ──────────────────────────────────────
 # K-G1: LLM-confirmed conflict resolution (grade hardcoded unverified)
 from oskill._conflict_resolution import conflict_resolution
+
 # K-G2: two-pass CoT knowledge extraction (analyze → generate, no free-play)
 from oskill._two_step_ingest import two_step_ingest
+
 # K-G3: composite KU relevance scoring (direct/source/adamic/type weights)
 from oskill._relevance_compute import relevance_compute
+
 # K-G4: BFS graph expansion with relevance pruning
 from oskill._graph_expand_retrieval import graph_expand_retrieval
+
 # K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
 from oskill._cascade_delete import cascade_delete
+
+# ── Batch-warehouse commerce vertical ───────────────────────────────────────
+from oskill._resolve_display_batch import resolve_display_batch
+from oskill._compute_cart_subtotal import compute_cart_subtotal
+from oskill._compute_cart_grand_total import compute_cart_grand_total
+from oskill._evaluate_discount_eligibility import evaluate_discount_eligibility
+from oskill._evaluate_discount_conditions import evaluate_discount_conditions
+from oskill._apply_discount_amount import apply_discount_amount
+from oskill._apply_discount_percentage import apply_discount_percentage
+from oskill._apply_free_shipping import apply_free_shipping
+from oskill._stack_discount_allocations import stack_discount_allocations
+from oskill._allocate_gift_card_balance import allocate_gift_card_balance
