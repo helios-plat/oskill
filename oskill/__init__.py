@@ -164,3 +164,7 @@ from oskill._apply_discount_percentage import apply_discount_percentage
 from oskill._apply_free_shipping import apply_free_shipping
 from oskill._stack_discount_allocations import stack_discount_allocations
 from oskill._allocate_gift_card_balance import allocate_gift_card_balance
+from oskill._compute_tax_lines import compute_tax_lines
+from oskill._compute_line_item_totals import compute_line_item_totals
+from oskill._select_region_currency import select_region_currency
+from oskill._evaluate_tax_inclusive_pricing import evaluate_tax_inclusive_pricing
