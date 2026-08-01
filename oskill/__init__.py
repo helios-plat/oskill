@@ -7,6 +7,31 @@ from pathlib import Path
 from typing import Any
 from oskill._version import __version__
 
+# Public-package contract for 3O consumers.  A manifest is data only: skills
+# still receive providers through their existing protocols and keep no state.
+__manifest__ = {
+    "package": "oskill",
+    "version": __version__,
+    "elements": [
+        {
+            "name": "storyboard_planner",
+            "kind": "oskill",
+            "module": "oskill.storyboard_planner",
+            "signature": "(config, request, llm) -> dict",
+            "depends_on": ["oprim.llm_complete", "oprim.schema_validate"],
+            "pillars": ["cost", "fingerprint", "trail", "report"],
+        },
+        {
+            "name": "asset_reference_inject",
+            "kind": "oskill",
+            "module": "oskill.asset_reference_inject",
+            "signature": "(prompt, references) -> str",
+            "depends_on": ["oprim.prompt_compose", "oprim.media_inspect"],
+            "pillars": ["fingerprint", "trail", "report"],
+        },
+    ],
+}
+
 _ELEMENT_MAP: dict[str, str] = {}
 _SUBMODULE_SET: set[str] = set()
 
@@ -59,7 +84,7 @@ def __getattr__(name: str) -> Any:
 def __dir__() -> list[str]:
     return sorted(set(list(_ELEMENT_MAP.keys()) + list(_SUBMODULE_SET) + ["__version__"]))
 
-__all__ = sorted(_ELEMENT_MAP.keys())
+__all__ = sorted([*_ELEMENT_MAP.keys(), "__manifest__"])
 
 # --- Explicit re-exports (Pinning) ---
 from oskill._types import (
