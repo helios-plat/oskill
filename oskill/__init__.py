@@ -164,3 +164,50 @@ from oskill._apply_discount_percentage import apply_discount_percentage
 from oskill._apply_free_shipping import apply_free_shipping
 from oskill._stack_discount_allocations import stack_discount_allocations
 from oskill._allocate_gift_card_balance import allocate_gift_card_balance
+
+# AutoAgent capability imports
+from .agent_form_synthesize import agent_form_synthesize  # noqa: F401
+from .meta_self_develop_loop import meta_self_develop_loop  # noqa: F401
+
+from .team_plan_gen import team_plan_gen  # noqa: F401
+
+from .soul_self_evolution import soul_self_evolution  # noqa: F401
+
+from .deep_research_tree import deep_research_tree  # noqa: F401
+
+from .leader_worker_dispatch import leader_worker_dispatch  # noqa: F401
+
+from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401
+
+from .dag_visual_layout import dag_visual_layout  # noqa: F401
+
+from .skill_teach import skill_teach, skill_list, skill_export, skill_import_  # noqa: F401
+
+from .recurring_scheduler import RecurringScheduler  # noqa: F401
+from .scheduler_attempt_lifecycle import transition_attempt, monthly_clamp, retry_execute, pre_run_knowledge_hook  # noqa: F401
+from .skills_dynamic_inject import skills_dynamic_inject  # noqa: F401
+
+# ── Phase 2: 贝叶斯 ToM 信念更新 ───────────────────────────────────
+from ._bayesian_belief_update import (  # noqa: F401
+    DEFAULT_HYPOTHESES,
+    BayesianBeliefUpdater,
+    _bayesian_belief_update,
+    sequential_update,
+)
+
+# ── Phase 3: 在线因果参数更新 (CPD, Dirichlet/EMA) ──────────────────
+from ._online_cpd_update import (  # noqa: F401
+    CategoricalCPD,
+    config_key,
+    dirichlet_update,
+    ema_update,
+    split_config,
+    update_cpd,
+)
+
+# ── Phase 4: 长期策略演化 ────────────────────────────────────────────
+from ._strategy_evolve import (  # noqa: F401
+    STRATEGY_NAMES,
+    STRATEGY_PARAMS,
+    StrategyEvolver,
+)
