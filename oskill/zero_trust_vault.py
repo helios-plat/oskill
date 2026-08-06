@@ -100,6 +100,7 @@ class ZeroTrustVault:
             self.pending_approvals.pop(task_id, None)
             self.approval_results.pop(task_id, None)
             _log.info("vault: task %s approval timed out — auto rejected", task_id)
+            self._publish_resolved(task_id, approved=False, reason="timeout")
             limit = timeout or self.approval_timeout
             return f"❌ 执行失败: 审批超时(超过 {limit:.0f}s 无人响应), 已自动拒绝。"
 
@@ -108,6 +109,7 @@ class ZeroTrustVault:
         self.pending_approvals.pop(task_id, None)
         if not is_approved:
             _log.info("vault: task %s rejected by human", task_id)
+            self._publish_resolved(task_id, approved=False, reason="rejected")
             return "❌ 执行失败: 已由系统管理员 (Human) 拒绝授权。"
 
         # 4. 人类授权通过! 解密真实 Key, 直连物理引擎, 大模型全程瞎眼
@@ -115,11 +117,20 @@ class ZeroTrustVault:
         _log.info("vault: approved — injecting %s into physical layer", required_vault_id)
         try:
             result = await physical_tool_callback(**intent_args, _injected_secret=real_secret)
-            return f"✅ 授权执行完毕。反馈: {result}"
         except Exception as exc:  # noqa: BLE001 — 底层执行失败反馈给主脑
+            self._publish_resolved(task_id, approved=True, reason="physical_error")
             return f"❌ 底层执行崩溃: {type(exc).__name__}: {exc}"
+        self._publish_resolved(task_id, approved=True, reason="approved")
+        return f"✅ 授权执行完毕。反馈: {result}"
 
     # ── 人类审批入口(前端悬浮窗按钮 → 宿主路由) ──────────────────────
+    def _publish_resolved(self, task_id: str, approved: bool, reason: str) -> None:
+        """广播审批终止事件 — 宿主据此关闭对应 HITL 悬浮窗(审批/拒绝/超时均通知)。"""
+        self.event_bus.publish(
+            "vault_resolved",
+            {"task_id": task_id, "approved": approved, "reason": reason},
+        )
+
     def resolve_approval(self, task_id: str, approved: bool) -> bool:
         """Record the human verdict and wake the suspended coroutine."""
         event = self.pending_approvals.get(task_id)
