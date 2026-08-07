@@ -217,3 +217,11 @@ from oskill.llm_router import (  # noqa: E402
     LLMRouter,
     llm_router,
 )
+
+# 可执行 Spec 技能 (spec-kit 内化) + ECC 领域分派基础
+from oskill.spec_execute import (  # noqa: E402
+    PRESETS,
+    SpecExecutor,
+    render_preset,
+    spec_executor,
+)
