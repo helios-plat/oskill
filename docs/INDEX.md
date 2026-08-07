@@ -39,3 +39,19 @@
 | Skill | Description | Calls |
 |-------|-------------|-------|
 | `calibration_analysis` | Full calibration analysis (Brier + ECE + MCE) | `brier_score_decomposed`, `percentile_rank`, `bayes_beta_update` |
+
+## Group 6: General Purpose (MathModelAgent SKILL 3O 内化, v4.15.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `typst_minimal_doc` | Typst 最小文档生成 | — |
+| `typst_format_check` | typstyle 格式化检查循环 (check→diff→apply) | `bash_exec` |
+| `typst_probe` | 无文件 Typst 表达式探针 (stdin + query) | `bash_exec` |
+| `typst_compile` | typst compile 编译验证 | `bash_exec` |
+| `detect_platform` | 平台/发行版/包管理器检测 | `bash_exec` |
+| `check_dependencies` | 依赖探测 (cmd / python 包) | `bash_exec`, `_import_module` |
+| `install_commands` | 按平台选择安装命令 | — |
+| `run_doctor` | 环境检查总入口 (可选自动安装) | 上述全部 |
+| `resolve_template` | 科研绘图模板解析 (id/别名/中文) | — |
+| `list_figure_templates` | 模板清单 | — |
+| `render_figure_template` | 复制模板脚本到工作区并执行 | `subprocess` |

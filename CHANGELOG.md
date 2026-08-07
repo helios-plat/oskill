@@ -2,6 +2,14 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.15.0] — 2026-08-07
+
+### Added (MathModelAgent SKILL 3O 内化 — General Purpose 三件套)
+- feat: `typst_author` — Typst 文档撰写技能: minimal doc 生成 / typstyle 格式化检查循环 (check→diff→apply) / 无文件 probe (`metadata`+`typst query`) / `typst compile` 验证, 附 `TYPST_GUIDE` 结构化知识包 (关键区分、# 用法、set vs show、常见错误、排障)。subprocess 走 oprim `_bash_exec`。
+- feat: `env_doctor` — 环境检查与安装向导: `DepSpec` 声明式依赖清单 (cmd/pkg) + `detect_platform` (mac/linux/windows + distro + 包管理器) + `check_dependencies` + `install_commands` (linux-<distro> → tag → all 回退) + `run_doctor` (可选 auto_install 必须项并复检)。内置 `DEFAULT_SPECS` 仅作通用科学计算栈示例, 不绑定领域。
+- feat: `figure_templates` — 科研绘图模板渲染: 11 套 matplotlib 模板脚本 (raincloud / SHAP 组合 / 交叉验证 ROC / 泰勒图 / 配对云雨 / 环形热图 / Nature 和弦图等, 确定性模拟数据) 打包于 `oskill/_figure_templates/templates/`, 渲染时复制到工作区执行, 输出 png/pdf/svg。支持 id / 别名 / 中文关键词解析。
+- chore: `__init__.py` 元素扫描新增 `_SKIP_SCAN_DIRS`, 跳过 `_figure_templates` 数据资产目录, 防止模板脚本公共函数污染顶层命名空间。
+
 ## [4.4.0] — 2026-07-03
 
 ### Fixed
