@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import time
 import uuid
@@ -58,10 +59,62 @@ class LLMRouter:
     async def dispatch_long(self, prompt: str,
                             caller: Callable[[str, int], Awaitable[dict[str, Any]]],
                             *, max_parallel: int | None = None,
-                            title: str = "") -> dict[str, Any]:
-        """长文并行快速回答 (切分 → gather → 聚合)。"""
+                            title: str = "",
+                            planner: Callable[[str, str], Awaitable[dict[str, Any]]] | None = None,
+                            ) -> dict[str, Any]:
+        """长程任务深度规划链: 强模型规划 → flash 并行执行 → 强模型聚合。"""
         matrix = load_matrix(self.matrix_path)
         parallelism = max_parallel or int(matrix.get("parallelism", 4))
+
+        plan: list[str] | None = None
+        if planner is not None:
+            # ① 深度理解 + 规划 (强模型)
+            plan_result = await planner(prompt, "plan")
+            plan_text = str(plan_result.get("output", "") or "")
+            if plan_text:
+                import re as _re
+
+                plan = [t.strip() for t in _re.split(r"[\n\n]+", plan_text)
+                        if t.strip() and not t.strip().startswith(("#", "- 概述", "概要"))]
+                plan = plan[:parallelism * 2]
+            self._audit_write({"action": "long_plan", "ts": time.time(),
+                               "plan_items": len(plan or [])})
+
+        if plan:
+            # ② flash 并行执行规划项
+            t0 = time.time()
+            results = await asyncio.gather(
+                *[caller(item, i) for i, item in enumerate(plan)],
+                return_exceptions=True,
+            )
+            normalized = [
+                {"ok": True, "output": str(r)} if isinstance(r, Exception)
+                else (r if isinstance(r, dict) else {"ok": False, "error": str(r)})
+                for r in results
+            ]
+            elapsed = round(time.time() - t0, 3)
+            # ③ 强模型聚合 (深度综合)
+            aggregate_text = ""
+            if planner is not None:
+                agg_input = "\n\n".join(
+                    f"[部分{i+1}]\n{str(r.get('output', ''))[:1500]}"
+                    for i, r in enumerate(normalized) if r.get("ok"))
+                agg = await planner(agg_input, "aggregate")
+                aggregate_text = str(agg.get("output", "") or "")
+            return {
+                "parallel": True,
+                "planner": True,
+                "chunks": len(plan),
+                "elapsed_s": elapsed,
+                "ok": any(r.get("ok") for r in normalized),
+                "output": aggregate_text or "\n\n".join(
+                    f"[部分{i+1}]\n{str(r.get('output', ''))[:800]}"
+                    for i, r in enumerate(normalized)),
+                "aggregated": aggregate_text,
+                "plan": plan,
+            }
+
+        # 无规划器 → 原规则切分并行
         result = await dispatch_parallel(prompt, caller, max_parallel=parallelism,
                                          title=title)
         result["alias"] = matrix.get("alias", "veya1.1")
@@ -103,8 +156,33 @@ class LLMRouter:
                     content = str(res.get("output", ""))
                 return {"ok": bool(content), "output": content}
 
+            planner_caller = None
+            if "planner" in load_matrix(self.matrix_path):
+                matrix_p = load_matrix(self.matrix_path)["planner"]
+
+                async def _planner(input_text: str, phase: str) -> dict[str, Any]:
+                    res = await caller({
+                        "provider": matrix_p["provider"],
+                        "model": matrix_p["model"],
+                        "messages": [{"role": "user",
+                                      "content": (
+                                          "深度理解以下长文并给出任务拆解规划, \n"
+                                          "输出编号任务列表(每行一个):\n"
+                                          if phase == "plan" else
+                                          "综合以下各部分结果, 给出完整一致的最终回答:\n"
+                                      ) + input_text}],
+                        "tools": None,
+                    })
+                    content = ""
+                    try:
+                        content = str(res["choices"][0]["message"].get("content", ""))
+                    except (KeyError, IndexError, TypeError):
+                        content = str(res.get("output", ""))
+                    return {"ok": bool(content), "output": content}
+
             return await self.dispatch_long(prompt, _chunk_caller,
-                                            title="长文并行回答")
+                                            title="长文并行回答",
+                                            planner=planner_caller)
         result = await caller({
             "provider": decision["provider"],
             "model": decision["model"],
