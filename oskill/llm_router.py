@@ -19,6 +19,7 @@ from typing import Any
 
 from oprim._llm_router import load_matrix, route_decision
 from oprim._parallel_llm import dispatch_parallel, split_prompt
+from oprim._quality_gate import quality_check
 
 AUDIT_FILE = Path.home() / ".veya" / "audit" / "llm-router.jsonl"
 
@@ -39,11 +40,16 @@ class LLMRouter:
             pass
 
     def route(self, messages: list[dict[str, Any]],
-              tools: list | None = None) -> dict[str, Any]:
-        """路由决策 + 审计。"""
+              tools: list | None = None, *,
+              priority: str = "normal",
+              budget: float | None = None) -> dict[str, Any]:
+        """路由决策 (成本阈值/优先级感知) + 审计。"""
         matrix = load_matrix(self.matrix_path)
-        decision = route_decision(messages, tools, matrix)
+        decision = route_decision(messages, tools, matrix,
+                                  priority=priority, budget=budget)
         decision["alias"] = matrix.get("alias", "veya1.1")
+        decision["priority"] = priority
+        decision["budget"] = budget
         decision["ts"] = time.time()
         decision["audit_id"] = f"lr_{uuid.uuid4().hex[:10]}"
         self._audit_write(decision)
@@ -70,12 +76,14 @@ class LLMRouter:
         caller: Callable[[dict[str, Any]], Awaitable[dict[str, Any]]],
         *,
         tools: list | None = None,
+        priority: str = "normal",
+        budget: float | None = None,
     ) -> dict[str, Any]:
-        """别名入口: 决策 → 单发 (short) / 并行 (long) → 结果。
+        """别名入口: 决策 → 单发/并行 → 质量闸门 (低质量升级重试 1 次)。
 
         caller: 装配层注入的单次调用函数, 接收 {"provider", "model", "messages", "tools"}
         """
-        decision = self.route(messages, tools)
+        decision = self.route(messages, tools, priority=priority, budget=budget)
         if decision["route"] == "long":
             prompt = " ".join(
                 str(m.get("content", "")) for m in messages
@@ -103,8 +111,30 @@ class LLMRouter:
             "messages": messages,
             "tools": tools,
         })
+        # 质量闸门: 低质量 → 升级 frontier/upgrade_target 重试 1 次
+        gate = quality_check(result)
         result["route"] = decision["route"]
         result["alias"] = decision["alias"]
+        result["gate"] = gate
+        if not gate["ok"]:
+            matrix = load_matrix(self.matrix_path)
+            upgrade = matrix.get("upgrade_target") or matrix.get("frontier")
+            if upgrade and upgrade.get("model") != decision["model"]:
+                retry = await caller({
+                    "provider": upgrade["provider"],
+                    "model": upgrade["model"],
+                    "messages": messages,
+                    "tools": tools,
+                })
+                retry["route"] = decision["route"]
+                retry["alias"] = decision["alias"]
+                retry["gate"] = {"ok": True, "reason": "upgraded",
+                                 "from": decision["model"], "to": upgrade["model"]}
+                self._audit_write({"action": "gate_upgrade", "ts": time.time(),
+                                   "route": decision["route"],
+                                   "from": decision["model"], "to": upgrade["model"],
+                                   "reason": gate["reason"]})
+                return retry
         return result
 
 
