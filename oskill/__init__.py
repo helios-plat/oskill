@@ -9,6 +9,8 @@ from oskill._version import __version__
 
 _ELEMENT_MAP: dict[str, str] = {}
 _SUBMODULE_SET: set[str] = set()
+# 跳过扫描的包目录: 内置模板脚本等数据资产, 防止其公共函数污染顶层命名空间
+_SKIP_SCAN_DIRS: frozenset[str] = frozenset({"_figure_templates"})
 
 
 def _build_element_map() -> None:
@@ -17,6 +19,8 @@ def _build_element_map() -> None:
     for py in sorted(pkg_dir.rglob("*.py")):
         rel_path = py.relative_to(pkg_dir)
         if rel_path.parts == ("__init__.py",):
+            continue
+        if any(part in _SKIP_SCAN_DIRS for part in rel_path.parts):
             continue
         mod_parts = list(rel_path.with_suffix("").parts)
         if mod_parts[-1] == "__init__":
@@ -224,4 +228,31 @@ from oskill.spec_execute import (  # noqa: E402
     SpecExecutor,
     render_preset,
     spec_executor,
+)
+
+# Typst 撰写技能 (typst-author SKILL 内化)
+from oskill.typst_author import (  # noqa: E402
+    TYPST_GUIDE,
+    typst_compile,
+    typst_format_check,
+    typst_minimal_doc,
+    typst_probe,
+)
+
+# 环境检查与安装向导 (doctor SKILL 内化)
+from oskill.env_doctor import (  # noqa: E402
+    DEFAULT_SPECS,
+    DepSpec,
+    DoctorReport,
+    check_dependencies,
+    detect_platform,
+    install_commands,
+    run_doctor,
+)
+
+# 科研绘图模板 (mathmodel-figure-templates SKILL 内化)
+from oskill.figure_templates import (  # noqa: E402
+    list_figure_templates,
+    render_figure_template,
+    resolve_template,
 )

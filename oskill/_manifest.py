@@ -192,6 +192,18 @@ ELEMENTS: list[str] = [
     "discipline_vs_violation_winrate_compute",
     "system_history_aggregator",
     "equity_curve_3seg_compute",
+    # General Purpose (MathModelAgent SKILL 3O 内化, v4.15.0)
+    "typst_minimal_doc",
+    "typst_format_check",
+    "typst_probe",
+    "typst_compile",
+    "detect_platform",
+    "check_dependencies",
+    "install_commands",
+    "run_doctor",
+    "resolve_template",
+    "list_figure_templates",
+    "render_figure_template",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -330,6 +342,20 @@ CATEGORIES: dict[str, list[str]] = {
     "cognitive": [
         "cognitive_update",
     ],
+    # General Purpose (MathModelAgent SKILL 3O 内化, v4.15.0)
+    "general_purpose": [
+        "typst_minimal_doc",
+        "typst_format_check",
+        "typst_probe",
+        "typst_compile",
+        "detect_platform",
+        "check_dependencies",
+        "install_commands",
+        "run_doctor",
+        "resolve_template",
+        "list_figure_templates",
+        "render_figure_template",
+    ],
 }
 
 STABILITY: dict[str, str] = {
@@ -459,4 +485,16 @@ STABILITY: dict[str, str] = {
     "lint_substrate_graph": "experimental",
     "check_reference_integrity": "experimental",
     "cognitive_update": "experimental",
+    # General Purpose (MathModelAgent SKILL 3O 内化, v4.15.0)
+    "typst_minimal_doc": "experimental",
+    "typst_format_check": "experimental",
+    "typst_probe": "experimental",
+    "typst_compile": "experimental",
+    "detect_platform": "experimental",
+    "check_dependencies": "experimental",
+    "install_commands": "experimental",
+    "run_doctor": "experimental",
+    "resolve_template": "experimental",
+    "list_figure_templates": "experimental",
+    "render_figure_template": "experimental",
 }
