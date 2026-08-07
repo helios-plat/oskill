@@ -164,6 +164,7 @@ class LLMRouter:
                     res = await caller({
                         "provider": matrix_p["provider"],
                         "model": matrix_p["model"],
+                        "endpoint": matrix_p.get("endpoint"),
                         "messages": [{"role": "user",
                                       "content": (
                                           "深度理解以下长文并给出任务拆解规划, \n"

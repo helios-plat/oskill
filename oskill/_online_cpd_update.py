@@ -52,21 +52,22 @@ class CategoricalCPD:
 
     # ── 构造 ────────────────────────────────────────────────────────
     @classmethod
-    def uniform(cls, child_states: List[str], parents: List[str] | None = None,
-                prior_mass: float = 1.0) -> "CategoricalCPD":
-        """空 CPD: 没有任何配置行, 首次观测时按均匀先验初始化。"""
-        return cls(child_states=list(child_states), counts={},
-                   parents=list(parents or []))
+    def uniform(cls, child_states: List[str], parents: List[str] | None = None) -> "CategoricalCPD":
+        """空 CPD: 没有任何配置行, 首次观测时按均匀伪计数先验 (1.0/状态) 初始化 (见 _row)。"""
+        return cls(child_states=list(child_states), counts={}, parents=list(parents or []))
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CategoricalCPD":
         if not data:
             raise ValueError("CPD 数据为空")
-        return cls(child_states=list(data["child_states"]),
-                   counts={str(k): [float(v) for v in vals]
-                           for k, vals in (data.get("counts") or {}).items()},
-                   parents=list(data.get("parents", [])),
-                   version=int(data.get("version", 1)))
+        return cls(
+            child_states=list(data["child_states"]),
+            counts={
+                str(k): [float(v) for v in vals] for k, vals in (data.get("counts") or {}).items()
+            },
+            parents=list(data.get("parents", [])),
+            version=int(data.get("version", 1)),
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -77,7 +78,7 @@ class CategoricalCPD:
         if row is not None:
             return row
         if create:
-            prior = [1.0] * len(self.child_states)   # 均匀伪计数先验
+            prior = [1.0] * len(self.child_states)  # 均匀伪计数先验
             self.counts[parent_config] = prior
             return prior
         raise KeyError(f"父配置 {parent_config!r} 无观测, 无法预测")
@@ -106,17 +107,19 @@ class CategoricalCPD:
 # 无状态更新: 旧 CPD + 观测 → 新 CPD (不修改入参)
 # ---------------------------------------------------------------------------
 
+
 def _clone(cpd: CategoricalCPD) -> CategoricalCPD:
-    return CategoricalCPD(child_states=list(cpd.child_states),
-                          counts={k: list(v) for k, v in cpd.counts.items()},
-                          parents=list(cpd.parents),
-                          version=cpd.version)
+    return CategoricalCPD(
+        child_states=list(cpd.child_states),
+        counts={k: list(v) for k, v in cpd.counts.items()},
+        parents=list(cpd.parents),
+        version=cpd.version,
+    )
 
 
-def dirichlet_update(cpd: CategoricalCPD,
-                     parent_config: str,
-                     child_state: str,
-                     strength: float = 1.0) -> CategoricalCPD:
+def dirichlet_update(
+    cpd: CategoricalCPD, parent_config: str, child_state: str, strength: float = 1.0
+) -> CategoricalCPD:
     """Dirichlet 伪计数更新: counts[config][state] += strength。"""
     if strength <= 0:
         raise ValueError(f"strength 必须 > 0, 收到 {strength}")
@@ -127,11 +130,13 @@ def dirichlet_update(cpd: CategoricalCPD,
     return out
 
 
-def ema_update(cpd: CategoricalCPD,
-               parent_config: str,
-               child_state: str,
-               alpha: float = 0.1,
-               total_mass: float = 100.0) -> CategoricalCPD:
+def ema_update(
+    cpd: CategoricalCPD,
+    parent_config: str,
+    child_state: str,
+    alpha: float = 0.1,
+    total_mass: float = 100.0,
+) -> CategoricalCPD:
     """EMA 更新: probs ← (1−α)·probs + α·onehot, 换算回计数表示。
 
     首次观测该配置时从均匀分布起步。total_mass 决定计数表示的"惯性"。
@@ -147,28 +152,40 @@ def ema_update(cpd: CategoricalCPD,
     idx = out.state_index(child_state)
     total = sum(row)
     probs = [v / total for v in row]
-    new_probs = [(1 - alpha) * p + (alpha if i == idx else 0.0)
-                 for i, p in enumerate(probs)]
+    new_probs = [(1 - alpha) * p + (alpha if i == idx else 0.0) for i, p in enumerate(probs)]
     out.counts[parent_config] = [p * total_mass for p in new_probs]
     out.version = cpd.version + 1
     return out
 
 
-def update_cpd(cpd: CategoricalCPD,
-               parent_config: str,
-               child_state: str,
-               mode: str = "dirichlet",
-               **kwargs: Any) -> CategoricalCPD:
+def update_cpd(
+    cpd: CategoricalCPD,
+    parent_config: str,
+    child_state: str,
+    mode: str = "dirichlet",
+    **kwargs: Any,
+) -> CategoricalCPD:
     """统一入口: mode ∈ dirichlet | ema。"""
     if mode == "dirichlet":
-        return dirichlet_update(cpd, parent_config, child_state,
-                                strength=float(kwargs.get("strength", 1.0)))
+        return dirichlet_update(
+            cpd, parent_config, child_state, strength=float(kwargs.get("strength", 1.0))
+        )
     if mode == "ema":
-        return ema_update(cpd, parent_config, child_state,
-                          alpha=float(kwargs.get("alpha", 0.1)),
-                          total_mass=float(kwargs.get("total_mass", 100.0)))
+        return ema_update(
+            cpd,
+            parent_config,
+            child_state,
+            alpha=float(kwargs.get("alpha", 0.1)),
+            total_mass=float(kwargs.get("total_mass", 100.0)),
+        )
     raise ValueError(f"未知更新模式 {mode!r}, 只支持 dirichlet|ema")
 
 
-__all__ = ["CategoricalCPD", "config_key", "dirichlet_update", "ema_update",
-           "split_config", "update_cpd"]
+__all__ = [
+    "CategoricalCPD",
+    "config_key",
+    "dirichlet_update",
+    "ema_update",
+    "split_config",
+    "update_cpd",
+]
