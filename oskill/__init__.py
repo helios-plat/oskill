@@ -211,3 +211,9 @@ from ._strategy_evolve import (  # noqa: F401
     STRATEGY_PARAMS,
     StrategyEvolver,
 )
+
+# LLM 智能路由技能 (RouteLLM 内化)
+from oskill.llm_router import (  # noqa: E402
+    LLMRouter,
+    llm_router,
+)
