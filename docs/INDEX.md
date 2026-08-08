@@ -65,3 +65,20 @@
 | `compile_paper` | typst / xelatex×2 编译 | `bash_exec` |
 | `pdf_pages` | PDF 栅格化为 PNG (pdftoppm/mutool/magick) | `bash_exec` |
 | `run_verity` | 验收总入口 (门禁+编译+栅格化) | 上述全部 |
+
+## Group 7: Engineering Workflow (mattpocock skills 3O 内化, v4.17.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `interview_frontier` | 计算访谈前沿 (本轮可问问题) | — |
+| `interview_pending_facts` | 收集待查环境事实 | — |
+| `interview_progress` / `is_interview_complete` | 访谈进度/完成判定 | — |
+| `record_interview_answers` / `record_interview_facts` | 记录答案/事实 | — |
+| `resolve_interview_answer` | 确定性推荐答案 | — |
+| `scan_standards` | Standards 轴坏味道扫描 (确定性) | — |
+| `scan_spec_coverage` / `review_diff` | Spec 轴范围比对 / 双轴合并审查 | — |
+| `read_glossary` / `upsert_term` | CONTEXT.md 术语表读写 | — |
+| `should_write_adr` / `write_adr` | ADR 三门槛 / 编号落盘 | — |
+| `tickets_next_runnable` / `ticket_set_status` | 票阻塞边解算 / 状态流转 | — |
+| `tickets_check_cycles` | 依赖环检测 | — |
+| `pipeline_next_action` / `pipeline_transition` | 阶段机下一步/迁移 | — |
