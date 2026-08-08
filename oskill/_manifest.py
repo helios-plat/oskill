@@ -270,6 +270,11 @@ ELEMENTS: list[str] = [
     "write_agent_instructions",
     "plan_wiring",
     "list_agents",
+    # Graphify / Strix (3O 内化, v4.22.0)
+    "KnowledgeGraph",
+    "semantic_to_graph",
+    "run_pentest_loop",
+    "verify_finding",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -484,6 +489,10 @@ CATEGORIES: dict[str, list[str]] = {
         "write_agent_instructions",
         "plan_wiring",
         "list_agents",
+        "KnowledgeGraph",
+        "semantic_to_graph",
+        "run_pentest_loop",
+        "verify_finding",
     ],
 }
 
@@ -692,4 +701,9 @@ STABILITY: dict[str, str] = {
     "write_agent_instructions": "experimental",
     "plan_wiring": "experimental",
     "list_agents": "experimental",
+    # Graphify / Strix (3O 内化, v4.22.0)
+    "KnowledgeGraph": "experimental",
+    "semantic_to_graph": "experimental",
+    "run_pentest_loop": "experimental",
+    "verify_finding": "experimental",
 }

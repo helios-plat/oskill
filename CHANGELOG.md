@@ -2,6 +2,18 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.22.0] — 2026-08-08
+
+### Added (Graphify + Strix — 图遍历查询 + 渗透闭环 3O 内化)
+- feat: `knowledge_graph_query` — 可查询知识图谱: GraphNode/GraphEdge 带
+  **EXTRACTED/INFERRED 信任分级** (可审计) / 图遍历 (neighbors 按信任过滤 /
+  shortest_path BFS / trace 带边证据 / communities label propagation) /
+  export_json (graph.json) / `semantic_to_graph` (Graft 节点 → 图, 显式链接
+  标 EXTRACTED, 共享来源共现标 INFERRED)。
+- feat: `pentest_loop` — 自主渗透闭环: RECON→EXPLOIT→VERIFY→REPORT 阶段机 /
+  **PoC 验证门** (verify_finding: 通过→confirmed 防误报, 失败→rejected) /
+  产物契约 (markdown 报告 / SARIF 2.1.0 / to_dict), 仅授权目标。
+
 ## [4.21.0] — 2026-08-08
 
 ### Added (Graft — 语义节点图 + 多 agent 接线 3O 内化)

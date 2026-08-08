@@ -265,6 +265,21 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.knowledge_graph_query import (  # noqa: E402
+    EDGE_EXTRACTED,
+    EDGE_INFERRED,
+    GraphEdge,
+    GraphNode,
+    KnowledgeGraph,
+    semantic_to_graph,
+)
+from oskill.pentest_loop import (  # noqa: E402
+    Finding,
+    PentestReport,
+    PentestState,
+    run_pentest_loop,
+    verify_finding,
+)
 from oskill.code_graph_semantic import (  # noqa: E402
     LINK_DEPENDS_ON,
     LINK_IMPLEMENTS,
