@@ -275,6 +275,12 @@ ELEMENTS: list[str] = [
     "semantic_to_graph",
     "run_pentest_loop",
     "verify_finding",
+    # TencentDB Agent Memory (3O 内化, v4.23.0)
+    "rrf_merge",
+    "hybrid_search",
+    "bm25_score",
+    "DistillPipeline",
+    "AssetRegistry",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -493,6 +499,11 @@ CATEGORIES: dict[str, list[str]] = {
         "semantic_to_graph",
         "run_pentest_loop",
         "verify_finding",
+        "rrf_merge",
+        "hybrid_search",
+        "bm25_score",
+        "DistillPipeline",
+        "AssetRegistry",
     ],
 }
 
@@ -706,4 +717,10 @@ STABILITY: dict[str, str] = {
     "semantic_to_graph": "experimental",
     "run_pentest_loop": "experimental",
     "verify_finding": "experimental",
+    # TencentDB Agent Memory (3O 内化, v4.23.0)
+    "rrf_merge": "experimental",
+    "hybrid_search": "experimental",
+    "bm25_score": "experimental",
+    "DistillPipeline": "experimental",
+    "AssetRegistry": "experimental",
 }

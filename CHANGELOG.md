@@ -2,6 +2,18 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.23.0] — 2026-08-08
+
+### Added (TencentDB Agent Memory — 分层记忆/混合检索/资产负载 3O 内化)
+- feat: `rrf_retrieval` — RRF 混合检索: BM25 打分 (纯 Python) / rrf_merge
+  (Σ 1/(k+rank+1), RRF_K=60, 源自 TencentDB) / RetrievalBudget (条目/字符/
+  超时上限防上下文淹没) / hybrid_search (稀疏+稠密融合截断)。
+- feat: `memory_layers` — L0-L3 分层蒸馏: L0 原始 → L1 原子 (事实/偏好/约束/
+  事件 + 可替代性 score) → L2 场景 → L3 人格; 确定性触发阈值 (pending>=N
+  强制蒸馏, 未归属>=N 构建场景); 检索双层 (L2/L3 快速 + L1 回退)。
+- feat: `memory_assets` — 记忆资产注册 + ACL + loadout: private/team/restricted
+  三可见性, User/Role/Agent ACL, Fixed Binding 装配按 ACL 过滤, 版本自增。
+
 ## [4.22.0] — 2026-08-08
 
 ### Added (Graphify + Strix — 图遍历查询 + 渗透闭环 3O 内化)
