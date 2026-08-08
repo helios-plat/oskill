@@ -2,6 +2,14 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.24.0] — 2026-08-08
+
+### Added (Cypress — 测试稳定性三机制 3O 内化)
+- feat: `test_stability` — 测试稳定性: `retry_until` (命令自动重试直到成功
+  或超时, 默认 4s, Cypress retry-ability) / `wait_actionable` (Actionability
+  等待: 可见/可点/不遮挡/动画稳定, 检查器注入) / `expect_eventually`
+  (断言轮询收敛, TDD 语义); 统一 RunResult (重试轨迹/超时判定/耗时可审计)。
+
 ## [4.23.0] — 2026-08-08
 
 ### Added (TencentDB Agent Memory — 分层记忆/混合检索/资产负载 3O 内化)

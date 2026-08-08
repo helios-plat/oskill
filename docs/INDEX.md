@@ -140,3 +140,11 @@
 | `rrf_merge` / `hybrid_search` / `bm25_score` | RRF 混合检索 (稀疏+稠密融合, 预算截断) | — |
 | `DistillPipeline` | L0-L3 分层蒸馏 (原子 score 门控, 场景/人格构建) | — |
 | `AssetRegistry` | 记忆资产注册 + private/team/restricted ACL + loadout 装配 | — |
+
+## Group 14: Cypress (测试稳定性三机制, v4.24.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `retry_until` | 命令自动重试 (retry-ability, 默认 4s 超时, 轨迹可审计) | — |
+| `wait_actionable` | Actionability 等待 (可见/可点/不遮挡/动画稳定, 检查器注入) | — |
+| `expect_eventually` | 断言轮询收敛 (TDD 语义) | — |

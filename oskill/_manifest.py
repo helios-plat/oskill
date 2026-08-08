@@ -281,6 +281,10 @@ ELEMENTS: list[str] = [
     "bm25_score",
     "DistillPipeline",
     "AssetRegistry",
+    # Cypress (3O 内化, v4.24.0)
+    "retry_until",
+    "wait_actionable",
+    "expect_eventually",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -504,6 +508,9 @@ CATEGORIES: dict[str, list[str]] = {
         "bm25_score",
         "DistillPipeline",
         "AssetRegistry",
+        "retry_until",
+        "wait_actionable",
+        "expect_eventually",
     ],
 }
 
@@ -723,4 +730,8 @@ STABILITY: dict[str, str] = {
     "bm25_score": "experimental",
     "DistillPipeline": "experimental",
     "AssetRegistry": "experimental",
+    # Cypress (3O 内化, v4.24.0)
+    "retry_until": "experimental",
+    "wait_actionable": "experimental",
+    "expect_eventually": "experimental",
 }
