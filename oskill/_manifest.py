@@ -323,6 +323,15 @@ ELEMENTS: list[str] = [
     "run_function_calling",
     "run_react",
     "run_plan",
+    # Deep-dive batch (2-8, v4.32.0)
+    "FlowRunner",
+    "FlowBroker",
+    "BanditRouter",
+    "OffloadPipeline",
+    "SquadOrchestrator",
+    "parse_python_tree",
+    "Marketplace",
+    "fit_smooth_cubic",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -580,6 +589,14 @@ CATEGORIES: dict[str, list[str]] = {
         "run_function_calling",
         "run_react",
         "run_plan",
+        "FlowRunner",
+        "FlowBroker",
+        "BanditRouter",
+        "OffloadPipeline",
+        "SquadOrchestrator",
+        "parse_python_tree",
+        "Marketplace",
+        "fit_smooth_cubic",
     ],
 }
 
@@ -841,4 +858,13 @@ STABILITY: dict[str, str] = {
     "run_function_calling": "experimental",
     "run_react": "experimental",
     "run_plan": "experimental",
+    # Deep-dive batch (2-8, v4.32.0)
+    "FlowRunner": "experimental",
+    "FlowBroker": "experimental",
+    "BanditRouter": "experimental",
+    "OffloadPipeline": "experimental",
+    "SquadOrchestrator": "experimental",
+    "parse_python_tree": "experimental",
+    "Marketplace": "experimental",
+    "fit_smooth_cubic": "experimental",
 }
