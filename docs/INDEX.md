@@ -113,3 +113,12 @@
 | `produce_article` | Article 组装 (标题/摘要/封面/正文) | `md_to_wechat_html` |
 | `ArticleStore` | 本地草稿 + readiness 发布前检查 | — |
 | `publish_draft` | 微信草稿 API (HTTP 注入) | — |
+
+## Group 11: Graft (语义节点图 + 多 agent 接线, v4.21.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `semantic_build` | 两遍构建语义节点图 (文件摘要→分组, LLM 注入) | `build_fingerprint` |
+| `incremental_refresh` / `stale_nodes` | 内容哈希指纹刷新, 只重建变更 ($0) | — |
+| `render_node_markdown` / `parse_wikilinks` | 节点 markdown 渲染 / [[wikilinks]] 跟随 | — |
+| `write_agent_instructions` / `plan_wiring` / `list_agents` | 多 agent 指令文件集成 (marker-fenced/owned, dry-run) | — |
