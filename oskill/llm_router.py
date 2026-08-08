@@ -190,6 +190,13 @@ class LLMRouter:
             "messages": messages,
             "tools": tools,
         })
+        # 调用方显式错误标记 (如引擎调用失败) → 跳过质量闸门与升级, 原样返回
+        if result.get("error"):
+            result["route"] = decision["route"]
+            result["alias"] = decision["alias"]
+            result["gate"] = {"ok": False, "reason": "caller_error",
+                              "error": str(result.get("error"))}
+            return result
         # 质量闸门: 低质量 → 升级 frontier/upgrade_target 重试 1 次
         gate = quality_check(result)
         result["route"] = decision["route"]
