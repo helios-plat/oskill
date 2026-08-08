@@ -243,7 +243,17 @@ ELEMENTS: list[str] = [
     "get_rulebook",
     "rules_sections",
     "select_rulebooks",
-    "standards_rules",
+    # Agent Book (ai-agent-book 3O 内化, v4.19.0)
+    "run_suite",
+    "compare_runs",
+    "paired_t_test",
+    "wilcoxon_signed_rank",
+    "cohens_d",
+    "ExperienceStore",
+    "format_experiences",
+    "ContextPool",
+    "run_voice_pipeline",
+    "interrupt_turn",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -433,6 +443,17 @@ CATEGORIES: dict[str, list[str]] = {
         "rules_sections",
         "select_rulebooks",
         "standards_rules",
+        # Agent Book (ai-agent-book 3O 内化, v4.19.0)
+        "run_suite",
+        "compare_runs",
+        "paired_t_test",
+        "wilcoxon_signed_rank",
+        "cohens_d",
+        "ExperienceStore",
+        "format_experiences",
+        "ContextPool",
+        "run_voice_pipeline",
+        "interrupt_turn",
     ],
 }
 
@@ -614,4 +635,15 @@ STABILITY: dict[str, str] = {
     "rules_sections": "experimental",
     "select_rulebooks": "experimental",
     "standards_rules": "experimental",
+    # Agent Book (ai-agent-book 3O 内化, v4.19.0)
+    "run_suite": "experimental",
+    "compare_runs": "experimental",
+    "paired_t_test": "experimental",
+    "wilcoxon_signed_rank": "experimental",
+    "cohens_d": "experimental",
+    "ExperienceStore": "experimental",
+    "format_experiences": "experimental",
+    "ContextPool": "experimental",
+    "run_voice_pipeline": "experimental",
+    "interrupt_turn": "experimental",
 }

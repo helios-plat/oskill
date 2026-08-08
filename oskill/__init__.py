@@ -265,6 +265,38 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.eval_suite import (  # noqa: E402
+    ComparisonReport,
+    EvalCase,
+    EvalRun,
+    Scorer,
+    compare_runs,
+    cohens_d,
+    paired_t_test,
+    run_suite,
+    wilcoxon_signed_rank,
+)
+from oskill.failure_learning import (  # noqa: E402
+    Experience,
+    ExperienceStore,
+    FailureRecord,
+    format_experiences,
+)
+from oskill.agent_context_pool import (  # noqa: E402
+    ContextItem,
+    ContextPool,
+    VISIBILITY_DERIVED,
+    VISIBILITY_ISOLATED,
+    VISIBILITY_SHARED,
+)
+from oskill.voice_pipeline import (  # noqa: E402
+    PIPE_MODE,
+    STREAM_MODE,
+    FULL_DUPLEX_MODE,
+    VoiceTurn,
+    interrupt_turn,
+    run_voice_pipeline,
+)
 from oskill.rulebooks import (  # noqa: E402
     RULEBOOK_KEYWORDS,
     get_rulebook,
