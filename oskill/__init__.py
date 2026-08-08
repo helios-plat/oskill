@@ -265,6 +265,25 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.mvd import (  # noqa: E402
+    MvdPipeline,
+    MvdVerdict,
+    PHASES,
+    RULES,
+    mvd_check,
+)
+from oskill.playbook import (  # noqa: E402
+    PlaybookLibrary,
+    ScenarioPlaybook,
+    SECTIONS,
+)
+from oskill.productization_gate import (  # noqa: E402
+    DECISION_COMPONENTS,
+    DECISION_KEEP_FIELD,
+    DECISION_PRODUCTIZE,
+    ProductizationVerdict,
+    evaluate_productization,
+)
 from oskill.svg_craft import (  # noqa: E402
     GateVerdict,
     LadderDecision,

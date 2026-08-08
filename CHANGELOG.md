@@ -2,6 +2,19 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.28.0] — 2026-08-08
+
+### Added (FDE 书 2/7章 — MVD + 打法手册 + 产品化四问 3O 内化)
+- feat: `mvd` — 最小可行部署 (第2章): 三军规合规检查 (真实数据/缩小范围
+  不缩价值/周级期限) + 五步流水线阶段机 (Day0 筹备→Day1 接入→Day2-3 构建
+  →Day4-5 演示拍板, 五天封顶)。
+- feat: `playbook` — 场景打法手册 (第7章): 场景七件套数据模型 (痛点/尽调/
+  雷区/指标/角色/计价/复盘) + 生命周期 (负责人/版本自增/折旧/半年检修) +
+  复盘强制更新 (嵌入流程硬关卡)。
+- feat: `productization_gate` — 产品化四问 (第7章): 个性 vs 共性 (3 客户
+  信号) / 泛化代价 vs 收益 / 非代码人可用 / 现场空间 → productize/
+  components/keep_field 决策。
+
 ## [4.27.0] — 2026-08-08
 
 ### Added (Pixel2Motion — SVG 拟合工艺 3O 内化)

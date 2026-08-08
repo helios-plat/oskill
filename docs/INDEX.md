@@ -175,3 +175,11 @@
 | `svg_path_audit` | path d 解析 + 切线跳跃/交替小段/像素阶梯审计 | `parse_path` |
 | `smoothness_gate` | Smoothness Gate 硬门槛 (阶梯/抖动/网格正交即失败) | `svg_path_audit` |
 | `complexity_ladder` | 5 级复杂度阶梯决策 (升级条件表) | — |
+
+## Group 18: FDE Book 2/7章 (MVD + 打法手册 + 产品化四问, v4.28.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `mvd_check` / `MvdPipeline` | MVD 三军规检查 + 五步流水线 (Day0-5) | — |
+| `PlaybookLibrary` / `ScenarioPlaybook` | 场景七件套 + 生命周期 (负责人/版本/折旧) | — |
+| `evaluate_productization` | 产品化四问决策 (productize/components/keep_field) | — |
