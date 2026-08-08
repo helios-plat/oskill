@@ -332,6 +332,13 @@ ELEMENTS: list[str] = [
     "parse_python_tree",
     "Marketplace",
     "fit_smooth_cubic",
+    # Remaining value batch (v4.33.0)
+    "build_rag_pipeline",
+    "moderate",
+    "ConversationVars",
+    "CodeGraphBuilder",
+    "TriageFlow",
+    "HealthMonitor",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -597,6 +604,12 @@ CATEGORIES: dict[str, list[str]] = {
         "parse_python_tree",
         "Marketplace",
         "fit_smooth_cubic",
+        "build_rag_pipeline",
+        "moderate",
+        "ConversationVars",
+        "CodeGraphBuilder",
+        "TriageFlow",
+        "HealthMonitor",
     ],
 }
 
@@ -867,4 +880,11 @@ STABILITY: dict[str, str] = {
     "parse_python_tree": "experimental",
     "Marketplace": "experimental",
     "fit_smooth_cubic": "experimental",
+    # Remaining value batch (v4.33.0)
+    "build_rag_pipeline": "experimental",
+    "moderate": "experimental",
+    "ConversationVars": "experimental",
+    "CodeGraphBuilder": "experimental",
+    "TriageFlow": "experimental",
+    "HealthMonitor": "experimental",
 }

@@ -2,6 +2,23 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.33.0] — 2026-08-08
+
+### Added (剩余价值批次 — 六项目机制补全)
+- feat: `rag_pipeline` (Dify) — 知识库数据源管线: 加载/清洗 (空行折叠/重复
+  段落去重)/切分 (段落边界 + overlap)/RagIndex (BM25 + 向量注入检索)。
+- feat: `content_moderation` (Dify) — 内容审核: keyword/length/repeat 规则
+  (block/replace) + LLM 双层审核。
+- feat: `conversation_vars` (Dify) — 会话变量生命周期: 读写/版本/TTL/作用域
+  (session/project) 快照。
+- feat: `code_graph_builder` (Graft/Graphify) — 语义图构建管线: 两遍全量 +
+  指纹增量 (未变文件复用) + 知识图谱导出。
+- feat: `triage_flow` (mattpocock) — Issue 分流状态机: needs-triage →
+  needs-info → ready-for-agent/human → wontfix, 非法迁移拒绝, agent_ready
+  判定。
+- feat: `health_probe` (freellmapi) — 服务健康探测: 探测/状态机/冷却跳过/
+  多目标监控汇总 (healthy/rate_limited/invalid/error)。
+
 ## [4.32.0] — 2026-08-08
 
 ### Added (深挖批次 2-8 — 七项目机制补全)

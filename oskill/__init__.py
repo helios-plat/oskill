@@ -265,6 +265,48 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.rag_pipeline import (  # noqa: E402
+    Chunk,
+    RagIndex,
+    build_rag_pipeline,
+    chunk_text,
+    clean_document,
+    load_document,
+)
+from oskill.content_moderation import (  # noqa: E402
+    ModerationRule,
+    ModerationVerdict,
+    moderate,
+    moderate_with_llm,
+)
+from oskill.conversation_vars import (  # noqa: E402
+    ConversationVars,
+    SCOPE_PROJECT,
+    SCOPE_SESSION,
+    VarEntry,
+)
+from oskill.code_graph_builder import (  # noqa: E402
+    BuildStats,
+    CodeGraphBuilder,
+)
+from oskill.triage_flow import (  # noqa: E402
+    STATUS_NEEDS_INFO,
+    STATUS_NEEDS_TRIAGE,
+    STATUS_READY_AGENT,
+    STATUS_READY_HUMAN,
+    STATUS_WONTFIX,
+    TriageFlow,
+    TriageIssue,
+)
+from oskill.health_probe import (  # noqa: E402
+    HealthMonitor,
+    HealthProbe,
+    ProbeState,
+    STATUS_ERROR,
+    STATUS_HEALTHY,
+    STATUS_INVALID,
+    STATUS_RATE_LIMITED,
+)
 from oskill.flow_orchestrator import (  # noqa: E402
     FlowBroker,
     FlowRegistry,

@@ -222,3 +222,14 @@
 | `parse_python_tree` | Graft/Graphify | 代码符号/import/调用边 (ast 顺序遍历) |
 | `Marketplace` | AiToEarn | 任务市场闭环 (发布/领取/交付/结算) |
 | `fit_smooth_cubic` | Pixel2Motion | 平滑三次贝塞尔拟合 (G1 连续) |
+
+## Group 23: 剩余价值批次 (六项目机制补全, v4.33.0)
+
+| Skill | 项目 | 机制 |
+|-------|------|-------|
+| `build_rag_pipeline` / `RagIndex` | Dify | 知识库管线 (加载/清洗/切分/BM25+向量检索) |
+| `moderate` | Dify | 内容审核 (keyword/length/repeat + LLM 双层) |
+| `ConversationVars` | Dify | 会话变量生命周期 (版本/TTL/作用域) |
+| `CodeGraphBuilder` | Graft/Graphify | 语义图构建 (两遍 + 指纹增量) |
+| `TriageFlow` | mattpocock | Issue 分流状态机 (agent_ready 判定) |
+| `HealthMonitor` | freellmapi | 健康探测 (状态机/冷却/多目标汇总) |
