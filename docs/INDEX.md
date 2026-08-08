@@ -82,3 +82,13 @@
 | `tickets_next_runnable` / `ticket_set_status` | 票阻塞边解算 / 状态流转 | — |
 | `tickets_check_cycles` | 依赖环检测 | — |
 | `pipeline_next_action` / `pipeline_transition` | 阶段机下一步/迁移 | — |
+
+## Group 8: Rulebooks (agent-rules-books 3O 内化, v4.18.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `list_rulebooks` | 列出 14 本规则书 id | — |
+| `get_rulebook` | 读某书 full 规则全文 | — |
+| `rules_sections` | 按 ## 通用分段解析 | — |
+| `select_rulebooks` | 按任务关键词+书名加权选书 | — |
+| `standards_rules` | 拼装审查/重构规则基线 | `select_rulebooks`, `get_rulebook` |

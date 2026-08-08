@@ -55,10 +55,13 @@ class ReviewReport:
     Attributes:
         findings: 全部发现。
         spec_coverage: Spec 轴元信息 {declared, touched, missing, extra}。
+        standards_baseline: Standards 轴规则基线文本 (LLM 深度判断用,
+            由调用方注入, 如 oskill.rulebooks.standards_rules)。
     """
 
     findings: list[ReviewFinding] = field(default_factory=list)
     spec_coverage: dict[str, Any] = field(default_factory=dict)
+    standards_baseline: str | None = None
 
     def fails(self) -> list[ReviewFinding]:
         """返回全部 fail 级发现。"""
@@ -177,6 +180,7 @@ def review_diff(
     spec: str | None = None,
     spec_files: list[str] | None = None,
     extra_patterns: list[tuple[str, str]] | None = None,
+    standards_rules: str | None = None,
 ) -> ReviewReport:
     """一站式双轴审查: Standards 扫描 + Spec 覆盖比对。
 
@@ -185,6 +189,9 @@ def review_diff(
         spec: spec 文档文本; None 时跳过 Spec 轴。
         spec_files: spec 声明允许改动的文件; None 时从 spec 提取。
         extra_patterns: Standards 轴追加规则。
+        standards_rules: Standards 轴规则基线文本 (如
+            oskill.rulebooks.standards_rules 拼装的规则), 附到报告供 LLM
+            深度判断, 不改变确定性扫描结果。
 
     Returns:
         ReviewReport。
@@ -194,7 +201,7 @@ def review_diff(
         >>> any(f.rule == "debug_leftover" for f in r.findings)
         True
     """
-    report = ReviewReport()
+    report = ReviewReport(standards_baseline=standards_rules)
     report.findings.extend(scan_standards(diff, extra_patterns=extra_patterns))
     if spec is not None:
         coverage = scan_spec_coverage(diff, spec, spec_files=spec_files)
