@@ -312,6 +312,12 @@ ELEMENTS: list[str] = [
     "parse_function_tags",
     "convert_to_tool_calls",
     "adapt_call",
+    # Dify (3O 内化, v4.30.0)
+    "WorkflowDAG",
+    "topological_execute",
+    "validate_dsl",
+    "render_template",
+    "PluginRegistry",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -560,6 +566,11 @@ CATEGORIES: dict[str, list[str]] = {
         "parse_function_tags",
         "convert_to_tool_calls",
         "adapt_call",
+        "WorkflowDAG",
+        "topological_execute",
+        "validate_dsl",
+        "render_template",
+        "PluginRegistry",
     ],
 }
 
@@ -810,4 +821,10 @@ STABILITY: dict[str, str] = {
     "parse_function_tags": "experimental",
     "convert_to_tool_calls": "experimental",
     "adapt_call": "experimental",
+    # Dify (3O 内化, v4.30.0)
+    "WorkflowDAG": "experimental",
+    "topological_execute": "experimental",
+    "validate_dsl": "experimental",
+    "render_template": "experimental",
+    "PluginRegistry": "experimental",
 }

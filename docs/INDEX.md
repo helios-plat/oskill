@@ -192,3 +192,12 @@
 | `wrap_tools` | 注入 system prompt (格式指令 + 描述) | `tools_to_prompt` |
 | `parse_function_tags` / `convert_to_tool_calls` | <function> 标签解析 → OpenAI tool_calls | — |
 | `adapt_call` | 与 model_routing 组合 (标记 provider 自动适配) | 上述全部 |
+
+## Group 20: Dify (工作流 DSL + 模板引擎 + 插件注册表, v4.30.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `WorkflowDAG` / `topological_execute` | 工作流 DSL + DAG 拓扑执行 (并行/条件门控) | `validate_dsl` |
+| `parse_dsl` / `to_dsl` | JSON DSL 序列化 (可分享/版本化) | — |
+| `render_template` / `extract_variables` | {{var}} 注入 (嵌套/默认/转义/校验) | — |
+| `PluginRegistry` | 插件声明 + 依赖解析 + 启用禁用级联 | — |

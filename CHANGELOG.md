@@ -2,6 +2,18 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.30.0] — 2026-08-08
+
+### Added (Dify — 工作流 DSL + 模板引擎 + 插件注册表 3O 内化)
+- feat: `workflow_dsl` — 工作流 DSL + DAG 节点图执行: 类型化节点
+  (start/end/llm/tool/condition/iteration/knowledge/variable) / to_dsl/
+  parse_dsl (JSON 可分享版本化) / validate_dsl (循环检测/未知节点/悬空边)
+  / topological_execute (拓扑排序, 并行分支 + 条件门控 + 变量传播)。
+- feat: `template_engine` — Prompt 变量注入: {{var}}/嵌套 a.b.c/默认值
+  {{var|d}}/转义 {{var!e}}/必填校验/未用警告。
+- feat: `plugin_registry` — 插件市场: PluginDecl 声明 + 依赖拓扑解析
+  (循环拒绝) + 按能力查找 + 启用禁用级联。
+
 ## [4.29.0] — 2026-08-08
 
 ### Added (Auto-Deep-Research — 非函数调用 LLM 适配 3O 内化)
