@@ -2,6 +2,14 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.25.0] — 2026-08-08
+
+### Added (FDE 书 — 四层健康分 + 预警干预 3O 内化)
+- feat: `health_score` — 客户健康分系统 (第5章/附录A): 四层指标
+  (delivery/customer/business/org) 加权归一化 → 综合健康分 0-100 → 分档
+  (healthy/at_risk/critical) → 阈值预警 + 干预建议 → `watchdog` 周期性评估
+  触发干预 (可接 notification_center)。
+
 ## [4.24.0] — 2026-08-08
 
 ### Added (Cypress — 测试稳定性三机制 3O 内化)

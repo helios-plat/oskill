@@ -148,3 +148,11 @@
 | `retry_until` | 命令自动重试 (retry-ability, 默认 4s 超时, 轨迹可审计) | — |
 | `wait_actionable` | Actionability 等待 (可见/可点/不遮挡/动画稳定, 检查器注入) | — |
 | `expect_eventually` | 断言轮询收敛 (TDD 语义) | — |
+
+## Group 15: FDE Book (四层健康分 + 预警干预, v4.25.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `compute_health` | 四层加权健康分 + 分档 + 预警 (delivery/customer/business/org) | `normalize` |
+| `watchdog` | 周期性评估 → 预警 → 干预 (可接 notification_center) | `compute_health` |
+| `normalize` | 指标值 0-100 归一化 (high/low better) | — |
