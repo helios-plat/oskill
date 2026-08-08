@@ -296,6 +296,11 @@ ELEMENTS: list[str] = [
     "register_platform",
     "list_platforms",
     "settle",
+    # Pixel2Motion (3O 内化, v4.27.0)
+    "iou_score",
+    "svg_path_audit",
+    "smoothness_gate",
+    "complexity_ladder",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -531,6 +536,10 @@ CATEGORIES: dict[str, list[str]] = {
         "register_platform",
         "list_platforms",
         "settle",
+        "iou_score",
+        "svg_path_audit",
+        "smoothness_gate",
+        "complexity_ladder",
     ],
 }
 
@@ -765,4 +774,9 @@ STABILITY: dict[str, str] = {
     "register_platform": "experimental",
     "list_platforms": "experimental",
     "settle": "experimental",
+    # Pixel2Motion (3O 内化, v4.27.0)
+    "iou_score": "experimental",
+    "svg_path_audit": "experimental",
+    "smoothness_gate": "experimental",
+    "complexity_ladder": "experimental",
 }

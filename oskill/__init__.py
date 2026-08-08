@@ -265,6 +265,18 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.svg_craft import (  # noqa: E402
+    GateVerdict,
+    LadderDecision,
+    LEVEL_NAMES,
+    PathAudit,
+    PathSegment,
+    complexity_ladder,
+    iou_score,
+    parse_path,
+    smoothness_gate,
+    svg_path_audit,
+)
 from oskill.social_publish import (  # noqa: E402
     ENV_CN,
     ENV_INTL,

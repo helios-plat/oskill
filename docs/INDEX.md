@@ -166,3 +166,12 @@
 | `batch_draft` | 多平台批量草稿 (限制内裁剪) | `content_limits` |
 | `settle` / `SocialTask` | 变现结算 (fixed/按量/分成) | — |
 | `WechatAdapter` | 微信适配器 (复用 wechat_publish) | `wechat_publish` |
+
+## Group 17: Pixel2Motion (SVG 拟合工艺, v4.27.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `iou_score` | mask 像素重合度 (纯 Python) | — |
+| `svg_path_audit` | path d 解析 + 切线跳跃/交替小段/像素阶梯审计 | `parse_path` |
+| `smoothness_gate` | Smoothness Gate 硬门槛 (阶梯/抖动/网格正交即失败) | `svg_path_audit` |
+| `complexity_ladder` | 5 级复杂度阶梯决策 (升级条件表) | — |

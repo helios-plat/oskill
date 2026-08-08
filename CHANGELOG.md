@@ -2,6 +2,15 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.27.0] — 2026-08-08
+
+### Added (Pixel2Motion — SVG 拟合工艺 3O 内化)
+- feat: `svg_craft` — SVG 拟合工艺四机制:
+  iou_score (像素重合度, 纯 Python) / svg_path_audit (解析 path d: 切线
+  跳跃/交替小段/像素阶梯/噪点句柄) / smoothness_gate (Smoothness Gate 硬门槛:
+  阶梯/抖动/网格正交运行即失败, 即使 IoU 高) / complexity_ladder (5 级复杂度
+  阶梯决策: primitives→composites→few-curve→smoothed→trace + 升级条件表)。
+
 ## [4.26.0] — 2026-08-08
 
 ### Added (AiToEarn — 多平台发布 + 变现 3O 内化)
