@@ -306,6 +306,12 @@ ELEMENTS: list[str] = [
     "MvdPipeline",
     "PlaybookLibrary",
     "evaluate_productization",
+    # Auto-Deep-Research (3O 内化, v4.29.0)
+    "tools_to_prompt",
+    "wrap_tools",
+    "parse_function_tags",
+    "convert_to_tool_calls",
+    "adapt_call",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -549,6 +555,11 @@ CATEGORIES: dict[str, list[str]] = {
         "MvdPipeline",
         "PlaybookLibrary",
         "evaluate_productization",
+        "tools_to_prompt",
+        "wrap_tools",
+        "parse_function_tags",
+        "convert_to_tool_calls",
+        "adapt_call",
     ],
 }
 
@@ -793,4 +804,10 @@ STABILITY: dict[str, str] = {
     "MvdPipeline": "experimental",
     "PlaybookLibrary": "experimental",
     "evaluate_productization": "experimental",
+    # Auto-Deep-Research (3O 内化, v4.29.0)
+    "tools_to_prompt": "experimental",
+    "wrap_tools": "experimental",
+    "parse_function_tags": "experimental",
+    "convert_to_tool_calls": "experimental",
+    "adapt_call": "experimental",
 }

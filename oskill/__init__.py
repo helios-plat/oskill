@@ -265,6 +265,16 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.fn_call_adapter import (  # noqa: E402
+    adapt_call,
+    convert_to_tool_calls,
+    is_function_call_output,
+    mark_no_function_calling,
+    needs_adapter,
+    parse_function_tags,
+    tools_to_prompt,
+    wrap_tools,
+)
 from oskill.mvd import (  # noqa: E402
     MvdPipeline,
     MvdVerdict,

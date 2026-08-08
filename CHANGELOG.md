@@ -2,6 +2,16 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.29.0] — 2026-08-08
+
+### Added (Auto-Deep-Research — 非函数调用 LLM 适配 3O 内化)
+- feat: `fn_call_adapter` — 让不支持 function calling 的模型也能用于工具
+  调用 agent: tools_to_prompt (工具描述, AutoAgent 格式) / wrap_tools (注入
+  system prompt + <function> 标签格式指令) / parse_function_tags (<function=…>/
+  <parameter=…> 解析) / convert_to_tool_calls (标签 → OpenAI tool_calls, JSON
+  参数结构化) / adapt_call (与 model_routing 组合: 标记 provider 后自动适配)。
+  与 rescue_tool_calls (```json 块) 互补。
+
 ## [4.28.0] — 2026-08-08
 
 ### Added (FDE 书 2/7章 — MVD + 打法手册 + 产品化四问 3O 内化)
