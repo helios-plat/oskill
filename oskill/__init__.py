@@ -265,6 +265,17 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.agent_orchestrator import (  # noqa: E402
+    MODE_FUNCTION_CALLING,
+    MODE_PLAN,
+    MODE_REACT,
+    MODES,
+    AgentResult,
+    run_agent,
+    run_function_calling,
+    run_react,
+    run_plan,
+)
 from oskill.workflow_dsl import (  # noqa: E402
     NODE_CONDITION,
     NODE_END,

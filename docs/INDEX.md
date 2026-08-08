@@ -201,3 +201,12 @@
 | `parse_dsl` / `to_dsl` | JSON DSL 序列化 (可分享/版本化) | — |
 | `render_template` / `extract_variables` | {{var}} 注入 (嵌套/默认/转义/校验) | — |
 | `PluginRegistry` | 插件声明 + 依赖解析 + 启用禁用级联 | — |
+
+## Group 21: Dify Agent (三模式工具循环编排, v4.31.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `run_agent` | 统一编排入口 (按模式分派) | 下述 |
+| `run_function_calling` | tool_calls 循环 (max_iteration 防死循环, 工具错误不终止) | — |
+| `run_react` | Thought/Action/Observation 循环 (CoT) | — |
+| `run_plan` | 计划→逐步执行→汇总 (计划器) | — |

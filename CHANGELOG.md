@@ -2,6 +2,15 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.31.0] — 2026-08-08
+
+### Added (Dify Agent 三模式 — 工具循环编排 3O 内化)
+- feat: `agent_orchestrator` — Agent 三模式编排 (Dify fc/cot/plan runner):
+  function-calling (tool_calls 循环, max_iteration 防死循环) / react
+  (Thought/Action/Observation 循环, 适用不支持原生工具调用模型) / plan
+  (计划→逐步执行→汇总); 统一 AgentResult (回答/工具轨迹/迭代/错误),
+  工具错误不终止循环。
+
 ## [4.30.0] — 2026-08-08
 
 ### Added (Dify — 工作流 DSL + 模板引擎 + 插件注册表 3O 内化)
