@@ -2,6 +2,16 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.36.0] — 2026-08-08
+
+### Added (hello-agents — Reflection/上下文工程/A2A 3O 内化)
+- feat: `reflection_agent` — Reflection 范式: 生成 → 自我反思 → 修正循环,
+  通过/无改善/超轮次三种停止条件 (补 fc/react/plan 之外的第四范式)。
+- feat: `context_engineering` — 上下文工程: 消息优先级/预算/裁剪 (必须保留
+  role + 低优先级摘要化 + 超限丢弃/截断)。
+- feat: `agent_messaging` — A2A 协议: AgentMessage (from/to/task/status/
+  payload/reply_to) + AgentBus (注册/能力路由/派发/回传)。
+
 ## [4.35.0] — 2026-08-08
 
 ### Added (第七批 — computerd/embedding/browser/加密存储)

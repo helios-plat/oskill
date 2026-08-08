@@ -354,6 +354,10 @@ ELEMENTS: list[str] = [
     "EmbeddingService",
     "BrowserRunner",
     "SecureStore",
+    # hello-agents (3O 内化, v4.36.0)
+    "ReflectionLoop",
+    "ContextEngine",
+    "AgentBus",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -638,6 +642,9 @@ CATEGORIES: dict[str, list[str]] = {
         "EmbeddingService",
         "BrowserRunner",
         "SecureStore",
+        "ReflectionLoop",
+        "ContextEngine",
+        "AgentBus",
     ],
 }
 
@@ -930,4 +937,8 @@ STABILITY: dict[str, str] = {
     "EmbeddingService": "experimental",
     "BrowserRunner": "experimental",
     "SecureStore": "experimental",
+    # hello-agents (3O 内化, v4.36.0)
+    "ReflectionLoop": "experimental",
+    "ContextEngine": "experimental",
+    "AgentBus": "experimental",
 }

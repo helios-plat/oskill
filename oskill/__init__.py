@@ -265,6 +265,23 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.reflection_agent import (  # noqa: E402
+    ReflectionLoop,
+    ReflectionResult,
+)
+from oskill.context_engineering import (  # noqa: E402
+    ContextBudget,
+    ContextEngine,
+    ContextMessage,
+    TrimResult,
+)
+from oskill.agent_messaging import (  # noqa: E402
+    MSG_STATUS_ERROR,
+    MSG_STATUS_SUCCESS,
+    A2AProtocol,
+    AgentBus,
+    AgentMessage,
+)
 from oskill.daemon_runtime import (  # noqa: E402
     DaemonLifecycle,
     DaemonState,
