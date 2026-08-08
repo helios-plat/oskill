@@ -265,6 +265,33 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.rrf_retrieval import (  # noqa: E402
+    RetrievalBudget,
+    bm25_score,
+    hybrid_search,
+    rrf_merge,
+    tokenize,
+)
+from oskill.memory_layers import (  # noqa: E402
+    ATOM_CONSTRAINT,
+    ATOM_EVENT,
+    ATOM_FACT,
+    ATOM_PREFERENCE,
+    DistillPipeline,
+    L1Atom,
+    L2Scenario,
+    L3Persona,
+    MemoryEntry,
+)
+from oskill.memory_assets import (  # noqa: E402
+    ACL,
+    AssetRegistry,
+    MemoryAsset,
+    Principal,
+    VISIBILITY_PRIVATE,
+    VISIBILITY_RESTRICTED,
+    VISIBILITY_TEAM,
+)
 from oskill.knowledge_graph_query import (  # noqa: E402
     EDGE_EXTRACTED,
     EDGE_INFERRED,

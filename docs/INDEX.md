@@ -132,3 +132,11 @@
 | `run_pentest_loop` | 渗透闭环 (侦察→利用→验证→报告) | `verify_finding` |
 | `verify_finding` | PoC 验证门 (confirmed/rejected, 防误报) | — |
 | `PentestReport` | 产物契约 (markdown / SARIF 2.1.0) | — |
+
+## Group 13: TencentDB Agent Memory (分层记忆 + 混合检索 + 资产负载, v4.23.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `rrf_merge` / `hybrid_search` / `bm25_score` | RRF 混合检索 (稀疏+稠密融合, 预算截断) | — |
+| `DistillPipeline` | L0-L3 分层蒸馏 (原子 score 门控, 场景/人格构建) | — |
+| `AssetRegistry` | 记忆资产注册 + private/team/restricted ACL + loadout 装配 | — |
