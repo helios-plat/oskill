@@ -265,6 +265,53 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.flow_orchestrator import (  # noqa: E402
+    FlowBroker,
+    FlowRegistry,
+    FlowResult,
+    FlowRunner,
+    FlowStep,
+)
+from oskill.bandit_router import (  # noqa: E402
+    BanditRouter,
+    BanditState,
+)
+from oskill.memory_offload import (  # noqa: E402
+    OffloadPipeline,
+    TaskSegment,
+)
+from oskill.pentest_squad import (  # noqa: E402
+    ROLES,
+    SquadFinding,
+    SquadOrchestrator,
+    SquadReport,
+)
+from oskill.code_parse import (  # noqa: E402
+    SYMBOL_CLASS,
+    SYMBOL_FUNCTION,
+    SYMBOL_IMPORT,
+    SYMBOL_METHOD,
+    CallEdge,
+    CodeSymbol,
+    CodeTree,
+    parse_code,
+    parse_python_tree,
+)
+from oskill.marketplace import (  # noqa: E402
+    Listing,
+    Marketplace,
+    STATUS_CLAIMED,
+    STATUS_DELIVERED,
+    STATUS_OPEN,
+    STATUS_SETTLED,
+)
+from oskill.svg_path_tools import (  # noqa: E402
+    fit_smooth_cubic,
+    path_bbox,
+    path_center,
+    render_cubic_path,
+    simplify_line,
+)
 from oskill.agent_orchestrator import (  # noqa: E402
     MODE_FUNCTION_CALLING,
     MODE_PLAN,

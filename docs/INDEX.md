@@ -210,3 +210,15 @@
 | `run_function_calling` | tool_calls 循环 (max_iteration 防死循环, 工具错误不终止) | — |
 | `run_react` | Thought/Action/Observation 循环 (CoT) | — |
 | `run_plan` | 计划→逐步执行→汇总 (计划器) | — |
+
+## Group 22: 深挖批次 2-8 (七项目机制补全, v4.32.0)
+
+| Skill | 项目 | 机制 |
+|-------|------|-------|
+| `FlowRunner` / `FlowBroker` | Auto-Deep-Research | 流程步骤执行 (错误策略/跳转/动态插入) + 条件分发 |
+| `BanditRouter` | freellmapi | Thompson sampling 路由 (Beta 采样/观测/探索) |
+| `OffloadPipeline` | TencentDB | L1.5 任务边界 + L3 token 压缩光标 |
+| `SquadOrchestrator` | Strix | 多 agent 渗透编排 (recon/exploit/verify) |
+| `parse_python_tree` | Graft/Graphify | 代码符号/import/调用边 (ast 顺序遍历) |
+| `Marketplace` | AiToEarn | 任务市场闭环 (发布/领取/交付/结算) |
+| `fit_smooth_cubic` | Pixel2Motion | 平滑三次贝塞尔拟合 (G1 连续) |

@@ -2,6 +2,23 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.32.0] — 2026-08-08
+
+### Added (深挖批次 2-8 — 七项目机制补全)
+- feat: `flow_orchestrator` (Auto-Deep-Research) — 流程注册/分发/步骤执行:
+  顺序/错误策略 (fail/skip/retry)/跳转/动态插入步骤。
+- feat: `bandit_router` (freellmapi) — Thompson sampling 路由: Beta 分布
+  采样选 provider, 观测更新, epsilon 探索, 与 model_routing 组合。
+- feat: `memory_offload` (TencentDB) — L1.5 任务边界判断 + L3 token 压缩
+  光标 (预算超限触发摘要压缩)。
+- feat: `pentest_squad` (Strix) — 多 agent 渗透编排: recon/exploit 并行
+  视角/verify 验证门/汇总报告。
+- feat: `code_parse` (Graft/Graphify) — 代码解析管线: Python 标准库 ast
+  精确符号/import/调用边 (顺序遍历) + 其他语言行级 fallback。
+- feat: `marketplace` (AiToEarn) — 任务市场闭环: 发布/领取/交付/结算 状态机。
+- feat: `svg_path_tools` (Pixel2Motion) — 路径生成辅助: bbox/中心/折线简化
+  (Douglas-Peucker)/Catmull-Rom 平滑三次贝塞尔 (G1 连续)。
+
 ## [4.31.0] — 2026-08-08
 
 ### Added (Dify Agent 三模式 — 工具循环编排 3O 内化)
