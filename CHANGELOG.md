@@ -2,6 +2,18 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.21.0] — 2026-08-08
+
+### Added (Graft — 语义节点图 + 多 agent 接线 3O 内化)
+- feat: `code_graph_semantic` — 语义节点图: 两遍构建 (文件摘要→分组节点,
+  LLM 注入) / SemanticNode (Summary+Crux+Sources(内容哈希)+Links+Notes) /
+  指纹刷新 (build_fingerprint/ stale_nodes/ incremental_refresh, $0 无 LLM,
+  只重建变更) / 类型化 wikilinks (depends_on/part_of/uses/implements/produces)
+  / render_node_markdown (Graft 节点文件格式, [[wikilinks]] 可跟随)。
+- feat: `agent_wiring` — 多 agent 指令集成: 写 AGENTS.md/GEMINI.md/copilot/
+  .claude/skills/.cursor/rules/.windsurf/.kiro/.adal; 共享文件 marker-fenced
+  原位更新不碰用户内容, owned file 完全拥有, dry-run 预览。
+
 ## [4.20.0] — 2026-08-08
 
 ### Added (md2wechat — Discovery-First + 公众号生产发布 3O 内化)

@@ -265,6 +265,29 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.code_graph_semantic import (  # noqa: E402
+    LINK_DEPENDS_ON,
+    LINK_IMPLEMENTS,
+    LINK_PART_OF,
+    LINK_PRODUCES,
+    LINK_USES,
+    SemanticBuild,
+    SemanticNode,
+    SourceRef,
+    build_fingerprint,
+    content_hash,
+    incremental_refresh,
+    parse_wikilinks,
+    render_node_markdown,
+    semantic_build,
+    stale_nodes,
+)
+from oskill.agent_wiring import (  # noqa: E402
+    WiringResult,
+    list_agents,
+    plan_wiring,
+    write_agent_instructions,
+)
 from oskill.agent_discovery import (  # noqa: E402
     AntiNoiseValidator,
     DecisionVerdict,

@@ -261,6 +261,15 @@ ELEMENTS: list[str] = [
     "produce_article",
     "publish_draft",
     "ArticleStore",
+    # Graft (NanoNets, 3O 内化, v4.21.0)
+    "semantic_build",
+    "incremental_refresh",
+    "stale_nodes",
+    "render_node_markdown",
+    "parse_wikilinks",
+    "write_agent_instructions",
+    "plan_wiring",
+    "list_agents",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -467,6 +476,14 @@ CATEGORIES: dict[str, list[str]] = {
         "produce_article",
         "publish_draft",
         "ArticleStore",
+        "semantic_build",
+        "incremental_refresh",
+        "stale_nodes",
+        "render_node_markdown",
+        "parse_wikilinks",
+        "write_agent_instructions",
+        "plan_wiring",
+        "list_agents",
     ],
 }
 
@@ -666,4 +683,13 @@ STABILITY: dict[str, str] = {
     "produce_article": "experimental",
     "publish_draft": "experimental",
     "ArticleStore": "experimental",
+    # Graft (NanoNets, 3O 内化, v4.21.0)
+    "semantic_build": "experimental",
+    "incremental_refresh": "experimental",
+    "stale_nodes": "experimental",
+    "render_node_markdown": "experimental",
+    "parse_wikilinks": "experimental",
+    "write_agent_instructions": "experimental",
+    "plan_wiring": "experimental",
+    "list_agents": "experimental",
 }
