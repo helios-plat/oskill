@@ -2,6 +2,15 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.37.0] — 2026-08-08
+
+### Added (hello-agents 11/5-6章 — Agentic-RL + 框架适配 3O 内化)
+- feat: `agentic_rl` — Agentic-RL 训练管线机制: 确定性奖励规则 (exact/
+  contains/format/length) / GRPO 组内相对优势 (baseline 归一化) / SFT→RM→
+  RL→EVAL 阶段机 (评估门: 未达阈值不推进)。
+- feat: `agent_frameworks` — 多框架适配: AutoGen/AgentScope/LangGraph/n8n
+  注册表 (能力查询) + WorkflowDAG DSL → AutoGen/LangGraph 代码骨架生成。
+
 ## [4.36.0] — 2026-08-08
 
 ### Added (hello-agents — Reflection/上下文工程/A2A 3O 内化)

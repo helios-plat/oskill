@@ -261,3 +261,11 @@
 | `ReflectionLoop` | 4 | 生成→反思→修正循环 (第四范式) |
 | `ContextEngine` | 9 | 上下文裁剪 (优先级/摘要化/超限丢弃) |
 | `AgentBus` / `A2AProtocol` | 10 | A2A 消息 + 能力路由 + 派发回传 |
+
+## Group 27: Agentic-RL + 框架适配 (hello-agents 11/5-6章, v4.37.0)
+
+| Skill | 章 | 机制 |
+|-------|----|-------|
+| `compute_reward` / `grpo_advantages` | 11 | 确定性奖励 + GRPO 组内归一化优势 |
+| `TrainPipeline` | 11 | SFT→RM→RL→EVAL 阶段机 (评估门) |
+| `FrameworkRegistry` / `dsl_to_framework` | 5/6 | 框架注册 + DSL→AutoGen/LangGraph 代码骨架 |

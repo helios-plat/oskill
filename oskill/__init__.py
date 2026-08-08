@@ -265,6 +265,23 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.agentic_rl import (  # noqa: E402
+    STAGE_EVAL,
+    STAGE_RL,
+    STAGE_RM,
+    STAGE_SFT,
+    RewardRule,
+    TrainPipeline,
+    compute_reward,
+    grpo_advantages,
+)
+from oskill.agent_frameworks import (  # noqa: E402
+    FRAMEWORK_AUTOGEN,
+    FRAMEWORK_LANGGRAPH,
+    FrameworkRegistry,
+    FrameworkSpec,
+    dsl_to_framework,
+)
 from oskill.reflection_agent import (  # noqa: E402
     ReflectionLoop,
     ReflectionResult,

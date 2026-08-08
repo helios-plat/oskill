@@ -358,6 +358,12 @@ ELEMENTS: list[str] = [
     "ReflectionLoop",
     "ContextEngine",
     "AgentBus",
+    # Agentic-RL + 框架 (hello-agents 11/5-6章, v4.37.0)
+    "compute_reward",
+    "grpo_advantages",
+    "TrainPipeline",
+    "FrameworkRegistry",
+    "dsl_to_framework",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -645,6 +651,11 @@ CATEGORIES: dict[str, list[str]] = {
         "ReflectionLoop",
         "ContextEngine",
         "AgentBus",
+        "compute_reward",
+        "grpo_advantages",
+        "TrainPipeline",
+        "FrameworkRegistry",
+        "dsl_to_framework",
     ],
 }
 
@@ -941,4 +952,10 @@ STABILITY: dict[str, str] = {
     "ReflectionLoop": "experimental",
     "ContextEngine": "experimental",
     "AgentBus": "experimental",
+    # Agentic-RL + 框架 (hello-agents 11/5-6章, v4.37.0)
+    "compute_reward": "experimental",
+    "grpo_advantages": "experimental",
+    "TrainPipeline": "experimental",
+    "FrameworkRegistry": "experimental",
+    "dsl_to_framework": "experimental",
 }
