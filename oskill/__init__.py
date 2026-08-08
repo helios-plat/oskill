@@ -265,6 +265,37 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.runtime_backends import (  # noqa: E402
+    BackendExecutor,
+    BackendRegistry,
+    RuntimeBackend,
+)
+from oskill.doc_extractors import (  # noqa: E402
+    DataSourceAdapter,
+    extract_docx,
+    extract_pdf,
+    extract_text,
+    extract_xlsx,
+    fetch_url,
+)
+from oskill.memory_system import (  # noqa: E402
+    MEMORY_KINDS,
+    MEMORY_RAG,
+    MEMORY_TOOL,
+    MemoryEntry,
+    MemoryStore,
+    ToolMemory,
+)
+from oskill.test_report import (  # noqa: E402
+    TestCaseResult,
+    TestRunReport,
+    collect_test_run,
+)
+from oskill.provider_clients import (  # noqa: E402
+    PROVIDER_REGISTRY,
+    ProviderClient,
+    client_for,
+)
 from oskill.rag_pipeline import (  # noqa: E402
     Chunk,
     RagIndex,

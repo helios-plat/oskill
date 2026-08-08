@@ -2,6 +2,22 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.34.0] — 2026-08-08
+
+### Added (第六批 — 六项机制补全)
+- feat: `runtime_backends` (cloudflare) — 执行后端能力注册: 声明 (kind/
+  capabilities) / 注册/能力查询/按需求选择 / 懒连接执行器。
+- feat: `doc_extractors` (Dify 数据源) — 真实文档提取: txt/md/csv/json/
+  docx/xlsx (纯 Python zip+xml) / pdf (pymupdf 可选) / URL 拉取 + HTML strip。
+- feat: `memory_system` (Auto-Deep-Research) — 多类型记忆: tool/rag/paper/
+  codetree 分类存储 + 检索 + ToolMemory 场景→工具推荐。
+- feat: `test_report` (Cypress) — 测试结果契约: 用例结果/运行汇总/命令
+  轨迹/收集器 (异常→failed)。
+- feat: `provider_clients` (freellmapi) — 真实 provider HTTP 客户端:
+  13 家端点注册表 + OpenAI-compatible/Anthropic 双格式 + 流式 SSE 解析。
+- feat: `md_to_wechat_html` 增强 (md2wechat) — 表格/任务列表/嵌套列表/
+  代码块语言标注。
+
 ## [4.33.0] — 2026-08-08
 
 ### Added (剩余价值批次 — 六项目机制补全)

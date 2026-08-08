@@ -26,6 +26,9 @@ from typing import Any
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 _HR_RE = re.compile(r"^---+$")
 _CODE_FENCE_RE = re.compile(r"^```(\w*)")
+_TABLE_ROW_RE = re.compile(r"^\|.*\|$")
+_TASK_ITEM_RE = re.compile(r"^\s*[-*]\s+\[([ xX])\]\s+(.*)$")
+_LIST_ITEM_RE = re.compile(r"^(\s*)([-*]|\d+[.)])\s+(.*)$")
 _IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)")
 _LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
 _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
@@ -65,6 +68,7 @@ def md_to_wechat_html(markdown: str) -> str:
             html_lines.append("</blockquote>")
             in_quote = False
 
+    in_table = False
     for raw in lines:
         line = raw.rstrip()
         if in_code:
@@ -78,9 +82,26 @@ def md_to_wechat_html(markdown: str) -> str:
         if fence:
             close_list()
             close_quote()
-            html_lines.append("<pre><code>")
+            lang = fence.group(1) or ""
+            html_lines.append(f'<pre><code class="language-{html.escape(lang)}">')
             in_code = True
             continue
+        if _TABLE_ROW_RE.match(line):
+            close_list()
+            close_quote()
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if all(re.fullmatch(r"[-:]+", c) for c in cells):
+                continue
+            if not in_table:
+                html_lines.append("<table><tbody>")
+                in_table = True
+            html_lines.append(
+                "<tr>" + "".join(f"<td>{_inline_format(c)}</td>" for c in cells) + "</tr>"
+            )
+            continue
+        if in_table:
+            html_lines.append("</tbody></table>")
+            in_table = False
         if not line.strip():
             close_list()
             close_quote()
@@ -105,7 +126,18 @@ def md_to_wechat_html(markdown: str) -> str:
                 in_quote = True
             html_lines.append(f"<p>{_inline_format(line.lstrip('> ').strip())}</p>")
             continue
-        quote_or_list = re.match(r"^(\s*)([-*]|\d+[.)])\s+(.*)$", line)
+        task = _TASK_ITEM_RE.match(line)
+        if task:
+            checked = "checked" if task.group(1).lower() == "x" else ""
+            content = _inline_format(task.group(2).strip())
+            if not in_list_ul or list_type != "ul":
+                close_list()
+                html_lines.append("<ul>")
+                in_list_ul = 1
+                list_type = "ul"
+            html_lines.append(f'<li><input type="checkbox" disabled {checked}/> {content}</li>')
+            continue
+        quote_or_list = _LIST_ITEM_RE.match(line)
         if quote_or_list:
             marker = quote_or_list.group(2)
             content = _inline_format(quote_or_list.group(3).strip())
@@ -128,7 +160,6 @@ def md_to_wechat_html(markdown: str) -> str:
             )
             continue
         html_lines.append(f"<p>{_inline_format(line.strip())}</p>")
-
     close_list()
     close_quote()
     if in_code:
