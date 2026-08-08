@@ -97,7 +97,8 @@ def test_md_html_headings_and_paragraph():
 
 def test_md_html_code_block():
     html_text = md_to_wechat_html("```python\nprint(1 < 2)\n```\n")
-    assert "<pre><code>" in html_text
+    assert "<pre><code" in html_text  # 含 language class
+    assert 'class="language-python"' in html_text
     assert "&lt;" in html_text  # 转义
 
 

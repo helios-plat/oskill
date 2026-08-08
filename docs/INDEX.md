@@ -233,3 +233,14 @@
 | `CodeGraphBuilder` | Graft/Graphify | 语义图构建 (两遍 + 指纹增量) |
 | `TriageFlow` | mattpocock | Issue 分流状态机 (agent_ready 判定) |
 | `HealthMonitor` | freellmapi | 健康探测 (状态机/冷却/多目标汇总) |
+
+## Group 24: 第六批 (六项机制补全, v4.34.0)
+
+| Skill | 项目 | 机制 |
+|-------|------|-------|
+| `BackendRegistry` / `BackendExecutor` | cloudflare | 执行后端能力注册 + 懒连接 + 按需求选择 |
+| `extract_text` / `extract_docx` / `extract_xlsx` | Dify | 真实文档提取 (zip+xml 纯 Python / pdf 可选) |
+| `MemoryStore` / `ToolMemory` | Auto-Deep-Research | 多类型记忆 (tool/rag/paper/codetree) + 场景→工具 |
+| `collect_test_run` | Cypress | 测试结果契约 (汇总/轨迹/异常→failed) |
+| `ProviderClient` | freellmapi | 真实 provider HTTP 客户端 (13 家端点 + 双格式) |
+| `md_to_wechat_html` 增强 | md2wechat | 表格/任务列表/嵌套列表/代码语言 |

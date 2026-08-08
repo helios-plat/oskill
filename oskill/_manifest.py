@@ -339,6 +339,14 @@ ELEMENTS: list[str] = [
     "CodeGraphBuilder",
     "TriageFlow",
     "HealthMonitor",
+    # Sixth batch (v4.34.0)
+    "BackendRegistry",
+    "BackendExecutor",
+    "extract_text",
+    "extract_docx",
+    "MemoryStore",
+    "collect_test_run",
+    "ProviderClient",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -610,6 +618,13 @@ CATEGORIES: dict[str, list[str]] = {
         "CodeGraphBuilder",
         "TriageFlow",
         "HealthMonitor",
+        "BackendRegistry",
+        "BackendExecutor",
+        "extract_text",
+        "extract_docx",
+        "MemoryStore",
+        "collect_test_run",
+        "ProviderClient",
     ],
 }
 
@@ -887,4 +902,12 @@ STABILITY: dict[str, str] = {
     "CodeGraphBuilder": "experimental",
     "TriageFlow": "experimental",
     "HealthMonitor": "experimental",
+    # Sixth batch (v4.34.0)
+    "BackendRegistry": "experimental",
+    "BackendExecutor": "experimental",
+    "extract_text": "experimental",
+    "extract_docx": "experimental",
+    "MemoryStore": "experimental",
+    "collect_test_run": "experimental",
+    "ProviderClient": "experimental",
 }
