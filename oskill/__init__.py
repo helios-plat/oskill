@@ -265,6 +265,19 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.agent_discovery import (  # noqa: E402
+    AntiNoiseValidator,
+    DecisionVerdict,
+    Resource,
+    ResourceCatalog,
+)
+from oskill.wechat_publish import (  # noqa: E402
+    Article,
+    ArticleStore,
+    md_to_wechat_html,
+    produce_article,
+    publish_draft,
+)
 from oskill.eval_suite import (  # noqa: E402
     ComparisonReport,
     EvalCase,
