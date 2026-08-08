@@ -265,6 +265,14 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.rulebooks import (  # noqa: E402
+    RULEBOOK_KEYWORDS,
+    get_rulebook,
+    list_rulebooks,
+    rules_sections,
+    select_rulebooks,
+    standards_rules,
+)
 from oskill.workflow_pipeline import (  # noqa: E402
     TICKET_BLOCKED,
     TICKET_DONE,

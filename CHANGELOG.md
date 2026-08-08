@@ -2,6 +2,19 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.18.0] — 2026-08-08
+
+### Added (Rulebooks — agent-rules-books 3O 内化)
+- feat: `rulebooks` — 经典软件工程书规则库: 14 本 (Ousterhout/Martin/Fowler/
+  Evans/Nygard/Hunt-Thomas/Feathers...) **每本仅打包 full 最完整版** (共 14 个
+  markdown 数据文件, MIT), 解决"LLM 不知道该选谁"问题: `select_rulebooks`
+  按任务关键词+书名加权选书 (refactor→legacy+refactoring, 数据→DDIA,
+  可靠性→release-it, DDD→domain-driven-design); `get_rulebook` 读全文,
+  `rules_sections` 通用分段, `standards_rules` 拼装审查规则基线。
+- feat: `review_diff(standards_rules=...)` — Standards 轴可携带书规则基线
+  供 LLM 深度判断 (确定性扫描不变)。
+- docs/INDEX Group 8 追加; _version → 4.18.0。
+
 ## [4.17.0] — 2026-08-08
 
 ### Added (Engineering Workflow — mattpocock skills 3O 内化)

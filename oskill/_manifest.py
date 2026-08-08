@@ -238,6 +238,12 @@ ELEMENTS: list[str] = [
     "pipeline_transition",
     "workflow_to_dict",
     "workflow_from_dict",
+    # Rulebooks (agent-rules-books 3O 内化, v4.18.0)
+    "list_rulebooks",
+    "get_rulebook",
+    "rules_sections",
+    "select_rulebooks",
+    "standards_rules",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -422,6 +428,11 @@ CATEGORIES: dict[str, list[str]] = {
         "pipeline_transition",
         "workflow_to_dict",
         "workflow_from_dict",
+        "list_rulebooks",
+        "get_rulebook",
+        "rules_sections",
+        "select_rulebooks",
+        "standards_rules",
     ],
 }
 
@@ -598,4 +609,9 @@ STABILITY: dict[str, str] = {
     "pipeline_transition": "experimental",
     "workflow_to_dict": "experimental",
     "workflow_from_dict": "experimental",
+    "list_rulebooks": "experimental",
+    "get_rulebook": "experimental",
+    "rules_sections": "experimental",
+    "select_rulebooks": "experimental",
+    "standards_rules": "experimental",
 }
