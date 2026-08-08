@@ -1,10 +1,12 @@
 """Oskill — Composite financial analysis workflows built on oprim atomic operations. Lazy-loaded."""
 
 from __future__ import annotations
+
 import ast
 import importlib
 from pathlib import Path
 from typing import Any
+
 from oskill._version import __version__
 
 _ELEMENT_MAP: dict[str, str] = {}
@@ -80,116 +82,204 @@ def __dir__() -> list[str]:
 __all__ = sorted(_ELEMENT_MAP.keys())
 
 # --- Explicit re-exports (Pinning) ---
-from oskill._types import (
-    OskillError,
-    EditOskillError,
-    ParseOskillError,
-    LLMOskillError,
-    ConfigOskillError,
-    EditBlock,
-    ApplyResult,
-    Chunk,
-    Symbol,
-    RepoFile,
-    RepoMap,
-    TodoItem,
-    SubTask,
-    ToolCall,
-    PluginManifest,
-    UndoPlan,
-    HookCmd,
-)
+from oskill._allocate_gift_card_balance import allocate_gift_card_balance
+from oskill._apply_discount_amount import apply_discount_amount
+from oskill._apply_discount_percentage import apply_discount_percentage
 from oskill._apply_edit_block import apply_edit_block
-from oskill._apply_unified_diff import apply_unified_diff
-from oskill._select_tools import select_tools
-from oskill._select_skill import select_skill
-from oskill._plan_decompose import plan_decompose
-from oskill._plan_to_todos import plan_to_todos
+from oskill._apply_free_shipping import apply_free_shipping
 from oskill._apply_todo_update import apply_todo_update
-from oskill._summarize_file import summarize_file
-from oskill._chunk_code import chunk_code
-from oskill._extract_symbols import extract_symbols
-from oskill._repo_map_build import repo_map_build
-from oskill._rank_relevant_files import rank_relevant_files
+from oskill._apply_unified_diff import apply_unified_diff
 from oskill._build_repo_context import build_repo_context
-from oskill._semantic_search import semantic_search
-from oskill._syntax_check import syntax_check
-from oskill._validate_edit import validate_edit
-from oskill._dedup_edits import dedup_edits
-from oskill._generate_patch_preview import generate_patch_preview
-from oskill._build_undo_plan import build_undo_plan
-from oskill._format_diagnostics import format_diagnostics
-from oskill.socratic_guide_v2 import socratic_guide_v2, SocraticStateV2
-from oskill.metacog_scaffold import metacog_scaffold
-from oskill.cold_start_single import cold_start_single
-from oskill.variant_for_review import variant_for_review
-from oskill.essay_guide import essay_guide
-from oskill._parse_llm_tool_calls import parse_llm_tool_calls
-from oskill._merge_config import merge_config
-from oskill._evaluate_hooks import evaluate_hooks
-from oskill._match_permission_rule import match_permission_rule
-from oskill._escalate_thinking_budget import escalate_thinking_budget
-from oskill._compose_plugin_manifest import compose_plugin_manifest
 from oskill._build_subagent_prompt import build_subagent_prompt
-from oskill._merge_subagent_result import merge_subagent_result
-from oskill._compress_context import compress_context
-from oskill._resolve_mentions import resolve_mentions
-from oskill._resolve_memory_hierarchy import resolve_memory_hierarchy
-from oskill._load_skill_progressive import load_skill_progressive
-from oskill._three_way_merge import three_way_merge
+from oskill._build_undo_plan import build_undo_plan
 
-from oskill._physics_force_analysis_guide import physics_force_analysis_guide, ForceAnalysisResult
-from oskill._reading_comprehension_guide import reading_comprehension_guide, ReadingGuideResult
+# K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
+from oskill._cascade_delete import cascade_delete
+from oskill._chunk_code import chunk_code
+from oskill._compose_plugin_manifest import compose_plugin_manifest
+from oskill._compress_context import compress_context
+from oskill._compute_cart_grand_total import compute_cart_grand_total
+from oskill._compute_cart_subtotal import compute_cart_subtotal
 
 # ── AII Graph Capability (K-G1 … K-G5) ──────────────────────────────────────
 # K-G1: LLM-confirmed conflict resolution (grade hardcoded unverified)
 from oskill._conflict_resolution import conflict_resolution
-
-# K-G2: two-pass CoT knowledge extraction (analyze → generate, no free-play)
-from oskill._two_step_ingest import two_step_ingest
-
-# K-G3: composite KU relevance scoring (direct/source/adamic/type weights)
-from oskill._relevance_compute import relevance_compute
+from oskill._dedup_edits import dedup_edits
+from oskill._escalate_thinking_budget import escalate_thinking_budget
+from oskill._evaluate_discount_conditions import evaluate_discount_conditions
+from oskill._evaluate_discount_eligibility import evaluate_discount_eligibility
+from oskill._evaluate_hooks import evaluate_hooks
+from oskill._extract_symbols import extract_symbols
+from oskill._format_diagnostics import format_diagnostics
+from oskill._generate_patch_preview import generate_patch_preview
 
 # K-G4: BFS graph expansion with relevance pruning
 from oskill._graph_expand_retrieval import graph_expand_retrieval
+from oskill._load_skill_progressive import load_skill_progressive
+from oskill._match_permission_rule import match_permission_rule
+from oskill._merge_config import merge_config
+from oskill._merge_subagent_result import merge_subagent_result
+from oskill._parse_llm_tool_calls import parse_llm_tool_calls
+from oskill._physics_force_analysis_guide import ForceAnalysisResult, physics_force_analysis_guide
+from oskill._plan_decompose import plan_decompose
+from oskill._plan_to_todos import plan_to_todos
+from oskill._rank_relevant_files import rank_relevant_files
+from oskill._reading_comprehension_guide import ReadingGuideResult, reading_comprehension_guide
 
-# K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
-from oskill._cascade_delete import cascade_delete
+# K-G3: composite KU relevance scoring (direct/source/adamic/type weights)
+from oskill._relevance_compute import relevance_compute
+from oskill._repo_map_build import repo_map_build
 
 # ── Batch-warehouse commerce vertical ───────────────────────────────────────
 from oskill._resolve_display_batch import resolve_display_batch
-from oskill._compute_cart_subtotal import compute_cart_subtotal
-from oskill._compute_cart_grand_total import compute_cart_grand_total
-from oskill._evaluate_discount_eligibility import evaluate_discount_eligibility
-from oskill._evaluate_discount_conditions import evaluate_discount_conditions
-from oskill._apply_discount_amount import apply_discount_amount
-from oskill._apply_discount_percentage import apply_discount_percentage
-from oskill._apply_free_shipping import apply_free_shipping
+from oskill._resolve_memory_hierarchy import resolve_memory_hierarchy
+from oskill._resolve_mentions import resolve_mentions
+from oskill._select_skill import select_skill
+from oskill._select_tools import select_tools
+from oskill._semantic_search import semantic_search
 from oskill._stack_discount_allocations import stack_discount_allocations
-from oskill._allocate_gift_card_balance import allocate_gift_card_balance
+from oskill._summarize_file import summarize_file
+from oskill._syntax_check import syntax_check
+from oskill._three_way_merge import three_way_merge
 
-# AutoAgent capability imports
-from .agent_form_synthesize import agent_form_synthesize  # noqa: F401
-from .meta_self_develop_loop import meta_self_develop_loop  # noqa: F401
+# K-G2: two-pass CoT knowledge extraction (analyze → generate, no free-play)
+from oskill._two_step_ingest import two_step_ingest
+from oskill._types import (
+    ApplyResult,
+    Chunk,
+    ConfigOskillError,
+    EditBlock,
+    EditOskillError,
+    HookCmd,
+    LLMOskillError,
+    OskillError,
+    ParseOskillError,
+    PluginManifest,
+    RepoFile,
+    RepoMap,
+    SubTask,
+    Symbol,
+    TodoItem,
+    ToolCall,
+    UndoPlan,
+)
+from oskill._validate_edit import validate_edit
+from oskill.cold_start_single import cold_start_single
 
-from .team_plan_gen import team_plan_gen  # noqa: F401
+# DrawIO 非数据图示绘制 (4drawio SKILL 内化)
+from oskill.drawio_diagram import (  # noqa: E402
+    STYLE_BOX,
+    STYLE_DATA,
+    STYLE_DECISION,
+    STYLE_EDGE,
+    STYLE_PROCESS,
+    drawio_doc,
+    drawio_edge,
+    drawio_node,
+    export_drawio,
+    render_drawio,
+    validate_drawio,
+)
 
-from .soul_self_evolution import soul_self_evolution  # noqa: F401
+# 环境检查与安装向导 (doctor SKILL 内化)
+from oskill.env_doctor import (  # noqa: E402
+    DEFAULT_SPECS,
+    DepSpec,
+    DoctorReport,
+    check_dependencies,
+    detect_platform,
+    install_commands,
+    run_doctor,
+)
+from oskill.essay_guide import essay_guide
 
-from .deep_research_tree import deep_research_tree  # noqa: F401
+# 科研绘图模板 (mathmodel-figure-templates SKILL 内化)
+from oskill.figure_templates import (  # noqa: E402
+    list_figure_templates,
+    render_figure_template,
+    resolve_template,
+)
 
-from .leader_worker_dispatch import leader_worker_dispatch  # noqa: F401
+# LLM 智能路由技能 (RouteLLM 内化)
+from oskill.llm_router import (  # noqa: E402
+    LLMRouter,
+    llm_router,
+)
+from oskill.metacog_scaffold import metacog_scaffold
 
-from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401
+# 工程工作流原语 (mattpocock skills 3O 内化)
+from oskill.requirements_interview import (  # noqa: E402
+    InterviewQuestion,
+    InterviewState,
+    interview_frontier,
+    interview_pending_facts,
+    interview_progress,
+    is_interview_complete,
+    record_interview_answers,
+    record_interview_facts,
+    resolve_interview_answer,
+)
+from oskill.review_double_axis import (  # noqa: E402
+    ReviewFinding,
+    ReviewReport,
+    review_diff,
+    scan_spec_coverage,
+    scan_standards,
+)
+from oskill.shared_language import (  # noqa: E402
+    AdrDraft,
+    read_glossary,
+    should_write_adr,
+    upsert_term,
+    write_adr,
+)
+from oskill.socratic_guide_v2 import SocraticStateV2, socratic_guide_v2
 
-from .dag_visual_layout import dag_visual_layout  # noqa: F401
+# 可执行 Spec 技能 (spec-kit 内化) + ECC 领域分派基础
+from oskill.spec_execute import (  # noqa: E402
+    PRESETS,
+    SpecExecutor,
+    render_preset,
+    spec_executor,
+)
 
-from .skill_teach import skill_teach, skill_list, skill_export, skill_import_  # noqa: F401
+# Typst 撰写技能 (typst-author SKILL 内化)
+from oskill.typst_author import (  # noqa: E402
+    TYPST_GUIDE,
+    typst_compile,
+    typst_format_check,
+    typst_minimal_doc,
+    typst_probe,
+)
+from oskill.variant_for_review import variant_for_review
 
-from .recurring_scheduler import RecurringScheduler  # noqa: F401
-from .scheduler_attempt_lifecycle import transition_attempt, monthly_clamp, retry_execute, pre_run_knowledge_hook  # noqa: F401
-from .skills_dynamic_inject import skills_dynamic_inject  # noqa: F401
+# 论文验收与一致性检查 (6verity SKILL 内化)
+from oskill.verity_check import (  # noqa: E402
+    PLACEHOLDER_RE,
+    VerityConfig,
+    VerityItem,
+    VerityReport,
+    compile_paper,
+    pdf_pages,
+    resolve_config,
+    run_text_gate,
+    run_verity,
+)
+from oskill.workflow_pipeline import (  # noqa: E402
+    TICKET_BLOCKED,
+    TICKET_DONE,
+    TICKET_OPEN,
+    PipelineAction,
+    Ticket,
+    WorkflowState,
+    pipeline_next_action,
+    pipeline_transition,
+    ticket_set_status,
+    tickets_check_cycles,
+    tickets_next_runnable,
+    workflow_from_dict,
+    workflow_to_dict,
+)
 
 # ── Phase 2: 贝叶斯 ToM 信念更新 ───────────────────────────────────
 from ._bayesian_belief_update import (  # noqa: F401
@@ -216,71 +306,21 @@ from ._strategy_evolve import (  # noqa: F401
     StrategyEvolver,
 )
 
-# LLM 智能路由技能 (RouteLLM 内化)
-from oskill.llm_router import (  # noqa: E402
-    LLMRouter,
-    llm_router,
+# AutoAgent capability imports
+from .agent_form_synthesize import agent_form_synthesize  # noqa: F401
+from .dag_visual_layout import dag_visual_layout  # noqa: F401
+from .deep_research_tree import deep_research_tree  # noqa: F401
+from .leader_worker_dispatch import leader_worker_dispatch  # noqa: F401
+from .meta_self_develop_loop import meta_self_develop_loop  # noqa: F401
+from .recurring_scheduler import RecurringScheduler  # noqa: F401
+from .scheduler_attempt_lifecycle import (  # noqa: F401
+    monthly_clamp,
+    pre_run_knowledge_hook,
+    retry_execute,
+    transition_attempt,
 )
-
-# 可执行 Spec 技能 (spec-kit 内化) + ECC 领域分派基础
-from oskill.spec_execute import (  # noqa: E402
-    PRESETS,
-    SpecExecutor,
-    render_preset,
-    spec_executor,
-)
-
-# Typst 撰写技能 (typst-author SKILL 内化)
-from oskill.typst_author import (  # noqa: E402
-    TYPST_GUIDE,
-    typst_compile,
-    typst_format_check,
-    typst_minimal_doc,
-    typst_probe,
-)
-
-# 环境检查与安装向导 (doctor SKILL 内化)
-from oskill.env_doctor import (  # noqa: E402
-    DEFAULT_SPECS,
-    DepSpec,
-    DoctorReport,
-    check_dependencies,
-    detect_platform,
-    install_commands,
-    run_doctor,
-)
-
-# 科研绘图模板 (mathmodel-figure-templates SKILL 内化)
-from oskill.figure_templates import (  # noqa: E402
-    list_figure_templates,
-    render_figure_template,
-    resolve_template,
-)
-
-# DrawIO 非数据图示绘制 (4drawio SKILL 内化)
-from oskill.drawio_diagram import (  # noqa: E402
-    STYLE_BOX,
-    STYLE_DATA,
-    STYLE_DECISION,
-    STYLE_EDGE,
-    STYLE_PROCESS,
-    drawio_doc,
-    drawio_edge,
-    drawio_node,
-    export_drawio,
-    render_drawio,
-    validate_drawio,
-)
-
-# 论文验收与一致性检查 (6verity SKILL 内化)
-from oskill.verity_check import (  # noqa: E402
-    PLACEHOLDER_RE,
-    VerityConfig,
-    VerityItem,
-    VerityReport,
-    compile_paper,
-    pdf_pages,
-    resolve_config,
-    run_text_gate,
-    run_verity,
-)
+from .skill_teach import skill_export, skill_import_, skill_list, skill_teach  # noqa: F401
+from .skills_dynamic_inject import skills_dynamic_inject  # noqa: F401
+from .soul_self_evolution import soul_self_evolution  # noqa: F401
+from .team_plan_gen import team_plan_gen  # noqa: F401
+from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401

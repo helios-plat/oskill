@@ -2,6 +2,21 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.17.0] — 2026-08-08
+
+### Added (Engineering Workflow — mattpocock skills 3O 内化)
+- feat: `requirements_interview` — 需求对齐访谈原语 (grilling): 设计树状态机,
+  依赖声明的分轮前沿 (frontier) 推进, 环境事实派 sub-agent (调用方注入), 每题
+  确定性推荐答案, 前沿空 = 达成共享理解。
+- feat: `review_double_axis` — 双轴代码审查 (code-review): Standards 轴确定性
+  坏味道扫描 (debug/TODO/硬编码密钥= fail/注释代码/空 except) + Spec 轴改动
+  文件范围比对 (越界= fail), 两轴独立合并, LLM 深度判断由调用方注入。
+- feat: `shared_language` — 共享语言 (CONTEXT.md + ADR): 术语表幂等读写
+  (列表/表格两种格式), ADR 三门槛门控 (难逆转/无上下文难懂/真权衡), 编号落盘。
+- feat: `workflow_pipeline` — idea→ship 编排状态机 (grill→spec→tickets→
+  implement→review→DONE): 票携带 blocked_by 阻塞边 + 环检测 + 可运行集解算,
+  阶段迁移事件驱动, 纯投影不绑存储 (可接 veya_loop GoalKernel)。
+
 ## [4.16.0] — 2026-08-07
 
 ### Added (MathModelAgent SKILL 3O 内化 — General Purpose 中通用度两件套)
