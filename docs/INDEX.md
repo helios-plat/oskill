@@ -183,3 +183,12 @@
 | `mvd_check` / `MvdPipeline` | MVD 三军规检查 + 五步流水线 (Day0-5) | — |
 | `PlaybookLibrary` / `ScenarioPlaybook` | 场景七件套 + 生命周期 (负责人/版本/折旧) | — |
 | `evaluate_productization` | 产品化四问决策 (productize/components/keep_field) | — |
+
+## Group 19: Auto-Deep-Research (非函数调用 LLM 适配, v4.29.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `tools_to_prompt` | OpenAI tools → 文本描述 (AutoAgent 格式) | — |
+| `wrap_tools` | 注入 system prompt (格式指令 + 描述) | `tools_to_prompt` |
+| `parse_function_tags` / `convert_to_tool_calls` | <function> 标签解析 → OpenAI tool_calls | — |
+| `adapt_call` | 与 model_routing 组合 (标记 provider 自动适配) | 上述全部 |
