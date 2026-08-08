@@ -265,6 +265,30 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.workflow_dsl import (  # noqa: E402
+    NODE_CONDITION,
+    NODE_END,
+    NODE_ITERATION,
+    NODE_KNOWLEDGE,
+    NODE_LLM,
+    NODE_START,
+    NODE_TOOL,
+    NODE_VARIABLE,
+    WorkflowDAG,
+    WorkflowNode,
+    parse_dsl,
+    parse_dsl_json,
+    topological_execute,
+    validate_dsl,
+)
+from oskill.template_engine import (  # noqa: E402
+    extract_variables,
+    render_template,
+)
+from oskill.plugin_registry import (  # noqa: E402
+    PluginDecl,
+    PluginRegistry,
+)
 from oskill.fn_call_adapter import (  # noqa: E402
     adapt_call,
     convert_to_tool_calls,
