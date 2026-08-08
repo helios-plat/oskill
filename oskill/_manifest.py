@@ -289,6 +289,13 @@ ELEMENTS: list[str] = [
     "compute_health",
     "watchdog",
     "normalize",
+    # AiToEarn (3O 内化, v4.26.0)
+    "publish_to",
+    "batch_draft",
+    "content_limits",
+    "register_platform",
+    "list_platforms",
+    "settle",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -518,6 +525,12 @@ CATEGORIES: dict[str, list[str]] = {
         "compute_health",
         "watchdog",
         "normalize",
+        "publish_to",
+        "batch_draft",
+        "content_limits",
+        "register_platform",
+        "list_platforms",
+        "settle",
     ],
 }
 
@@ -745,4 +758,11 @@ STABILITY: dict[str, str] = {
     "compute_health": "experimental",
     "watchdog": "experimental",
     "normalize": "experimental",
+    # AiToEarn (3O 内化, v4.26.0)
+    "publish_to": "experimental",
+    "batch_draft": "experimental",
+    "content_limits": "experimental",
+    "register_platform": "experimental",
+    "list_platforms": "experimental",
+    "settle": "experimental",
 }

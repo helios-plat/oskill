@@ -2,6 +2,16 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.26.0] — 2026-08-08
+
+### Added (AiToEarn — 多平台发布 + 变现 3O 内化)
+- feat: `social_publish` — 多平台内容发布 + 变现结算:
+  PlatformAdapter 可插拔注册表 (Discovery-First) + PlatformCapabilities
+  平台能力路由 (视频/图文/限制表: xhs 18 图/yt 12h 视频) + 内置 WechatAdapter
+  (复用 wechat_publish) + GenericHttpAdapter (小红书/抖音/TikTok/YouTube 注入)
+  + batch_draft 多平台批量草稿 (平台限制内裁剪) + cn/intl 环境分离校验
+  + SocialTask/settle 变现结算 (fixed/按量/分成)。
+
 ## [4.25.0] — 2026-08-08
 
 ### Added (FDE 书 — 四层健康分 + 预警干预 3O 内化)
