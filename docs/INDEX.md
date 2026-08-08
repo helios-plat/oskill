@@ -253,3 +253,11 @@
 | `EmbeddingService` | Dify | embedding 提供者注册/缓存/批处理 |
 | `BrowserRunner` | Cypress | 浏览器 E2E 命令执行 (playwright 可选, 降级) |
 | `SecureStore` | freellmapi | AES-GCM 密钥加密存储 + PBKDF2 + 审计 |
+
+## Group 26: hello-agents (Reflection/上下文工程/A2A, v4.36.0)
+
+| Skill | 章 | 机制 |
+|-------|----|-------|
+| `ReflectionLoop` | 4 | 生成→反思→修正循环 (第四范式) |
+| `ContextEngine` | 9 | 上下文裁剪 (优先级/摘要化/超限丢弃) |
+| `AgentBus` / `A2AProtocol` | 10 | A2A 消息 + 能力路由 + 派发回传 |
