@@ -318,6 +318,11 @@ ELEMENTS: list[str] = [
     "validate_dsl",
     "render_template",
     "PluginRegistry",
+    # Dify Agent (3O 内化, v4.31.0)
+    "run_agent",
+    "run_function_calling",
+    "run_react",
+    "run_plan",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -571,6 +576,10 @@ CATEGORIES: dict[str, list[str]] = {
         "validate_dsl",
         "render_template",
         "PluginRegistry",
+        "run_agent",
+        "run_function_calling",
+        "run_react",
+        "run_plan",
     ],
 }
 
@@ -827,4 +836,9 @@ STABILITY: dict[str, str] = {
     "validate_dsl": "experimental",
     "render_template": "experimental",
     "PluginRegistry": "experimental",
+    # Dify Agent (3O 内化, v4.31.0)
+    "run_agent": "experimental",
+    "run_function_calling": "experimental",
+    "run_react": "experimental",
+    "run_plan": "experimental",
 }
