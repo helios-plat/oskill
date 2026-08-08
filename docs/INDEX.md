@@ -156,3 +156,13 @@
 | `compute_health` | 四层加权健康分 + 分档 + 预警 (delivery/customer/business/org) | `normalize` |
 | `watchdog` | 周期性评估 → 预警 → 干预 (可接 notification_center) | `compute_health` |
 | `normalize` | 指标值 0-100 归一化 (high/low better) | — |
+
+## Group 16: AiToEarn (多平台发布 + 变现, v4.26.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `register_platform` / `list_platforms` | 平台适配器注册表 (Discovery-First) | — |
+| `publish_to` / `content_limits` | 发布路由 (环境校验) / 平台限制查询 | `PlatformCapabilities` |
+| `batch_draft` | 多平台批量草稿 (限制内裁剪) | `content_limits` |
+| `settle` / `SocialTask` | 变现结算 (fixed/按量/分成) | — |
+| `WechatAdapter` | 微信适配器 (复用 wechat_publish) | `wechat_publish` |
