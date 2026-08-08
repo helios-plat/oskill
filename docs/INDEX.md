@@ -122,3 +122,13 @@
 | `incremental_refresh` / `stale_nodes` | 内容哈希指纹刷新, 只重建变更 ($0) | — |
 | `render_node_markdown` / `parse_wikilinks` | 节点 markdown 渲染 / [[wikilinks]] 跟随 | — |
 | `write_agent_instructions` / `plan_wiring` / `list_agents` | 多 agent 指令文件集成 (marker-fenced/owned, dry-run) | — |
+
+## Group 12: Graphify + Strix (图遍历查询 + 渗透闭环, v4.22.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `KnowledgeGraph` | 图遍历查询 (neighbors/shortest_path/trace/communities) + EXTRACTED/INFERRED 信任分级 | — |
+| `semantic_to_graph` | Graft 语义节点 → 知识图谱 (显式边 EXTRACTED, 共现 INFERRED) | `code_graph_semantic` |
+| `run_pentest_loop` | 渗透闭环 (侦察→利用→验证→报告) | `verify_finding` |
+| `verify_finding` | PoC 验证门 (confirmed/rejected, 防误报) | — |
+| `PentestReport` | 产物契约 (markdown / SARIF 2.1.0) | — |
