@@ -301,6 +301,11 @@ ELEMENTS: list[str] = [
     "svg_path_audit",
     "smoothness_gate",
     "complexity_ladder",
+    # FDE book 2/7章 (3O 内化, v4.28.0)
+    "mvd_check",
+    "MvdPipeline",
+    "PlaybookLibrary",
+    "evaluate_productization",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -540,6 +545,10 @@ CATEGORIES: dict[str, list[str]] = {
         "svg_path_audit",
         "smoothness_gate",
         "complexity_ladder",
+        "mvd_check",
+        "MvdPipeline",
+        "PlaybookLibrary",
+        "evaluate_productization",
     ],
 }
 
@@ -779,4 +788,9 @@ STABILITY: dict[str, str] = {
     "svg_path_audit": "experimental",
     "smoothness_gate": "experimental",
     "complexity_ladder": "experimental",
+    # FDE book 2/7章 (3O 内化, v4.28.0)
+    "mvd_check": "experimental",
+    "MvdPipeline": "experimental",
+    "PlaybookLibrary": "experimental",
+    "evaluate_productization": "experimental",
 }
