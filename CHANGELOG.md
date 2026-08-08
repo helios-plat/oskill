@@ -2,6 +2,19 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.35.0] — 2026-08-08
+
+### Added (第七批 — computerd/embedding/browser/加密存储)
+- feat: `daemon_runtime` (cloudflare computerd) — 守护进程生命周期
+  (start/stop/health/重启) + 目录变更监听 (哈希指纹 → added/changed/removed)
+  + SyncSession push/pull 同步括号 (FUSE 挂载属 OS 层, 机制层提供同步语义)。
+- feat: `embedding_service` (Dify) — embedding 提供者注册 + 缓存 + 批处理
+  (openai-compatible 工厂)。
+- feat: `browser_runner` (Cypress) — 浏览器 E2E 命令执行器 (visit/click/type/
+  assert/screenshot, playwright 可选驱动, 缺失结构化降级)。
+- feat: `secure_store` (freellmapi) — API key 加密存储: AES-GCM (cryptography
+  可选, 缺失标准库 HMAC fallback) + PBKDF2 主密钥派生 + 访问审计。
+
 ## [4.34.0] — 2026-08-08
 
 ### Added (第六批 — 六项机制补全)

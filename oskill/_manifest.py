@@ -347,6 +347,13 @@ ELEMENTS: list[str] = [
     "MemoryStore",
     "collect_test_run",
     "ProviderClient",
+    # Seventh batch (v4.35.0)
+    "DaemonLifecycle",
+    "DirWatcher",
+    "SyncSession",
+    "EmbeddingService",
+    "BrowserRunner",
+    "SecureStore",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -625,6 +632,12 @@ CATEGORIES: dict[str, list[str]] = {
         "MemoryStore",
         "collect_test_run",
         "ProviderClient",
+        "DaemonLifecycle",
+        "DirWatcher",
+        "SyncSession",
+        "EmbeddingService",
+        "BrowserRunner",
+        "SecureStore",
     ],
 }
 
@@ -910,4 +923,11 @@ STABILITY: dict[str, str] = {
     "MemoryStore": "experimental",
     "collect_test_run": "experimental",
     "ProviderClient": "experimental",
+    # Seventh batch (v4.35.0)
+    "DaemonLifecycle": "experimental",
+    "DirWatcher": "experimental",
+    "SyncSession": "experimental",
+    "EmbeddingService": "experimental",
+    "BrowserRunner": "experimental",
+    "SecureStore": "experimental",
 }

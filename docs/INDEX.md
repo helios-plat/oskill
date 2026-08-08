@@ -244,3 +244,12 @@
 | `collect_test_run` | Cypress | 测试结果契约 (汇总/轨迹/异常→failed) |
 | `ProviderClient` | freellmapi | 真实 provider HTTP 客户端 (13 家端点 + 双格式) |
 | `md_to_wechat_html` 增强 | md2wechat | 表格/任务列表/嵌套列表/代码语言 |
+
+## Group 25: 第七批 (computerd/embedding/browser/加密存储, v4.35.0)
+
+| Skill | 项目 | 机制 |
+|-------|------|-------|
+| `DaemonLifecycle` / `DirWatcher` / `SyncSession` | cloudflare computerd | daemon 生命周期 + 目录指纹监听 + push/pull 同步 |
+| `EmbeddingService` | Dify | embedding 提供者注册/缓存/批处理 |
+| `BrowserRunner` | Cypress | 浏览器 E2E 命令执行 (playwright 可选, 降级) |
+| `SecureStore` | freellmapi | AES-GCM 密钥加密存储 + PBKDF2 + 审计 |

@@ -265,6 +265,26 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.daemon_runtime import (  # noqa: E402
+    DaemonLifecycle,
+    DaemonState,
+    DirWatcher,
+    SyncSession,
+)
+from oskill.embedding_service import (  # noqa: E402
+    EmbeddingProvider,
+    EmbeddingService,
+)
+from oskill.browser_runner import (  # noqa: E402
+    BrowserRunner,
+    BrowserStepResult,
+    run_browser_test,
+)
+from oskill.secure_store import (  # noqa: E402
+    SecureStore,
+    SecureStoreError,
+    derive_key,
+)
 from oskill.runtime_backends import (  # noqa: E402
     BackendExecutor,
     BackendRegistry,
