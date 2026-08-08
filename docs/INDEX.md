@@ -92,3 +92,13 @@
 | `rules_sections` | 按 ## 通用分段解析 | — |
 | `select_rulebooks` | 按任务关键词+书名加权选书 | — |
 | `standards_rules` | 拼装审查/重构规则基线 | `select_rulebooks`, `get_rulebook` |
+
+## Group 9: Agent Book (ai-agent-book 3O 内化, v4.19.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `run_suite` | 声明式评测跑分 | `EvalCase`, scorer 注入 |
+| `compare_runs` / `paired_t_test` / `wilcoxon_signed_rank` / `cohens_d` | 双跑对比 + 统计显著性 (纯 Python) | — |
+| `ExperienceStore` / `format_experiences` | 失败学习: 记录/归纳/检索/注入 | — |
+| `ContextPool` | 多 Agent 上下文共享/隔离投影 | — |
+| `run_voice_pipeline` / `interrupt_turn` | 语音三范式编排 | asr/llm/tts 注入 |

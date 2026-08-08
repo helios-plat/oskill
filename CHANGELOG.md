@@ -2,6 +2,21 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.19.0] — 2026-08-08
+
+### Added (Agent Book — ai-agent-book 四能力 3O 内化)
+- feat: `eval_suite` — 评估套件 + 统计显著性 (第6章): EvalCase/run_suite 声明式
+  跑分 + 配对 t 检验 / Wilcoxon 符号秩 / Cohen's d (无 scipy 依赖, 纯 Python
+  数值近似) + compare_runs 双跑对比 (candidate_wins 判定)。
+- feat: `failure_learning` — 从失败中学习 (第8章): FailureRecord → ExperienceStore
+  (按类型聚合/教训去重/occurrences 计数/JSON 持久化) → 按任务 bigram 检索 →
+  format_experiences 注入护栏。
+- feat: `agent_context_pool` — 多 Agent 上下文共享/隔离 (第10章): shared/
+  isolated/derived 三可见性, projected() 按 agent 投影 (私有覆盖同键共享),
+  isolation_check 隔离守卫。
+- feat: `voice_pipeline` — 语音三范式 (第9章): pipe (整段) / stream (分块半双工)
+  / full_duplex (可打断), ASR/LLM/TTS 处理函数注入, 兼容同步/异步。
+
 ## [4.18.0] — 2026-08-08
 
 ### Added (Rulebooks — agent-rules-books 3O 内化)
