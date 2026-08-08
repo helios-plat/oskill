@@ -55,3 +55,13 @@
 | `resolve_template` | 科研绘图模板解析 (id/别名/中文) | — |
 | `list_figure_templates` | 模板清单 | — |
 | `render_figure_template` | 复制模板脚本到工作区并执行 | `subprocess` |
+| `drawio_node` / `drawio_edge` | DrawIO 节点/边描述 | — |
+| `drawio_doc` | 由节点/边生成 mxfile XML | — |
+| `export_drawio` | drawio CLI 导出 PDF (自动探测二进制) | `bash_exec` |
+| `validate_drawio` | .drawio 自检 (良构/节点/悬空边) | — |
+| `render_drawio` | 生成→写入→自检→导出 一站式 | 上述全部 |
+| `resolve_config` | 验收路径推断 (main/sections/figures...) | — |
+| `run_text_gate` | 文本质量门禁 (结构/标题/占位符/泄露/图表/数值) | `bash_exec` |
+| `compile_paper` | typst / xelatex×2 编译 | `bash_exec` |
+| `pdf_pages` | PDF 栅格化为 PNG (pdftoppm/mutool/magick) | `bash_exec` |
+| `run_verity` | 验收总入口 (门禁+编译+栅格化) | 上述全部 |

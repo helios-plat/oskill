@@ -256,3 +256,31 @@ from oskill.figure_templates import (  # noqa: E402
     render_figure_template,
     resolve_template,
 )
+
+# DrawIO 非数据图示绘制 (4drawio SKILL 内化)
+from oskill.drawio_diagram import (  # noqa: E402
+    STYLE_BOX,
+    STYLE_DATA,
+    STYLE_DECISION,
+    STYLE_EDGE,
+    STYLE_PROCESS,
+    drawio_doc,
+    drawio_edge,
+    drawio_node,
+    export_drawio,
+    render_drawio,
+    validate_drawio,
+)
+
+# 论文验收与一致性检查 (6verity SKILL 内化)
+from oskill.verity_check import (  # noqa: E402
+    PLACEHOLDER_RE,
+    VerityConfig,
+    VerityItem,
+    VerityReport,
+    compile_paper,
+    pdf_pages,
+    resolve_config,
+    run_text_gate,
+    run_verity,
+)

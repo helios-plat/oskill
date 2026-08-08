@@ -2,6 +2,13 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.16.0] — 2026-08-07
+
+### Added (MathModelAgent SKILL 3O 内化 — General Purpose 中通用度两件套)
+- feat: `drawio_diagram` — DrawIO 非数据图示绘制技能: 节点/边 spec (`drawio_node` / `drawio_edge`) → `drawio_doc` 生成 mxfile XML (ElementTree 保证转义) → `export_drawio` (自动探测 drawio/draw.io 二进制, CLI 导出 PDF) → `validate_drawio` 自检 (XML 良构/节点边计数/悬空边) → `render_drawio` 一站式。不预设任何建模专属图型。
+- feat: `verity_check` — 论文验收与一致性检查技能 (6verity SKILL 的 writing_check.sh Python 化): `resolve_config` 路径推断 → `run_text_gate` (引擎探测 / include 结构顺序 / 标题 / 占位符 / 内部词泄露 / 图片引用 / caption / 引用 / 指标与 JSON 数值一致性) → `compile_paper` (typst / xelatex×2) → `pdf_pages` (pdftoppm/mutool/magick 栅格化) → `run_verity` 总入口。领域规则参数化 (internal_terms / placeholder_pattern / problem_section_hint), 不内置工作流假设。
+- chore: `_manifest.py` ELEMENTS/CATEGORIES/STABILITY (experimental) 登记 + docs/INDEX Group 6 追加。
+
 ## [4.15.0] — 2026-08-07
 
 ### Added (MathModelAgent SKILL 3O 内化 — General Purpose 三件套)

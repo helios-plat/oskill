@@ -204,6 +204,18 @@ ELEMENTS: list[str] = [
     "resolve_template",
     "list_figure_templates",
     "render_figure_template",
+    # General Purpose (MathModelAgent SKILL 3O 内化, v4.16.0)
+    "drawio_node",
+    "drawio_edge",
+    "drawio_doc",
+    "export_drawio",
+    "validate_drawio",
+    "render_drawio",
+    "resolve_config",
+    "run_text_gate",
+    "compile_paper",
+    "pdf_pages",
+    "run_verity",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -355,6 +367,17 @@ CATEGORIES: dict[str, list[str]] = {
         "resolve_template",
         "list_figure_templates",
         "render_figure_template",
+        "drawio_node",
+        "drawio_edge",
+        "drawio_doc",
+        "export_drawio",
+        "validate_drawio",
+        "render_drawio",
+        "resolve_config",
+        "run_text_gate",
+        "compile_paper",
+        "pdf_pages",
+        "run_verity",
     ],
 }
 
@@ -497,4 +520,16 @@ STABILITY: dict[str, str] = {
     "resolve_template": "experimental",
     "list_figure_templates": "experimental",
     "render_figure_template": "experimental",
+    # General Purpose (MathModelAgent SKILL 3O 内化, v4.16.0)
+    "drawio_node": "experimental",
+    "drawio_edge": "experimental",
+    "drawio_doc": "experimental",
+    "export_drawio": "experimental",
+    "validate_drawio": "experimental",
+    "render_drawio": "experimental",
+    "resolve_config": "experimental",
+    "run_text_gate": "experimental",
+    "compile_paper": "experimental",
+    "pdf_pages": "experimental",
+    "run_verity": "experimental",
 }
