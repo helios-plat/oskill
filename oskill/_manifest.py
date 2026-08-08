@@ -254,6 +254,13 @@ ELEMENTS: list[str] = [
     "ContextPool",
     "run_voice_pipeline",
     "interrupt_turn",
+    # md2wechat (3O 内化, v4.20.0)
+    "ResourceCatalog",
+    "AntiNoiseValidator",
+    "md_to_wechat_html",
+    "produce_article",
+    "publish_draft",
+    "ArticleStore",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -454,6 +461,12 @@ CATEGORIES: dict[str, list[str]] = {
         "ContextPool",
         "run_voice_pipeline",
         "interrupt_turn",
+        "ResourceCatalog",
+        "AntiNoiseValidator",
+        "md_to_wechat_html",
+        "produce_article",
+        "publish_draft",
+        "ArticleStore",
     ],
 }
 
@@ -646,4 +659,11 @@ STABILITY: dict[str, str] = {
     "ContextPool": "experimental",
     "run_voice_pipeline": "experimental",
     "interrupt_turn": "experimental",
+    # md2wechat (3O 内化, v4.20.0)
+    "ResourceCatalog": "experimental",
+    "AntiNoiseValidator": "experimental",
+    "md_to_wechat_html": "experimental",
+    "produce_article": "experimental",
+    "publish_draft": "experimental",
+    "ArticleStore": "experimental",
 }

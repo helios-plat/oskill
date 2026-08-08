@@ -2,6 +2,17 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.20.0] — 2026-08-08
+
+### Added (md2wechat — Discovery-First + 公众号生产发布 3O 内化)
+- feat: `agent_discovery` — Discovery-First 资源目录 (ResourceCatalog: 注册/
+  discover/show/capabilities) + Anti-Noise 决策验证器 (5 条检查: 可观察/
+  确定性/可解释/无副作用/防真实错误, 源自 md2wechat AGENTS.md)。
+- feat: `wechat_publish` — 公众号内容生产管道: md_to_wechat_html (确定性
+  Markdown→微信 HTML, 纯函数) / produce_article (Article 组装) /
+  ArticleStore (本地草稿 + readiness 检查) / publish_draft (微信草稿 API,
+  HTTP 注入)。
+
 ## [4.19.0] — 2026-08-08
 
 ### Added (Agent Book — ai-agent-book 四能力 3O 内化)

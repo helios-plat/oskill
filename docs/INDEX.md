@@ -102,3 +102,14 @@
 | `ExperienceStore` / `format_experiences` | 失败学习: 记录/归纳/检索/注入 | — |
 | `ContextPool` | 多 Agent 上下文共享/隔离投影 | — |
 | `run_voice_pipeline` / `interrupt_turn` | 语音三范式编排 | asr/llm/tts 注入 |
+
+## Group 10: md2wechat (Discovery-First + 公众号发布 3O 内化, v4.20.0)
+
+| Skill | Description | Calls |
+|-------|-------------|-------|
+| `ResourceCatalog` | Discovery-First 资源目录 (注册/discover/show/capabilities) | — |
+| `AntiNoiseValidator` | 5 条反噪声决策检查 (可观察/确定性/可解释/无副作用/防真实错误) | — |
+| `md_to_wechat_html` | 确定性 Markdown→微信 HTML 转换 | — |
+| `produce_article` | Article 组装 (标题/摘要/封面/正文) | `md_to_wechat_html` |
+| `ArticleStore` | 本地草稿 + readiness 发布前检查 | — |
+| `publish_draft` | 微信草稿 API (HTTP 注入) | — |
