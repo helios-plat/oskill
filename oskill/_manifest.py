@@ -285,6 +285,10 @@ ELEMENTS: list[str] = [
     "retry_until",
     "wait_actionable",
     "expect_eventually",
+    # FDE book (3O 内化, v4.25.0)
+    "compute_health",
+    "watchdog",
+    "normalize",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -511,6 +515,9 @@ CATEGORIES: dict[str, list[str]] = {
         "retry_until",
         "wait_actionable",
         "expect_eventually",
+        "compute_health",
+        "watchdog",
+        "normalize",
     ],
 }
 
@@ -734,4 +741,8 @@ STABILITY: dict[str, str] = {
     "retry_until": "experimental",
     "wait_actionable": "experimental",
     "expect_eventually": "experimental",
+    # FDE book (3O 内化, v4.25.0)
+    "compute_health": "experimental",
+    "watchdog": "experimental",
+    "normalize": "experimental",
 }

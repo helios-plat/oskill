@@ -265,6 +265,22 @@ from oskill.verity_check import (  # noqa: E402
     run_text_gate,
     run_verity,
 )
+from oskill.health_score import (  # noqa: E402
+    GRADE_AT_RISK,
+    GRADE_CRITICAL,
+    GRADE_HEALTHY,
+    HealthAlert,
+    HealthReport,
+    LAYER_BUSINESS,
+    LAYER_CUSTOMER,
+    LAYER_DELIVERY,
+    LAYER_ORG,
+    LAYERS,
+    Metric,
+    compute_health,
+    normalize,
+    watchdog,
+)
 from oskill.test_stability import (  # noqa: E402
     ACTIONABLE_ANIMATION_STABLE,
     ACTIONABLE_CHECKS,
