@@ -642,9 +642,54 @@ from oskill.agent_discovery import (  # noqa: E402
 from oskill.wechat_publish import (  # noqa: E402
     Article,
     ArticleStore,
+    WechatAccount,
+    WechatAccountRegistry,
+    create_image_post,
+    inspect_article,
     md_to_wechat_html,
     produce_article,
     publish_draft,
+    upload_image,
+)
+from oskill.wechat_theme import (  # noqa: E402
+    LayoutBlock,
+    WechatTheme,
+    apply_theme,
+    get_theme,
+    layout_modules,
+    list_themes,
+    parse_layout_blocks,
+    register_layout_module,
+    register_theme,
+    render_layout_block,
+    render_markdown_with_layout,
+)
+from oskill.wechat_writing import (  # noqa: E402
+    ComplianceHit,
+    advise_prompt,
+    compliance_report,
+    cover_prompt,
+    humanize_prompt,
+    infographic_prompt,
+    reviewer_prompt,
+    reviser_prompt,
+    scan_compliance,
+    title_prompt,
+    write_prompt,
+)
+from oskill.wechat_review_loop import (  # noqa: E402
+    FULL_REWRITE_CRITERIA,
+    ReviewIssue,
+    ReviewRound,
+    WechatReviewLoop,
+    merge_revision,
+    needs_full_rewrite,
+    parse_verdict,
+)
+from oskill.wechat_resources import (  # noqa: E402
+    catalog_summary,
+    register_wechat_resources,
+    wechat_catalog,
 )
 from oskill.eval_suite import (  # noqa: E402
     ComparisonReport,
