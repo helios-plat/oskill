@@ -2,6 +2,35 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.38.0] — 2026-08-16
+
+### Added (md2wechat 能力面补全 — 公众号创作增强 3O 内化)
+- feat: `wechat_theme` — 主题 + 布局模块系统: WechatTheme 数据驱动主题表
+  (内置 8 个: default/clean/news/tech/elegant/spring/ocean/bold-red, 可
+  register_theme 扩展) / apply_theme 内联样式注入 (微信要求内联, 幂等) /
+  `:::` 布局块解析器 (3/4 冒号围栏, opener 字段 + 方括号 caption + rows/
+  plain 正文) + 10 个内置模块渲染器 (hero/card/tip/warning/danger/quote/
+  divider/table/list/steps) / render_markdown_with_layout 端到端 (md+布局
+  → 主题化微信 HTML); 未知主题/模块报错附可用列表 (do not guess)。
+- feat: `wechat_writing` — 创作增强 prompt 工厂 (LLM 注入分离, 零模型调
+  用): write_prompt (钩子/小节/配图 brief, JSON 契约) / title_prompt
+  (hook-level 1-3 参数化) / humanize_prompt (去 AI 味规则) /
+  cover_prompt + infographic_prompt (生图 plan 模式) / advise_prompt
+  (inspect 报告注入) + 确定性合规扫描 scan_compliance/compliance_report
+  (绝对化/医疗功效/金融承诺/夸大宣传/诱导分享 5 类违禁词规则表, 命中+
+  上下文 snippet, 可测可解释 — md2wechat inspect 只查元数据不查违禁词)。
+- feat: `wechat_publish` 增强 — upload_image (material/add_material 永久
+  素材, multipart) / create_image_post (图文/多图消息组装, 默认先上传再
+  组 draft payload) / WechatAccountRegistry (多账号表, 只存 secret_hint
+  永不输出 secret) / inspect_article (完整发布前检查: 元数据 readiness +
+  标题 ≤64 字 + 违禁用语扫描 + 图片数)。
+- feat: `wechat_review_loop` — 写手↔审核↔打回闭环状态机 (主链路
+  produce_wechat_article 机制 3O 内化; md2wechat 无此能力): writer/
+  reviewer/reviser/resolve_image 全部调用方注入 (async), 状态机纯逻辑;
+  整体性问题→全文重写带约束, 章节问题→定向 patch, 超限 best-effort 不
+  假装通过; 每轮 action_log 可审计 (passed/full_rewrite/patch/
+  patch_failed/capped)。
+
 ## [4.37.0] — 2026-08-08
 
 ### Added (hello-agents 11/5-6章 — Agentic-RL + 框架适配 3O 内化)
