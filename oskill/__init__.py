@@ -136,6 +136,22 @@ from oskill._resolve_memory_hierarchy import resolve_memory_hierarchy
 from oskill._resolve_mentions import resolve_mentions
 from oskill._select_skill import select_skill
 from oskill._select_tools import select_tools
+from oskill._skill_contract import (
+    CONTRACT_FIELDS,
+    extract_contract,
+    format_skill_contract_block,
+    has_contract,
+    validate_skill_contract,
+)
+from oskill._fan_out_synthesize import fan_out_and_synthesize
+from oskill._edge_confidence import (
+    EXTRACTED,
+    INFERRED,
+    annotate_edges,
+    build_definition_index,
+    edge_confidence,
+    is_low_confidence,
+)
 from oskill._semantic_search import semantic_search
 from oskill._stack_discount_allocations import stack_discount_allocations
 from oskill._summarize_file import summarize_file
