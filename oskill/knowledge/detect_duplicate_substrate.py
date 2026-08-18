@@ -1,10 +1,12 @@
 """SHA-256 exact-match duplicate detection. Phase 1: hash-only, no embedding similarity."""
+
 from __future__ import annotations
 
 from oprim._logging import log
 from oprim.meta_db import open_meta_db
 
 from oskill.knowledge._context import meta_db_path
+from oskill.knowledge._pg_meta import detect_duplicate_pg, pg_enabled
 
 
 async def detect_duplicate_substrate(
@@ -16,15 +18,23 @@ async def detect_duplicate_substrate(
 
     Phase 1: SHA-256 exact match only. Embedding similarity lookup deferred to Phase 10.
     """
+    if pg_enabled():
+        try:
+            existing_id = detect_duplicate_pg(file_hash)
+        except Exception as e:
+            log.warning("oskill.detect_duplicate.db_error", error=str(e))
+            return None
+        if existing_id:
+            log.info("oskill.detect_duplicate.found", file_hash=file_hash, existing_id=existing_id)
+        return existing_id
+
     db_path = meta_db_path()
     if not db_path.exists():
         return None
 
     try:
         db = open_meta_db(db_path)
-        rows = db.fetchall(
-            "SELECT id FROM substrates WHERE file_hash = ?", [file_hash]
-        )
+        rows = db.fetchall("SELECT id FROM substrates WHERE file_hash = ?", [file_hash])
         db.close()
     except Exception as e:
         log.warning("oskill.detect_duplicate.db_error", error=str(e))
