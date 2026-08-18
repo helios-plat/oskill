@@ -279,6 +279,75 @@ def validate_drawio(path: str | Path) -> dict[str, Any]:
     }
 
 
+def wrap_mxcells_xml(inner_xml: str, *, page_width: float = 800, page_height: float = 600) -> str:
+    """把模型产出的裸 mxCell 片段 (不含根 cell/wrapper) 包成完整 mxfile XML。
+
+    Args:
+        inner_xml: 零个或多个 <mxCell>...</mxCell> 元素拼接的字符串 (不含
+            id="0"/id="1" 根 cell, 不含 <mxfile>/<root> 包裹)。
+        page_width, page_height: 画布尺寸 (仅写入 mxGraphModel 属性, 不影响校验)。
+
+    Returns:
+        完整 mxfile XML 字符串, 可直接喂给 validate_drawio_xml() / 前端画布。
+    """
+    return (
+        f'<mxfile><diagram name="Page-1">'
+        f'<mxGraphModel dx="0" dy="0" grid="1" gridSize="10" '
+        f'pageWidth="{page_width}" pageHeight="{page_height}">'
+        f'<root><mxCell id="0"/><mxCell id="1" parent="0"/>'
+        f"{inner_xml}"
+        f"</root></mxGraphModel></diagram></mxfile>"
+    )
+
+
+def validate_drawio_xml(xml: str) -> dict[str, Any]:
+    """同 validate_drawio, 但直接校验 XML 字符串 (工具调用场景不落文件)。
+
+    Args:
+        xml: 完整 mxfile XML 文本。
+
+    Returns:
+        {ok, well_formed, node_count, edge_count, problems}
+    """
+    problems: list[str] = []
+    if not xml or not xml.strip():
+        return {
+            "ok": False,
+            "well_formed": False,
+            "node_count": 0,
+            "edge_count": 0,
+            "problems": ["XML 为空"],
+        }
+    try:
+        root = ET.fromstring(xml)
+    except ET.ParseError as exc:
+        return {
+            "ok": False,
+            "well_formed": False,
+            "node_count": 0,
+            "edge_count": 0,
+            "problems": [f"XML 解析失败: {exc}"],
+        }
+    cells = root.findall(".//mxCell")
+    node_count = sum(1 for c in cells if c.get("vertex") == "1")
+    edge_count = sum(1 for c in cells if c.get("edge") == "1")
+    if node_count == 0 and edge_count == 0:
+        problems.append("没有有效 mxCell 节点/边")
+    node_ids = {c.get("id") for c in cells if c.get("vertex") == "1"}
+    for c in cells:
+        if c.get("edge") == "1" and (
+            c.get("source") not in node_ids or c.get("target") not in node_ids
+        ):
+            problems.append(f"边 {c.get('id')} 引用了不存在的节点")
+    return {
+        "ok": not problems,
+        "well_formed": True,
+        "node_count": node_count,
+        "edge_count": edge_count,
+        "problems": problems,
+    }
+
+
 def render_drawio(
     title: str,
     nodes: list[dict[str, Any]],
