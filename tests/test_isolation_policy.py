@@ -31,3 +31,23 @@ def test_harness_host_is_process_with_network() -> None:
     assert rec["isolation"] == "process"
     assert rec["block_network"] is False
     assert "not deleted" in rec["note"]
+
+
+def test_hosted_chat_verify_is_opensandbox() -> None:
+    rec = isolation_policy("chat_verify", profile="hosted")
+    assert rec["ok"] is True
+    assert rec["isolation"] == "opensandbox"
+    assert rec["block_network"] is True
+    assert rec["profile"] == "hosted"
+
+
+def test_hosted_hicode_workspace_is_opensandbox() -> None:
+    rec = isolation_policy("hicode_workspace", profile="hosted")
+    assert rec["isolation"] == "opensandbox"
+    assert rec["block_network"] is True
+
+
+def test_local_default_unchanged() -> None:
+    rec = isolation_policy("chat_verify", profile="local")
+    assert rec["isolation"] == "process"
+    assert rec["block_network"] is False
