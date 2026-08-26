@@ -13,6 +13,7 @@ _CHECK = re.compile(
 _ID_TITLE = re.compile(r"^(?P<id>T\d+(?:\.\d+)*)\s+[:.\-]?\s*(?P<title>.+)$", re.I)
 _DEPENDS = re.compile(r"depends(?:\s+on)?\s*:\s*(.+)$", re.I)
 _ACCEPT = re.compile(r"accept(?:ance)?\s*:\s*(.+)$", re.I)
+_PARALLEL = re.compile(r"\[P\]", re.I)
 
 
 def compile_spec_to_dag(tasks_md_content: str) -> list[TaskNode]:
@@ -37,6 +38,7 @@ def compile_spec_to_dag(tasks_md_content: str) -> list[TaskNode]:
                 "acceptance": [],
                 "depends_on": [],
                 "explicit_deps": False,
+                "parallel": False,
             }
             continue
         if current is None or not raw.strip():
@@ -64,6 +66,12 @@ def compile_spec_to_dag(tasks_md_content: str) -> list[TaskNode]:
     for item in parsed:
         if not item["explicit_deps"]:
             deps: list[str] = []
+            # Check for [P] parallel marker in task body
+            body_text = item.get("title", "") + " " + " ".join(item.get("instruction_parts", []))
+            if _PARALLEL.search(body_text):
+                item["parallel"] = True
+            else:
+                item["parallel"] = False
             while stack and stack[-1][0] >= item["indent"]:
                 stack.pop()
             if stack:
@@ -81,6 +89,7 @@ def compile_spec_to_dag(tasks_md_content: str) -> list[TaskNode]:
                 instruction=instruction or item["title"],
                 acceptance=item["acceptance"] or [f"{item['title']} is done"],
                 depends_on=item["depends_on"],
+                parallel=item.get("parallel", False),
             )
         )
     return nodes
