@@ -117,6 +117,7 @@ from oskill._generate_patch_preview import generate_patch_preview
 from oskill._graph_expand_retrieval import graph_expand_retrieval
 from oskill._load_skill_progressive import load_skill_progressive
 from oskill._match_permission_rule import match_permission_rule
+from oskill.action_governance import classify_action_effect, evaluate_action_policy
 from oskill._merge_config import merge_config
 from oskill._merge_subagent_result import merge_subagent_result
 from oskill._parse_llm_tool_calls import parse_llm_tool_calls
