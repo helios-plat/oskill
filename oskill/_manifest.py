@@ -8,6 +8,8 @@ ELEMENTS: list[str] = [
     # Action Gateway (PR-09)
     "classify_action_effect",
     "evaluate_action_policy",
+    # Computer Supervisor (PR-10)
+    "evaluate_computer_readiness",
     # Group 1: Performance
     "bootstrap_sharpe",
     "psr_dsr",

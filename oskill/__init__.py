@@ -92,6 +92,7 @@ from oskill._apply_unified_diff import apply_unified_diff
 from oskill._build_repo_context import build_repo_context
 from oskill._build_subagent_prompt import build_subagent_prompt
 from oskill._build_undo_plan import build_undo_plan
+from oskill.computer_readiness import evaluate_computer_readiness
 
 # K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
 from oskill._cascade_delete import cascade_delete
