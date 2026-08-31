@@ -23,6 +23,10 @@ _SENSITIVE_MARKERS = frozenset(
         "password",
         "credential",
         "sensitive",
+        "sensitive_confirmation",
+        "confirmation",
+        "authorize",
+        "authorization",
         "confirm_payment",
         "confirm_purchase",
     }
@@ -31,7 +35,7 @@ _SENSITIVE_MARKERS = frozenset(
 
 def _action_name(action: str) -> str:
     normalized = str(action).lower().strip()
-    return normalized.removeprefix("browser_")
+    return normalized.removeprefix("browser_").replace("-", "_")
 
 
 def browser_action_is_read(action: str) -> bool:
@@ -57,7 +61,13 @@ def classify_browser_action_effect(action: str) -> str:
 
 
 def _sensitive_context(context: Mapping[str, Any]) -> bool:
-    for key in ("sensitive", "requires_human_control", "authentication", "two_factor"):
+    for key in (
+        "sensitive",
+        "sensitive_confirmation",
+        "requires_human_control",
+        "authentication",
+        "two_factor",
+    ):
         value = context.get(key)
         if value is True or (isinstance(value, str) and value.lower() in {"true", "required"}):
             return True
