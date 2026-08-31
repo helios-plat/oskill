@@ -87,16 +87,70 @@ _POLICIES: dict[str, dict[str, Any]] = {
     },
 }
 
+# Hosted/multi-user: never process-jail on the app host. OpenSandbox is the
+# execution plane; egress denied until an explicit policy opens it.
+_HOSTED: dict[str, dict[str, Any]] = {
+    "chat_verify": {
+        "isolation": "opensandbox",
+        "image": "python:3.11-slim",
+        "block_network": True,
+        "cpu": "1",
+        "memory": "512m",
+        "note": "hosted: OpenSandbox; egress denied by default",
+    },
+    "hicode_workspace": {
+        "isolation": "opensandbox",
+        "image": "python:3.11-slim",
+        "block_network": True,
+        "cpu": "2",
+        "memory": "2g",
+        "note": "hosted: per-user OpenSandbox volume, not host path-jail",
+    },
+    "pytest_local": {
+        "isolation": "opensandbox",
+        "image": "python:3.11-slim",
+        "block_network": True,
+        "cpu": "1",
+        "memory": "512m",
+        "note": "hosted: pytest_local upgraded off process",
+    },
+    "harness_host": {
+        "isolation": "docker",
+        "image": "veya-sandbox-tools:latest",
+        "block_network": False,
+        "cpu": "2",
+        "memory": "2g",
+        "note": "hosted: harness_host upgraded off process",
+    },
+}
 
-def isolation_policy(purpose: str) -> dict[str, Any]:
-    """Return a copy of the isolation policy for ``purpose``."""
+
+def isolation_policy(purpose: str, profile: str = "local") -> dict[str, Any]:
+    """Return a copy of the isolation policy for ``purpose``.
+
+    ``profile`` is ``local`` (single-user laptop) or ``hosted`` (multi-user).
+    Pure: no env/I/O. The assembly layer supplies the profile.
+    """
     spec = _POLICIES.get(purpose)
     if spec is None:
         return {
             "ok": False,
             "error": f"unknown purpose {purpose!r}; expected one of {sorted(_POLICIES)}",
         }
+    kind = (profile or "local").strip().lower()
+    if kind == "hosted":
+        spec = _HOSTED.get(purpose, spec)
+        if spec.get("isolation") == "process":
+            return {
+                "ok": False,
+                "error": (
+                    f"hosted profile forbids process isolation for purpose {purpose!r}"
+                ),
+                "purpose": purpose,
+                "profile": "hosted",
+            }
     out = dict(spec)
     out["ok"] = True
     out["purpose"] = purpose
+    out["profile"] = kind if kind == "hosted" else "local"
     return out

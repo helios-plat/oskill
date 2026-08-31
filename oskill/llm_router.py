@@ -48,7 +48,7 @@ class LLMRouter:
         matrix = load_matrix(self.matrix_path)
         decision = route_decision(messages, tools, matrix,
                                   priority=priority, budget=budget)
-        decision["alias"] = matrix.get("alias", "veya1.1")
+        decision["alias"] = matrix.get("alias", "veya1.2")
         decision["priority"] = priority
         decision["budget"] = budget
         decision["ts"] = time.time()
@@ -117,7 +117,7 @@ class LLMRouter:
         # 无规划器 → 原规则切分并行
         result = await dispatch_parallel(prompt, caller, max_parallel=parallelism,
                                          title=title)
-        result["alias"] = matrix.get("alias", "veya1.1")
+        result["alias"] = matrix.get("alias", "veya1.2")
         self._audit_write({"action": "dispatch_long", "ts": time.time(),
                            **{k: v for k, v in result.items()
                               if k in ("parallel", "chunks", "elapsed_s")}})

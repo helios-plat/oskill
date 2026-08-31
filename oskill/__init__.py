@@ -92,6 +92,7 @@ from oskill._apply_unified_diff import apply_unified_diff
 from oskill._build_repo_context import build_repo_context
 from oskill._build_subagent_prompt import build_subagent_prompt
 from oskill._build_undo_plan import build_undo_plan
+from oskill.computer_readiness import evaluate_computer_readiness
 
 # K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
 from oskill._cascade_delete import cascade_delete
@@ -117,6 +118,13 @@ from oskill._generate_patch_preview import generate_patch_preview
 from oskill._graph_expand_retrieval import graph_expand_retrieval
 from oskill._load_skill_progressive import load_skill_progressive
 from oskill._match_permission_rule import match_permission_rule
+from oskill.action_governance import classify_action_effect, evaluate_action_policy
+from oskill.browser_takeover import (
+    browser_action_is_read,
+    browser_action_is_write,
+    classify_browser_action_effect,
+    review_browser_takeover_need,
+)
 from oskill._merge_config import merge_config
 from oskill._merge_subagent_result import merge_subagent_result
 from oskill._parse_llm_tool_calls import parse_llm_tool_calls
@@ -806,3 +814,14 @@ from .skills_dynamic_inject import skills_dynamic_inject  # noqa: F401
 from .soul_self_evolution import soul_self_evolution  # noqa: F401
 from .team_plan_gen import team_plan_gen  # noqa: F401
 from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401
+
+# PR-12 stateless execution-layer skills. Pin the functions explicitly so
+# package imports do not resolve to same-named lazy submodules.
+from .aggregate_usage import aggregate_usage  # noqa: F401
+from .fallback_decision import fallback_decision  # noqa: F401
+from .select_provider import select_provider  # noqa: F401
+
+# PR-13 stateless tool/MCP governance skills.
+from .classify_tool_effect import classify_tool_effect  # noqa: F401
+from .prepare_tool_execution import prepare_tool_execution  # noqa: F401
+from .resolve_tool_grant import resolve_tool_grant  # noqa: F401
