@@ -814,3 +814,9 @@ from .skills_dynamic_inject import skills_dynamic_inject  # noqa: F401
 from .soul_self_evolution import soul_self_evolution  # noqa: F401
 from .team_plan_gen import team_plan_gen  # noqa: F401
 from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401
+
+# PR-12 stateless execution-layer skills. Pin the functions explicitly so
+# package imports do not resolve to same-named lazy submodules.
+from .aggregate_usage import aggregate_usage  # noqa: F401
+from .fallback_decision import fallback_decision  # noqa: F401
+from .select_provider import select_provider  # noqa: F401
