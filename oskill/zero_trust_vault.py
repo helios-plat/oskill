@@ -18,6 +18,7 @@ from collections.abc import Awaitable, Callable
 
 from obase.event_bus import EventBus, default_event_bus
 from obase.secrets_store import SecretsStore
+from obase.tool_governance import redact_payload
 
 _log = logging.getLogger(__name__)
 
@@ -85,7 +86,7 @@ class ZeroTrustVault:
                 "title": "⚠️ 请求动用生产密钥",
                 "content": (
                     f"Agent 请求提取 '{required_vault_id}' 以执行操作: {tool_name}。\n"
-                    f"参数: {json.dumps(intent_args, ensure_ascii=False)[:500]}"
+                    f"参数: {json.dumps(redact_payload(intent_args), ensure_ascii=False)[:500]}"
                 ),
                 "task_id": task_id,
                 "action": tool_name,
@@ -117,9 +118,9 @@ class ZeroTrustVault:
         _log.info("vault: approved — injecting %s into physical layer", required_vault_id)
         try:
             result = await physical_tool_callback(**intent_args, _injected_secret=real_secret)
-        except Exception as exc:  # noqa: BLE001 — 底层执行失败反馈给主脑
+        except Exception as exc:  # noqa: BLE001 — never expose physical error text
             self._publish_resolved(task_id, approved=True, reason="physical_error")
-            return f"❌ 底层执行崩溃: {type(exc).__name__}: {exc}"
+            return f"❌ 底层执行崩溃: {type(exc).__name__}"
         self._publish_resolved(task_id, approved=True, reason="approved")
         return f"✅ 授权执行完毕。反馈: {result}"
 

@@ -820,3 +820,8 @@ from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401
 from .aggregate_usage import aggregate_usage  # noqa: F401
 from .fallback_decision import fallback_decision  # noqa: F401
 from .select_provider import select_provider  # noqa: F401
+
+# PR-13 stateless tool/MCP governance skills.
+from .classify_tool_effect import classify_tool_effect  # noqa: F401
+from .prepare_tool_execution import prepare_tool_execution  # noqa: F401
+from .resolve_tool_grant import resolve_tool_grant  # noqa: F401
