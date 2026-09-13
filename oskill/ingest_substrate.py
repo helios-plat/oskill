@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-import duckdb as _duckdb
 from ulid import ULID
 
 from oprim._logging import log
@@ -37,6 +36,14 @@ from oskill.knowledge.generate_derivative import generate_derivative
 _VECTOR_DIM = 1024
 _VECTOR_TABLE = "vectors_text"
 _CHUNK_SIZE = 512
+
+
+def _is_duckdb_exception(exc: BaseException, class_name: str) -> bool:
+    """Identify DuckDB causes without making DuckDB an oskill import dependency."""
+    return (
+        exc.__class__.__name__ == class_name
+        and exc.__class__.__module__.split(".", 1)[0] == "duckdb"
+    )
 
 
 @dataclass
@@ -79,6 +86,7 @@ async def ingest_substrate(
     user_hint: dict | None = None,
     content_override: str | None = None,
     metadata_override: dict | None = None,
+    existing_substrate_id: str | None = None,
 ) -> IngestResult:
     """End-to-end ingestion: classify → deduplicate → parse → embed → index.
 
@@ -100,7 +108,9 @@ async def ingest_substrate(
     file_hash = _sha256(path)
 
     # Step 2: deduplicate (skip when content_override: bundle books share the same source file)
-    if content_override is None:
+    # An externally-created canonical Source is already identity-checked by
+    # its owner; never create or select a second Source here.
+    if existing_substrate_id is None and content_override is None:
         existing = await detect_duplicate_substrate(file_hash)
         if existing:
             log.info("oskill.ingest.duplicate", path=str(path), existing=existing)
@@ -114,7 +124,7 @@ async def ingest_substrate(
         # D-assert: bundle 衍生项入口去重（WARN 模式，不阻断）
         # bundle 单本 file_hash=NULL，三道信号盲区在此兜底
         _bundle_file_hash = (metadata_override or {}).get("bundle_file_hash")
-        if _bundle_file_hash:
+        if _bundle_file_hash and existing_substrate_id is None:
             _dup_count = await _detect_bundle_duplicate(_bundle_file_hash, user_id_hash)
             if _dup_count > 0:
                 log.warning(
@@ -133,7 +143,7 @@ async def ingest_substrate(
     medium = classify_result.medium or "other"
 
     # Step 4: ULID
-    substrate_id = str(ULID())
+    substrate_id = existing_substrate_id or str(ULID())
 
     # Step 5: copy to local storage
     dest_dir = substrate_data_path() / medium
@@ -198,7 +208,10 @@ async def ingest_substrate(
     except Exception as e:
         log.warning("oskill.ingest.fulltext_failed", error=str(e))
 
-    # Step 9: write meta_db
+    # Step 9: write local processing bookkeeping.  In external-source mode the
+    # canonical Source lives in the caller's authority store; this path must
+    # never read or create a local `substrates` authority row.  Derivatives and
+    # changefeed entries remain local, keyed by the supplied canonical ID.
     db_p = meta_db_path()
     db_p.parent.mkdir(parents=True, exist_ok=True)
     path_mime = detect_mime(path)
@@ -214,24 +227,15 @@ async def ingest_substrate(
             }
         meta = json.dumps(_meta_dict, ensure_ascii=False)
         title = _meta_extra.get("book_title") or _meta_extra.get("title") or path.stem
-        db.execute(
-            """INSERT INTO substrates
-               (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json,
-                created_at, updated_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?)""",
-            [
-                substrate_id,
-                user_id_hash,
-                title,
-                path_mime or None,
-                str(dest),
-                file_hash if content_override is None else None,
-                path.stat().st_size,
-                meta,
-                now,
-                now,
-            ],
-        )
+        if existing_substrate_id is None:
+            db.execute(
+                """INSERT INTO substrates
+                   (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json,
+                    created_at, updated_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                [substrate_id, user_id_hash, title, path_mime or None, str(dest),
+                 file_hash if content_override is None else None, path.stat().st_size, meta, now, now],
+            )
         for deriv_kind, deriv_content in derivatives_dict.items():
             deriv_id = str(ULID())
             if deriv_content is not None:
@@ -254,10 +258,11 @@ async def ingest_substrate(
         )
         db.close()
     except MetaDBError as e:
-        if isinstance(e.__cause__, _duckdb.BinderException):
+        cause = e.__cause__
+        if cause is not None and _is_duckdb_exception(cause, "BinderException"):
             log.error("oskill.ingest.schema_mismatch", error=str(e))
             raise
-        if isinstance(e.__cause__, _duckdb.ConnectionException):
+        if cause is not None and _is_duckdb_exception(cause, "ConnectionException"):
             log.warning("oskill.ingest.db_unavailable", error=str(e))
         else:
             log.error("oskill.ingest.meta_db_failed", error=str(e))

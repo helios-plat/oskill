@@ -8,7 +8,6 @@ from typing import Literal
 
 from oprim._logging import log
 from oprim.classifier.detect_mime import detect_mime
-from oprim.classifier.detect_pdf_features import detect_pdf_features
 from oprim.classifier.detect_image_exif import detect_image_exif
 
 MEDIUMS = frozenset([
@@ -157,9 +156,13 @@ def _classify_by_heuristic(path: Path, layer1: ClassifyResult) -> ClassifyResult
     candidates = list(layer1.candidates)
     top_medium = candidates[0][0] if candidates else "other"
 
-    # PDF heuristics
-    if any(m == top_medium for m, _ in candidates[:2] if m in {"paper", "book", "diagram", "webpage"}):
+    # PDF heuristics are strictly PDF-only; keep the optional detector out of
+    # EPUB/TXT/DOCX classification and package imports.
+    is_pdf = path.suffix.lower() == ".pdf" or detect_mime(path) == "application/pdf"
+    if is_pdf and any(m == top_medium for m, _ in candidates[:2] if m in {"paper", "book", "diagram", "webpage"}):
         try:
+            from oprim.classifier.detect_pdf_features import detect_pdf_features
+
             features = detect_pdf_features(path)
             if features.page_count > 60:
                 # Long doc → book
