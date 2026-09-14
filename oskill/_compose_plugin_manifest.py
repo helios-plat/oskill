@@ -1,13 +1,15 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import fnmatch
-import json
-import re
-import uuid
+
 from dataclasses import dataclass
 from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
+from ._types import (
+    ConfigOskillError,
+    PluginManifest,
+)
+
 
 @dataclass
 class ToolScore:
@@ -15,11 +17,13 @@ class ToolScore:
     score: float
     reason: str
 
+
 @dataclass
 class HookCmd:
     event: str
     command: str
     matcher: str | None
+
 
 def compose_plugin_manifest(
     bundle: dict[str, Any],
@@ -57,10 +61,14 @@ def compose_plugin_manifest(
         mcp_servers=_to_dict_list(bundle.get("mcp_servers", [])),
     )
 
+
 def _to_str_list(v: Any) -> list[str]:
-    if isinstance(v, list): return [str(x) for x in v]
+    if isinstance(v, list):
+        return [str(x) for x in v]
     return []
 
+
 def _to_dict_list(v: Any) -> list[dict]:
-    if isinstance(v, list): return [x for x in v if isinstance(x, dict)]
+    if isinstance(v, list):
+        return [x for x in v if isinstance(x, dict)]
     return []

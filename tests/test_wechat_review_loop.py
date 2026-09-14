@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 
 from oskill.wechat_review_loop import (
-    ReviewIssue,
     WechatReviewLoop,
     merge_revision,
     needs_full_rewrite,
@@ -39,10 +38,17 @@ def test_patch_round_then_pass():
     async def reviewer(draft, images, topic, req, miss_streak):
         review_calls["n"] += 1
         if review_calls["n"] == 1:
-            return _verdict(False, [{
-                "criterion": "readability", "section": "第二节",
-                "detail": "太短", "fix_instruction": "补充细节",
-            }])
+            return _verdict(
+                False,
+                [
+                    {
+                        "criterion": "readability",
+                        "section": "第二节",
+                        "detail": "太短",
+                        "fix_instruction": "补充细节",
+                    }
+                ],
+            )
         return _verdict(True)
 
     async def reviser(draft, issues, topic, req):
@@ -68,10 +74,17 @@ def test_full_rewrite_on_topic_mismatch():
 
     async def reviewer(draft, images, topic, req, miss_streak):
         if writer_calls["n"] == 1:
-            return _verdict(False, [{
-                "criterion": "topic_match", "section": None,
-                "detail": "跑题", "fix_instruction": "重新围绕主题",
-            }])
+            return _verdict(
+                False,
+                [
+                    {
+                        "criterion": "topic_match",
+                        "section": None,
+                        "detail": "跑题",
+                        "fix_instruction": "重新围绕主题",
+                    }
+                ],
+            )
         return _verdict(True)
 
     async def reviser(draft, issues, topic, req):
@@ -88,16 +101,24 @@ def test_capped_best_effort_with_remaining_issues():
         return _DRAFT
 
     async def reviewer(draft, images, topic, req, miss_streak):
-        return _verdict(False, [{
-            "criterion": "readability", "section": "第一节",
-            "detail": "不够好", "fix_instruction": "重写",
-        }])
+        return _verdict(
+            False,
+            [
+                {
+                    "criterion": "readability",
+                    "section": "第一节",
+                    "detail": "不够好",
+                    "fix_instruction": "重写",
+                }
+            ],
+        )
 
     async def reviser(draft, issues, topic, req):
         return [{"heading": "第一节", "body": "改写后"}]
 
-    result = _run(WechatReviewLoop(writer=writer, reviewer=reviewer,
-                                   reviser=reviser, max_iterations=2))
+    result = _run(
+        WechatReviewLoop(writer=writer, reviewer=reviewer, reviser=reviser, max_iterations=2)
+    )
     assert result["passed"] is False
     assert result["best_effort"] is True
     assert result["iterations"] == 2
@@ -111,16 +132,24 @@ def test_patch_failed_does_not_crash():
         return _DRAFT
 
     async def reviewer(draft, images, topic, req, miss_streak):
-        return _verdict(False, [{
-            "criterion": "readability", "section": "第一节",
-            "detail": "d", "fix_instruction": "f",
-        }])
+        return _verdict(
+            False,
+            [
+                {
+                    "criterion": "readability",
+                    "section": "第一节",
+                    "detail": "d",
+                    "fix_instruction": "f",
+                }
+            ],
+        )
 
     async def reviser(draft, issues, topic, req):
         return None  # LLM 输出无法解析
 
-    result = _run(WechatReviewLoop(writer=writer, reviewer=reviewer,
-                                   reviser=reviser, max_iterations=3))
+    result = _run(
+        WechatReviewLoop(writer=writer, reviewer=reviewer, reviser=reviser, max_iterations=3)
+    )
     assert result["passed"] is False
     assert result["best_effort"] is True
     assert any(r["action"] == "patch_failed" for r in result["action_log"])
@@ -173,8 +202,9 @@ def test_resolve_image_injected():
     async def resolve(brief):
         return {"status": "ok", "path": f"/tmp/{brief}.png"}
 
-    loop = WechatReviewLoop(writer=writer, reviewer=reviewer, reviser=reviser,
-                            resolve_image=resolve)
+    loop = WechatReviewLoop(
+        writer=writer, reviewer=reviewer, reviser=reviser, resolve_image=resolve
+    )
     result = _run(loop)
     assert result["passed"] is True
     assert result["image_results"][0]["path"] == "/tmp/图一.png"
@@ -190,29 +220,38 @@ def test_unparseable_reviewer_treated_as_fail():
     async def reviser(draft, issues, topic, req):
         return [{"heading": "第一节", "body": "x"}]
 
-    result = _run(WechatReviewLoop(writer=writer, reviewer=reviewer,
-                                   reviser=reviser, max_iterations=1))
+    result = _run(
+        WechatReviewLoop(writer=writer, reviewer=reviewer, reviser=reviser, max_iterations=1)
+    )
     assert result["passed"] is False
     assert result["issues"][0].criterion == "reviewer_output"
 
 
 def test_parse_verdict_and_needs_full_rewrite():
-    passed, issues = parse_verdict(_verdict(False, [
-        {"criterion": "topic_match", "section": None, "detail": "d"},
-    ]))
+    passed, issues = parse_verdict(
+        _verdict(
+            False,
+            [
+                {"criterion": "topic_match", "section": None, "detail": "d"},
+            ],
+        )
+    )
     assert passed is False
     assert needs_full_rewrite(issues) is True
     assert parse_verdict(_verdict(True)) == (True, [])
 
 
 def test_merge_revision_only_touches_named_sections():
-    merged = merge_revision(_DRAFT, [
-        {"heading": "第一节", "body": "新一"},
-        {"heading": "title", "body": "新标题"},
-        {"heading": "closing", "body": "新结尾"},
-    ])
+    merged = merge_revision(
+        _DRAFT,
+        [
+            {"heading": "第一节", "body": "新一"},
+            {"heading": "title", "body": "新标题"},
+            {"heading": "closing", "body": "新结尾"},
+        ],
+    )
     assert merged["title"] == "新标题"
     assert merged["closing"] == "新结尾"
     assert merged["sections"][0]["body"] == "新一"
-    assert merged["sections"][1]["body"] == "内容二"      # 未点名不动
-    assert _DRAFT["title"] == "标题A"                      # 原稿不污染
+    assert merged["sections"][1]["body"] == "内容二"  # 未点名不动
+    assert _DRAFT["title"] == "标题A"  # 原稿不污染

@@ -44,8 +44,14 @@ class TestNoOverride:
 class TestActiveRegime:
     def test_boosts_momentum_dampens_valuation(self) -> None:
         dim_scores = {
-            "momentum": 92.0, "volume": 88.0, "sentiment": 85.0, "policy": 90.0,
-            "technical": 75.0, "fundamentals": 68.0, "valuation": 55.0, "risk": 65.0,
+            "momentum": 92.0,
+            "volume": 88.0,
+            "sentiment": 85.0,
+            "policy": 90.0,
+            "technical": 75.0,
+            "fundamentals": 68.0,
+            "valuation": 55.0,
+            "risk": 65.0,
         }
         result = regime_conditional_score_weighted(
             dim_scores, BASE_WEIGHTS_8DIM, REGIME_OVERRIDES, "积极"
@@ -70,8 +76,14 @@ class TestMathConsistency:
 
     def test_total_equals_sum_contributions(self) -> None:
         dim_scores = {
-            "momentum": 92.0, "volume": 88.0, "sentiment": 85.0, "policy": 90.0,
-            "technical": 75.0, "fundamentals": 68.0, "valuation": 55.0, "risk": 65.0,
+            "momentum": 92.0,
+            "volume": 88.0,
+            "sentiment": 85.0,
+            "policy": 90.0,
+            "technical": 75.0,
+            "fundamentals": 68.0,
+            "valuation": 55.0,
+            "risk": 65.0,
         }
         result = regime_conditional_score_weighted(
             dim_scores, BASE_WEIGHTS_8DIM, REGIME_OVERRIDES, "积极"
@@ -83,8 +95,14 @@ class TestMathConsistency:
     def test_specific_hand_calculation(self) -> None:
         """Verify: 7 dims at 70, momentum at 100, regime=积极."""
         dim_scores = {
-            "momentum": 100.0, "volume": 70.0, "sentiment": 70.0, "policy": 70.0,
-            "technical": 70.0, "fundamentals": 70.0, "valuation": 70.0, "risk": 70.0,
+            "momentum": 100.0,
+            "volume": 70.0,
+            "sentiment": 70.0,
+            "policy": 70.0,
+            "technical": 70.0,
+            "fundamentals": 70.0,
+            "valuation": 70.0,
+            "risk": 70.0,
         }
         result = regime_conditional_score_weighted(
             dim_scores, BASE_WEIGHTS_8DIM, REGIME_OVERRIDES, "积极"

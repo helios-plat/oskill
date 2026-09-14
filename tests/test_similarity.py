@@ -1,18 +1,24 @@
 """Tests for Group 4: Similarity Retrieval skills."""
 
+from datetime import date as _date
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from oskill.similarity import (
+    commodity_ratio_analytics,
+    forward_outcome_distribution,
+    geopolitical_risk_index,
     historical_analogy_search,
+    multi_dim_nearest_search,
     regime_transition_analysis,
 )
-
 
 # ============================================================
 # historical_analogy_search tests
 # ============================================================
+
 
 class TestHistoricalAnalogySearch:
     """Tests for historical_analogy_search."""
@@ -75,8 +81,7 @@ class TestHistoricalAnalogySearch:
         query = rng.normal(0, 1, 20)
         db = [rng.normal(0, 1, 20) for _ in range(5)]
         results = historical_analogy_search(
-            query, db, ensemble="weighted",
-            weights={"dtw": 2.0, "wasserstein": 1.0}, top_k=3
+            query, db, ensemble="weighted", weights={"dtw": 2.0, "wasserstein": 1.0}, top_k=3
         )
         assert len(results) == 3
 
@@ -133,8 +138,9 @@ class TestHistoricalAnalogySearch:
 
     def test_integration_mock_dtw(self, mocker):
         """Integration: oprim.dtw_distance called for each db entry."""
-        mock_dtw = mocker.patch("oskill.similarity.oprim.dtw_distance",
-                                return_value={"distance": 1.0, "path": []})
+        mock_dtw = mocker.patch(
+            "oskill.similarity.oprim.dtw_distance", return_value={"distance": 1.0, "path": []}
+        )
         rng = np.random.default_rng(42)
         query = rng.normal(0, 1, 20)
         db = [rng.normal(0, 1, 20) for _ in range(5)]
@@ -143,8 +149,10 @@ class TestHistoricalAnalogySearch:
 
     def test_integration_mock_cosine(self, mocker):
         """Integration: oprim.cosine_similarity_batch called."""
-        mock_cos = mocker.patch("oskill.similarity.oprim.cosine_similarity_batch",
-                                return_value=np.array([0.9, 0.8, 0.7, 0.6, 0.5]))
+        mock_cos = mocker.patch(
+            "oskill.similarity.oprim.cosine_similarity_batch",
+            return_value=np.array([0.9, 0.8, 0.7, 0.6, 0.5]),
+        )
         rng = np.random.default_rng(42)
         query = rng.normal(0, 1, 20)
         db = [rng.normal(0, 1, 20) for _ in range(5)]
@@ -157,14 +165,14 @@ class TestHistoricalAnalogySearch:
         query = rng.normal(0, 1, 30)
         db = [rng.normal(0, 1, 30) for _ in range(3)]
         # Should not raise
-        results = historical_analogy_search(query, db, methods=["dtw"],
-                                            sakoe_chiba_band=5, top_k=3)
+        results = historical_analogy_search(query, db, methods=["dtw"], sakoe_chiba_band=5, top_k=3)
         assert len(results) == 3
 
 
 # ============================================================
 # regime_transition_analysis tests
 # ============================================================
+
 
 class TestRegimeTransitionAnalysis:
     """Tests for regime_transition_analysis."""
@@ -232,30 +240,38 @@ class TestRegimeTransitionAnalysis:
 
     def test_integration_mock_transition_matrix(self, mocker):
         """Integration: oprim.regime_transition_matrix called."""
-        mock_tm = mocker.patch("oskill.similarity.oprim.regime_transition_matrix", return_value={
-            "transition_matrix": pd.DataFrame(
-                {"A": [0.8, 0.2], "B": [0.3, 0.7]}, index=["A", "B"]
-            ),
-            "stationary_distribution": pd.Series({"A": 0.6, "B": 0.4}),
-            "n_transitions": 10,
-            "duration_distribution": {"A": {"mean": 5}, "B": {"mean": 3}},
-        })
+        mock_tm = mocker.patch(
+            "oskill.similarity.oprim.regime_transition_matrix",
+            return_value={
+                "transition_matrix": pd.DataFrame(
+                    {"A": [0.8, 0.2], "B": [0.3, 0.7]}, index=["A", "B"]
+                ),
+                "stationary_distribution": pd.Series({"A": 0.6, "B": 0.4}),
+                "n_transitions": 10,
+                "duration_distribution": {"A": {"mean": 5}, "B": {"mean": 3}},
+            },
+        )
         labels = pd.Series(["A"] * 20 + ["B"] * 20)
         regime_transition_analysis(labels)
         mock_tm.assert_called_once()
 
     def test_integration_mock_regime_filter_data(self, mocker):
         """Integration: oprim.regime_filter_data called when data_per_regime given."""
-        mocker.patch("oskill.similarity.oprim.regime_transition_matrix", return_value={
-            "transition_matrix": pd.DataFrame(
-                {"A": [0.8, 0.2], "B": [0.3, 0.7]}, index=["A", "B"]
-            ),
-            "stationary_distribution": pd.Series({"A": 0.6, "B": 0.4}),
-            "n_transitions": 10,
-            "duration_distribution": None,
-        })
-        mock_rf = mocker.patch("oskill.similarity.oprim.regime_filter_data",
-                               return_value=pd.DataFrame({"value": [1, 2, 3]}))
+        mocker.patch(
+            "oskill.similarity.oprim.regime_transition_matrix",
+            return_value={
+                "transition_matrix": pd.DataFrame(
+                    {"A": [0.8, 0.2], "B": [0.3, 0.7]}, index=["A", "B"]
+                ),
+                "stationary_distribution": pd.Series({"A": 0.6, "B": 0.4}),
+                "n_transitions": 10,
+                "duration_distribution": None,
+            },
+        )
+        mock_rf = mocker.patch(
+            "oskill.similarity.oprim.regime_filter_data",
+            return_value=pd.DataFrame({"value": [1, 2, 3]}),
+        )
         mocker.patch("oskill.similarity.oprim.distribution_summary", return_value={"mean": 2})
         labels = pd.Series(["A"] * 20 + ["B"] * 20)
         data = pd.Series(np.ones(40))
@@ -288,8 +304,6 @@ class TestRegimeTransitionAnalysis:
 # ============================================================
 # commodity_ratio_analytics tests
 # ============================================================
-
-from oskill.similarity import commodity_ratio_analytics, geopolitical_risk_index
 
 
 class TestCommodityRatioAnalytics:
@@ -430,10 +444,12 @@ class TestGeopoliticalRiskIndex:
         if rng is None:
             rng = np.random.default_rng(42)
         dates = pd.date_range("2024-01-01", periods=n, freq="D")
-        df = pd.DataFrame({
-            "timestamp": dates,
-            "intensity": rng.uniform(1, 10, n),
-        })
+        df = pd.DataFrame(
+            {
+                "timestamp": dates,
+                "intensity": rng.uniform(1, 10, n),
+            }
+        )
         if with_region:
             df["region"] = rng.choice(["US", "EU", "APAC"], n)
         if with_weight:
@@ -467,10 +483,12 @@ class TestGeopoliticalRiskIndex:
         rng = np.random.default_rng(42)
         events = self._make_events(n=60, rng=rng)
         # Add a massive spike at the end
-        spike = pd.DataFrame({
-            "timestamp": pd.date_range("2024-02-25", periods=5, freq="D"),
-            "intensity": [100, 100, 100, 100, 100],
-        })
+        spike = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2024-02-25", periods=5, freq="D"),
+                "intensity": [100, 100, 100, 100, 100],
+            }
+        )
         events = pd.concat([events, spike], ignore_index=True)
         result = geopolitical_risk_index(events)
         assert result["regime"] in ("extreme", "elevated")
@@ -562,9 +580,6 @@ class TestGeopoliticalRiskIndex:
 # Sprint 0: multi_dim_nearest_search + forward_outcome_distribution
 # ============================================================
 
-from datetime import date as _date
-from oskill.similarity import multi_dim_nearest_search, forward_outcome_distribution
-
 
 class TestMultiDimNearestSearch:
     def _history(self):
@@ -599,12 +614,16 @@ class TestMultiDimNearestSearch:
         assert "vec" in result[0]
 
     def test_euclidean_metric(self):
-        result = multi_dim_nearest_search([0.0, 0.0, 0.0], self._history(), k=3, distance_metric="euclidean")
+        result = multi_dim_nearest_search(
+            [0.0, 0.0, 0.0], self._history(), k=3, distance_metric="euclidean"
+        )
         dists = [r["distance"] for r in result]
         assert dists == sorted(dists)
 
     def test_cosine_metric(self):
-        result = multi_dim_nearest_search([1.0, 1.0, 1.0], self._history(), k=3, distance_metric="cosine")
+        result = multi_dim_nearest_search(
+            [1.0, 1.0, 1.0], self._history(), k=3, distance_metric="cosine"
+        )
         assert len(result) == 3
 
     def test_unknown_metric_raises(self):
@@ -688,9 +707,7 @@ class TestForwardOutcomeDistribution:
             assert key in p
 
     def test_empty_similar_dates(self):
-        result = forward_outcome_distribution(
-            _date(2023, 1, 1), [], self._ohlcv(), [5]
-        )
+        result = forward_outcome_distribution(_date(2023, 1, 1), [], self._ohlcv(), [5])
         assert result["n_analogues"] == 0
         assert result["by_period"][5]["mean_return"] == 0.0
 
@@ -712,9 +729,7 @@ class TestForwardOutcomeDistribution:
             _date(2023, 1, 3): {"close": 105.0},
         }
         # similar_date not in ohlcv -> skipped
-        result = forward_outcome_distribution(
-            _date(2023, 1, 1), [_date(2023, 1, 9)], ohlcv, [1]
-        )
+        result = forward_outcome_distribution(_date(2023, 1, 1), [_date(2023, 1, 9)], ohlcv, [1])
         assert result["by_period"][1]["mean_return"] == 0.0
 
     def test_zero_start_price_skipped(self):
@@ -722,9 +737,7 @@ class TestForwardOutcomeDistribution:
             _date(2023, 1, 2): {"close": 0.0},  # zero price
             _date(2023, 1, 3): {"close": 105.0},
         }
-        result = forward_outcome_distribution(
-            _date(2023, 1, 1), [_date(2023, 1, 2)], ohlcv, [1]
-        )
+        result = forward_outcome_distribution(_date(2023, 1, 1), [_date(2023, 1, 2)], ohlcv, [1])
         assert result["by_period"][1]["mean_return"] == 0.0
 
     def test_tuple_ohlcv_format(self):
@@ -733,9 +746,7 @@ class TestForwardOutcomeDistribution:
             _date(2023, 1, 2): (99.0, 102.0, 98.0, 100.0, 1e6),  # close at index 3
             _date(2023, 1, 3): (104.0, 106.0, 103.0, 105.0, 1e6),
         }
-        result = forward_outcome_distribution(
-            _date(2023, 1, 1), [_date(2023, 1, 2)], ohlcv, [1]
-        )
+        result = forward_outcome_distribution(_date(2023, 1, 1), [_date(2023, 1, 2)], ohlcv, [1])
         # 105/100 - 1 = 5%
         assert result["by_period"][1]["mean_return"] == pytest.approx(0.05)
 
@@ -754,9 +765,7 @@ class TestForwardOutcomeDistribution:
             _date(2023, 1, 6): {"close": 104.0},
         }
         similar_dates = [_date(2023, 1, 2), _date(2023, 1, 3)]
-        result = forward_outcome_distribution(
-            _date(2023, 1, 1), similar_dates, ohlcv, [3]
-        )
+        result = forward_outcome_distribution(_date(2023, 1, 1), similar_dates, ohlcv, [3])
         p = result["by_period"][3]
         assert p["win_rate"] == pytest.approx(1.0)
         assert p["mean_return"] > 0

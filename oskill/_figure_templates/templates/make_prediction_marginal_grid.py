@@ -7,13 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.gridspec import GridSpecFromSubplotSpec
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.gridspec import GridSpecFromSubplotSpec
 
 
 @dataclass(frozen=True)
@@ -121,7 +122,9 @@ def kde_1d(values: np.ndarray, grid: np.ndarray) -> np.ndarray:
     return density
 
 
-def draw_top_distribution(ax: plt.Axes, train: np.ndarray, test: np.ndarray, train_color: str, test_color: str) -> None:
+def draw_top_distribution(
+    ax: plt.Axes, train: np.ndarray, test: np.ndarray, train_color: str, test_color: str
+) -> None:
     bins = np.linspace(0, 110, 20)
     for values, color in [(test, test_color), (train, train_color)]:
         ax.hist(
@@ -142,7 +145,9 @@ def draw_top_distribution(ax: plt.Axes, train: np.ndarray, test: np.ndarray, tra
     ax.tick_params(length=0)
 
 
-def draw_right_distribution(ax: plt.Axes, train: np.ndarray, test: np.ndarray, train_color: str, test_color: str) -> None:
+def draw_right_distribution(
+    ax: plt.Axes, train: np.ndarray, test: np.ndarray, train_color: str, test_color: str
+) -> None:
     bins = np.linspace(-5, 112, 20)
     max_density = 0.0
     for values, color in [(test, test_color), (train, train_color)]:
@@ -220,8 +225,12 @@ def draw_model_panel(fig: plt.Figure, slot, panel: ModelPanel, seed: int) -> Non
     rng = np.random.default_rng(seed)
     actual_train = make_actual_values(rng, 230)
     actual_test = make_actual_values(rng, 92)
-    pred_train = simulate_predictions(rng, actual_train, panel.train_noise, panel.train_bias, shrink=-0.018)
-    pred_test = simulate_predictions(rng, actual_test, panel.test_noise, panel.test_bias, shrink=-0.055)
+    pred_train = simulate_predictions(
+        rng, actual_train, panel.train_noise, panel.train_bias, shrink=-0.018
+    )
+    pred_test = simulate_predictions(
+        rng, actual_test, panel.test_noise, panel.test_bias, shrink=-0.055
+    )
 
     sub = GridSpecFromSubplotSpec(
         2,
@@ -241,7 +250,9 @@ def draw_model_panel(fig: plt.Figure, slot, panel: ModelPanel, seed: int) -> Non
     draw_top_distribution(ax_top, actual_train, actual_test, panel.train_color, panel.test_color)
     draw_scatter_panel(ax_main, actual_train, pred_train, actual_test, pred_test, panel)
     draw_right_distribution(ax_right, pred_train, pred_test, panel.train_color, panel.test_color)
-    ax_top.set_title(f"{panel.name} — Pred vs True (Hist+KDE)", fontsize=10.5, fontweight="bold", pad=5)
+    ax_top.set_title(
+        f"{panel.name} — Pred vs True (Hist+KDE)", fontsize=10.5, fontweight="bold", pad=5
+    )
 
 
 def make_figure(output_stem: Path) -> None:

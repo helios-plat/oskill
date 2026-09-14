@@ -5,6 +5,7 @@ Layer4 (hevi) owns the asset DB. oskill only does the mechanical injection:
   - merge resolved asset data into shot_spec under standardized keys
   - asset_loader=None → skip loading, inject raw ref IDs as-is (staging/dry-run)
 """
+
 from __future__ import annotations
 
 _ASSET_KEYS = ("character_id", "scene_id", "voice_id", "prop_id", "fx_id")

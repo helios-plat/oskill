@@ -1,7 +1,6 @@
 """Signal fusion oskills — composite analysis combining multiple oprims."""
-from __future__ import annotations
 
-from typing import Any, Literal
+from __future__ import annotations
 
 
 class SignalFusionSkillError(Exception):
@@ -29,14 +28,23 @@ def fusion_score_with_uncertainty(
 
     values = list(raw_signals.values())
     if not values:
-        return {"fusion_score": 0, "uncertainty": 1.0, "abstain": True, "confidence_interval": (0, 0)}
+        return {
+            "fusion_score": 0,
+            "uncertainty": 1.0,
+            "abstain": True,
+            "confidence_interval": (0, 0),
+        }
     mean_signal = sum(values) / len(values)
     std_signal = (sum((v - mean_signal) ** 2 for v in values) / max(len(values) - 1, 1)) ** 0.5
     p = prior or {"mean": 0, "std": 1}
-    posterior = bayesian_factor_posterior(prior=p, likelihood={"mean": mean_signal, "std": max(std_signal, 0.01)})
+    posterior = bayesian_factor_posterior(
+        prior=p, likelihood={"mean": mean_signal, "std": max(std_signal, 0.01)}
+    )
     uncertainty = std_signal / max(abs(mean_signal), 0.01)
     confidence = 1.0 - min(1.0, uncertainty)
-    decision = abstain_decision(confidence=confidence, uncertainty=min(1.0, uncertainty), threshold=abstain_threshold)
+    decision = abstain_decision(
+        confidence=confidence, uncertainty=min(1.0, uncertainty), threshold=abstain_threshold
+    )
     return {
         "fusion_score": round(posterior["posterior_mean"] * 100, 2),
         "uncertainty": round(min(1.0, uncertainty), 4),
@@ -69,9 +77,13 @@ def signal_quality_gate(
     passed, gated = [], []
     for name, score in signals.items():
         freq = (frequencies or {}).get(name, total_signals // 2)
-        weight = signal_rarity_weight(signal_frequency=max(1, freq), total_signals=max(1, total_signals))
+        weight = signal_rarity_weight(
+            signal_frequency=max(1, freq), total_signals=max(1, total_signals)
+        )
         confidence = min(1.0, abs(score) * weight / 3)
-        decision = abstain_decision(confidence=confidence, uncertainty=1 - confidence, threshold=confidence_threshold)
+        decision = abstain_decision(
+            confidence=confidence, uncertainty=1 - confidence, threshold=confidence_threshold
+        )
         if decision == "proceed":
             passed.append(name)
         else:
@@ -94,7 +106,9 @@ def temporal_fusion(
     - oprim.cross_timeframe_consistency
 
     Example:
-        >>> temporal_fusion(signals={"a": 0.8}, ages_hours={"a": 12}, tf1_signal=0.7, tf4_signal=0.6)
+        >>> temporal_fusion(
+        ...     signals={"a": 0.8}, ages_hours={"a": 12}, tf1_signal=0.7, tf4_signal=0.6
+        ... )
         {'decayed_signals': {...}, 'consistency': 0.66, ...}
     """
     from oprim.signal_analysis import cross_timeframe_consistency, signal_temporal_decay
@@ -102,9 +116,15 @@ def temporal_fusion(
     decayed = {}
     for name, val in signals.items():
         age = ages_hours.get(name, 0)
-        decayed[name] = round(signal_temporal_decay(signal=val, age_hours=age, half_life=half_life), 6)
+        decayed[name] = round(
+            signal_temporal_decay(signal=val, age_hours=age, half_life=half_life), 6
+        )
     consistency = cross_timeframe_consistency(tf1_signal=tf1_signal, tf4_signal=tf4_signal)
-    return {"decayed_signals": decayed, "consistency": consistency, "tf_aligned": abs(consistency) > 0.3}
+    return {
+        "decayed_signals": decayed,
+        "consistency": consistency,
+        "tf_aligned": abs(consistency) > 0.3,
+    }
 
 
 def behavioral_weighting(
@@ -121,7 +141,10 @@ def behavioral_weighting(
     - oprim.trend_sentiment_synergy
 
     Example:
-        >>> behavioral_weighting(signals={"trend": 0.8}, frequencies={"trend": 10}, total_signals=100, sentiment_score=0.9)
+        >>> behavioral_weighting(
+        ...     signals={"trend": 0.8}, frequencies={"trend": 10}, total_signals=100,
+        ...     sentiment_score=0.9
+        ... )
         {'weighted': {'trend': ...}, ...}
     """
     from oprim.signal_analysis import signal_rarity_weight, trend_sentiment_synergy
@@ -129,7 +152,9 @@ def behavioral_weighting(
     weighted = {}
     for name, val in signals.items():
         freq = frequencies.get(name, total_signals // 2)
-        rarity = signal_rarity_weight(signal_frequency=max(1, freq), total_signals=max(1, total_signals))
+        rarity = signal_rarity_weight(
+            signal_frequency=max(1, freq), total_signals=max(1, total_signals)
+        )
         synergy = trend_sentiment_synergy(trend_signal=val, sentiment_score=sentiment_score)
         weighted[name] = round(synergy * min(rarity, 5.0) / 5.0, 6)
     return {"weighted": weighted, "sentiment_impact": sentiment_score}
@@ -156,8 +181,15 @@ def pack_evaluation(
     test = pack_promotion_test(historical_packs=historical_packs, new_pack=new_pack)
     hist_scores = [p.get("score", 0) for p in historical_packs] if historical_packs else [0]
     p = prior or {"mean": sum(hist_scores) / len(hist_scores), "std": 10}
-    posterior = bayesian_factor_posterior(prior=p, likelihood={"mean": new_pack.get("score", 0), "std": 5})
-    return {"promote": test["promote"], "p_value": test["p_value"], "improvement": test["improvement"], "posterior": posterior}
+    posterior = bayesian_factor_posterior(
+        prior=p, likelihood={"mean": new_pack.get("score", 0), "std": 5}
+    )
+    return {
+        "promote": test["promote"],
+        "p_value": test["p_value"],
+        "improvement": test["improvement"],
+        "posterior": posterior,
+    }
 
 
 def alphalens_style_ic(
@@ -179,7 +211,10 @@ def alphalens_style_ic(
     from oprim.signal_analysis import factor_attribution, ic_oos_decay
 
     decay = ic_oos_decay(ic_series=ic_series, oos_start_idx=oos_start_idx)
-    attr = factor_attribution(fusion_score=decay["ic_mean"] * 100, factor_contributions=factor_contributions or {"signal": decay["ic_mean"] * 100})
+    attr = factor_attribution(
+        fusion_score=decay["ic_mean"] * 100,
+        factor_contributions=factor_contributions or {"signal": decay["ic_mean"] * 100},
+    )
     return {"ic_decay": decay, "attribution": attr}
 
 
@@ -196,7 +231,9 @@ def regime_aware_scoring(
     - oprim.cross_sectional_rank
 
     Example:
-        >>> regime_aware_scoring(ic_series=[0.1, -0.05], regime_labels=["bull", "bear"], asset_scores={"BTC": 80})
+        >>> regime_aware_scoring(
+        ...     ic_series=[0.1, -0.05], regime_labels=["bull", "bear"], asset_scores={"BTC": 80}
+        ... )
         {'regime_ic': {...}, 'ranks': {...}}
     """
     from oprim.signal_analysis import cross_sectional_rank, regime_conditional_ic
@@ -247,7 +284,10 @@ def backtest_metric_suite(
     """
     if not equity_curve or len(equity_curve) < 2:
         return {"sharpe": 0, "max_drawdown": 0, "total_return": 0, "trade_count": 0}
-    returns = [(equity_curve[i] - equity_curve[i - 1]) / equity_curve[i - 1] for i in range(1, len(equity_curve))]
+    returns = [
+        (equity_curve[i] - equity_curve[i - 1]) / equity_curve[i - 1]
+        for i in range(1, len(equity_curve))
+    ]
     mean_r = sum(returns) / len(returns)
     std_r = (sum((r - mean_r) ** 2 for r in returns) / max(len(returns) - 1, 1)) ** 0.5
     sharpe = (mean_r / std_r * (252**0.5)) if std_r > 0 else 0
@@ -289,7 +329,11 @@ def walkforward_validator(
         window = data[i : i + window_size]
         returns = [(window[j] - window[j - 1]) / window[j - 1] for j in range(1, len(window))]
         mean_r = sum(returns) / len(returns) if returns else 0
-        std_r = (sum((r - mean_r) ** 2 for r in returns) / max(len(returns) - 1, 1)) ** 0.5 if returns else 0
+        std_r = (
+            (sum((r - mean_r) ** 2 for r in returns) / max(len(returns) - 1, 1)) ** 0.5
+            if returns
+            else 0
+        )
         sharpe = (mean_r / std_r * (252**0.5)) if std_r > 0 else 0
         results.append({"window": window_idx, "sharpe": round(sharpe, 4), "start_idx": i})
         i += step_size
@@ -341,5 +385,7 @@ def counterfactual_generator(
         perturbed = {**base_scenario}
         perturbed[factor] = base_scenario.get(factor, 0) + delta
         ranks = cross_sectional_rank(asset_scores=perturbed)
-        scenarios.append({"scenario": f"{factor}_shock", "values": perturbed, "ranks": ranks, "delta": delta})
+        scenarios.append(
+            {"scenario": f"{factor}_shock", "values": perturbed, "ranks": ranks, "delta": delta}
+        )
     return scenarios

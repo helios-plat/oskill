@@ -68,11 +68,14 @@ async def threeo_ingester(
 
     # LLM extraction
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": (
-            "Extract insights from this report. Return JSON: "
-            "{\"topic\", \"key_findings\": [], \"charts\": [], "
-            "\"related_concepts\": [], \"source_omodul\", \"raw_report\": {}}"
-        )},
+        {
+            "role": "system",
+            "content": (
+                "Extract insights from this report. Return JSON: "
+                '{"topic", "key_findings": [], "charts": [], '
+                '"related_concepts": [], "source_omodul", "raw_report": {}}'
+            ),
+        },
         {"role": "user", "content": json.dumps(raw_report, default=str)[:8000]},
     ]
 

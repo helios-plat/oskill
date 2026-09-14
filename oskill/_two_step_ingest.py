@@ -11,6 +11,7 @@ conflict_resolution (K-G1) to adjudicate.
   数学/经济学专项: 定理/引理/推导/公式/例题/反例 全部独立KU.
   max_tokens 2048→4096: 给更大输出空间以容纳完整覆盖的KU列表.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,7 +19,10 @@ import re
 
 from oprim._aii_graph_types import TwoStepIngestResult
 
-_STEP1_SYSTEM = "You are a knowledge extraction specialist. Analyze the source text carefully. Output valid JSON only."
+_STEP1_SYSTEM = (
+    "You are a knowledge extraction specialist. Analyze the source text carefully. "
+    "Output valid JSON only."
+)
 _STEP2_SYSTEM = (
     "You are an exhaustive knowledge unit extractor. "
     "Your job is to extract EVERY distinct piece of knowledge from the text — "
@@ -39,7 +43,8 @@ Output JSON with:
   "entities": ["list of all entities, concepts, variables, symbols mentioned"],
   "concepts": ["list of all core and secondary concepts"],
   "conflict_candidates": ["descriptions of potential conflicts with existing KUs"],
-  "structure": "description of argument structure and section types (theorem/proof/example/definition/etc)"
+  "structure": "description of argument structure and section types (theorem/proof/example/"\
+  "definition/etc)"
 }}"""
 
 _STEP2_TMPL = """\
@@ -94,16 +99,17 @@ async def two_step_ingest(
     """
     # Step 1: Analysis
     existing_block = "\n".join(f"- {s}" for s in existing_ku_summaries) or "(none)"
-    step1_prompt = _STEP1_TMPL.format(
-        source_text=source_text, existing_summaries=existing_block
-    )
+    step1_prompt = _STEP1_TMPL.format(source_text=source_text, existing_summaries=existing_block)
     step1_resp = await llm(
         messages=[{"role": "user", "content": step1_prompt}],
         system=_STEP1_SYSTEM,
         max_tokens=1024,
     )
     analysis = _parse_json(step1_resp) or {
-        "entities": [], "concepts": [], "conflict_candidates": [], "structure": ""
+        "entities": [],
+        "concepts": [],
+        "conflict_candidates": [],
+        "structure": "",
     }
 
     # Step 2: KU Generation — exhaustive coverage (完整覆盖, max_tokens 2048→4096)

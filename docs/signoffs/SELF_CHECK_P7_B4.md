@@ -70,6 +70,7 @@ All checks passed!
 ```python
 class SubjectRef(BaseModel):
     """Reference to a subject/character for LLM prompt injection."""
+
     subject_id: str
     name: str
     description: str = ""

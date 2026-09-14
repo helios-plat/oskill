@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from oskill.constitutional_violation import detect_constitution_violation
 from oskill.dag_compiler import (
     compile_spec_to_dag,
     pick_ready_task_ids,
     validate_taskgraph_dag,
 )
-from oskill.constitutional_violation import detect_constitution_violation
 
 TASKS = """
 # Tasks
@@ -31,9 +31,7 @@ def test_compile_ids_and_deps() -> None:
 
 
 def test_cycle_detected() -> None:
-    nodes = compile_spec_to_dag(
-        "- [ ] T1 A\n  Depends: T2\n- [ ] T2 B\n  Depends: T1\n"
-    )
+    nodes = compile_spec_to_dag("- [ ] T1 A\n  Depends: T2\n- [ ] T2 B\n  Depends: T1\n")
     errors = validate_taskgraph_dag(nodes)
     assert any("cycle" in e for e in errors)
 

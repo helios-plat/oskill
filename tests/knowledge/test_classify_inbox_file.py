@@ -1,10 +1,10 @@
 """Tests for oskill.knowledge.classify_inbox_file."""
-from __future__ import annotations
-from pathlib import Path
-import pytest
-from unittest.mock import patch, MagicMock
 
-from oskill.knowledge.classify_inbox_file import classify_inbox_file, ClassifyResult, MEDIUMS
+from __future__ import annotations
+
+from unittest.mock import patch
+
+from oskill.knowledge.classify_inbox_file import MEDIUMS, ClassifyResult, classify_inbox_file
 
 
 class TestLayer1ExtensionClassifier:
@@ -14,7 +14,10 @@ class TestLayer1ExtensionClassifier:
         f.write_bytes(b"PK\x03\x04" + b"\x00" * 100)  # zip magic
         with patch("oprim.classifier.detect_mime.magic") as mock_magic:
             mock_magic.Magic.return_value.from_file.return_value = "application/epub+zip"
-            with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/epub+zip"):
+            with patch(
+                "oskill.knowledge.classify_inbox_file.detect_mime",
+                return_value="application/epub+zip",
+            ):
                 result = classify_inbox_file(f)
         assert result.medium == "book"
         assert result.confidence >= 0.85
@@ -24,7 +27,9 @@ class TestLayer1ExtensionClassifier:
         """Markdown file → markdown_note."""
         f = tmp_path / "note.md"
         f.write_text("# Title\n\nContent")
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/markdown"
+        ):
             result = classify_inbox_file(f)
         assert result.medium == "markdown_note"
         assert result.confidence >= 0.85
@@ -48,7 +53,9 @@ class TestLayer1ExtensionClassifier:
     def test_python_code(self, tmp_path):
         f = tmp_path / "script.py"
         f.write_text("print('hello')")
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/x-python"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime", return_value="text/x-python"
+        ):
             result = classify_inbox_file(f)
         assert result.medium == "code"
 
@@ -82,12 +89,19 @@ class TestLayer1ExtensionClassifier:
 
     def test_pdf_starts_with_candidates(self, tmp_path, simple_pdf):
         """PDF → multiple paper/book candidates."""
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"
+        ):
             with patch("oskill.knowledge.classify_inbox_file.detect_pdf_features") as mock_feat:
                 from oprim.classifier.detect_pdf_features import PDFFeatures
+
                 mock_feat.return_value = PDFFeatures(
-                    page_count=5, first_page_text="test", has_cjk=False,
-                    is_scanned=False, has_tables=False, is_two_column=False,
+                    page_count=5,
+                    first_page_text="test",
+                    has_cjk=False,
+                    is_scanned=False,
+                    has_tables=False,
+                    is_two_column=False,
                 )
                 result = classify_inbox_file(simple_pdf)
         assert result.candidates
@@ -98,12 +112,19 @@ class TestLayer1ExtensionClassifier:
 class TestLayer2HeuristicClassifier:
     def test_pdf_two_column_paper(self, tmp_path, simple_pdf):
         """Two-column PDF → paper."""
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"
+        ):
             with patch("oskill.knowledge.classify_inbox_file.detect_pdf_features") as mock_feat:
                 from oprim.classifier.detect_pdf_features import PDFFeatures
+
                 mock_feat.return_value = PDFFeatures(
-                    page_count=10, first_page_text="abstract", has_cjk=False,
-                    is_scanned=False, has_tables=True, is_two_column=True,
+                    page_count=10,
+                    first_page_text="abstract",
+                    has_cjk=False,
+                    is_scanned=False,
+                    has_tables=True,
+                    is_two_column=True,
                 )
                 result = classify_inbox_file(simple_pdf)
         assert result.medium == "paper"
@@ -111,12 +132,19 @@ class TestLayer2HeuristicClassifier:
 
     def test_pdf_long_doc_book(self, tmp_path, simple_pdf):
         """Long PDF (>60 pages) → book."""
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"
+        ):
             with patch("oskill.knowledge.classify_inbox_file.detect_pdf_features") as mock_feat:
                 from oprim.classifier.detect_pdf_features import PDFFeatures
+
                 mock_feat.return_value = PDFFeatures(
-                    page_count=200, first_page_text="chapter 1", has_cjk=False,
-                    is_scanned=False, has_tables=False, is_two_column=False,
+                    page_count=200,
+                    first_page_text="chapter 1",
+                    has_cjk=False,
+                    is_scanned=False,
+                    has_tables=False,
+                    is_two_column=False,
                 )
                 result = classify_inbox_file(simple_pdf)
         assert result.medium == "book"
@@ -127,9 +155,15 @@ class TestLayer2HeuristicClassifier:
         with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="image/jpeg"):
             with patch("oskill.knowledge.classify_inbox_file.detect_image_exif") as mock_exif:
                 from oprim.classifier.detect_image_exif import ImageExif
+
                 mock_exif.return_value = ImageExif(
-                    has_exif=True, camera_make="Apple", camera_model="iPhone 14 Pro",
-                    datetime_taken=None, width=3024, height=4032, is_screenshot_likely=False,
+                    has_exif=True,
+                    camera_make="Apple",
+                    camera_model="iPhone 14 Pro",
+                    datetime_taken=None,
+                    width=3024,
+                    height=4032,
+                    is_screenshot_likely=False,
                 )
                 result = classify_inbox_file(simple_png)
         assert result.medium == "photograph"
@@ -140,9 +174,15 @@ class TestLayer2HeuristicClassifier:
         with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="image/png"):
             with patch("oskill.knowledge.classify_inbox_file.detect_image_exif") as mock_exif:
                 from oprim.classifier.detect_image_exif import ImageExif
+
                 mock_exif.return_value = ImageExif(
-                    has_exif=False, camera_make=None, camera_model=None,
-                    datetime_taken=None, width=1920, height=1080, is_screenshot_likely=True,
+                    has_exif=False,
+                    camera_make=None,
+                    camera_model=None,
+                    datetime_taken=None,
+                    width=1920,
+                    height=1080,
+                    is_screenshot_likely=True,
                 )
                 result = classify_inbox_file(screen_png)
         assert result.medium == "diagram"
@@ -152,17 +192,27 @@ class TestLayer2HeuristicClassifier:
         """Unrecognized binary → needs_review."""
         f = tmp_path / "unknown.bin"
         f.write_bytes(b"\x00\x01\x02\x03" * 20)
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/octet-stream"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime",
+            return_value="application/octet-stream",
+        ):
             result = classify_inbox_file(f)
         assert result.layer == "needs_review" or result.confidence < 0.65
 
     def test_all_results_have_required_fields(self, tmp_path, simple_pdf):
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/pdf"
+        ):
             with patch("oskill.knowledge.classify_inbox_file.detect_pdf_features") as mock_feat:
                 from oprim.classifier.detect_pdf_features import PDFFeatures
+
                 mock_feat.return_value = PDFFeatures(
-                    page_count=5, first_page_text="text", has_cjk=False,
-                    is_scanned=False, has_tables=False, is_two_column=False,
+                    page_count=5,
+                    first_page_text="text",
+                    has_cjk=False,
+                    is_scanned=False,
+                    has_tables=False,
+                    is_two_column=False,
                 )
                 result = classify_inbox_file(simple_pdf)
         assert isinstance(result, ClassifyResult)
@@ -174,7 +224,10 @@ class TestLayer2HeuristicClassifier:
         """use_llm=False must never call LLM."""
         f = tmp_path / "unknown.bin"
         f.write_bytes(b"\x00" * 100)
-        with patch("oskill.knowledge.classify_inbox_file.detect_mime", return_value="application/octet-stream"):
+        with patch(
+            "oskill.knowledge.classify_inbox_file.detect_mime",
+            return_value="application/octet-stream",
+        ):
             result = classify_inbox_file(f, use_llm=False)
         assert result.layer != "llm"
 

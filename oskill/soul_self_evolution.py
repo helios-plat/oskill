@@ -9,7 +9,8 @@ persist its own behavior changes (skills, model settings, thinking mode).
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def soul_self_evolution(
@@ -38,20 +39,27 @@ def soul_self_evolution(
 
     if llm_caller is not None and ctx.get("use_llm", True):
         try:
-            import json, re
+            import json
+            import re
+
             prompt = (
                 f"You are {agent_name} evaluating your own performance. "
                 f"Current SOUL.md: {current_soul[:2000]}\n"
                 f"Current config: {json.dumps(current_config, ensure_ascii=False)[:1000]}\n"
                 f"Execution feedback: {execution_feedback[:2000]}\n\n"
                 "Propose specific, minimal changes to SOUL.md and config. "
-                "Output JSON: {\"soul_changes\": [{\"line\": \"old text\", \"new\": \"new text\", \"reason\": \"...\"}], "
-                "\"config_changes\": {\"key\": \"new_value\", ...}}"
+                'Output JSON: {"soul_changes": [{"line": "old text", "new": "new text", '
+                '"reason": "..."}], '
+                '"config_changes": {"key": "new_value", ...}}'
             )
             out = llm_caller(messages=[{"role": "user", "content": prompt}], tools=None, config=ctx)
             raw = out.get("content") or "" if isinstance(out, dict) else str(out)
             m = re.search(r"```json\s*(.*?)\s*```", raw, re.DOTALL)
-            parsed = json.loads(m.group(1)) if m else (json.loads(raw) if raw.strip().startswith("{") else {})
+            parsed = (
+                json.loads(m.group(1))
+                if m
+                else (json.loads(raw) if raw.strip().startswith("{") else {})
+            )
         except Exception:
             parsed = {}
 
@@ -59,10 +67,21 @@ def soul_self_evolution(
             "proposed_soul": _apply_soul_changes(current_soul, parsed.get("soul_changes", [])),
             "proposed_config": {**current_config, **parsed.get("config_changes", {})},
             "changes": [
-                {"field": "soul", "old": sc.get("line", "")[:80], "new": sc.get("new", "")[:80], "reason": sc.get("reason", "")}
+                {
+                    "field": "soul",
+                    "old": sc.get("line", "")[:80],
+                    "new": sc.get("new", "")[:80],
+                    "reason": sc.get("reason", ""),
+                }
                 for sc in parsed.get("soul_changes", [])
-            ] + [
-                {"field": k, "old": str(current_config.get(k, "")), "new": str(v), "reason": "performance feedback"}
+            ]
+            + [
+                {
+                    "field": k,
+                    "old": str(current_config.get(k, "")),
+                    "new": str(v),
+                    "reason": "performance feedback",
+                }
                 for k, v in parsed.get("config_changes", {}).items()
             ],
             "status": "analyzed",
@@ -75,7 +94,14 @@ def soul_self_evolution(
     return {
         "proposed_soul": new_soul,
         "proposed_config": current_config,
-        "changes": [{"field": "soul", "old": "", "new": "evaluation annotation appended", "reason": execution_feedback[:80]}],
+        "changes": [
+            {
+                "field": "soul",
+                "old": "",
+                "new": "evaluation annotation appended",
+                "reason": execution_feedback[:80],
+            }
+        ],
         "status": "analyzed",
     }
 
@@ -92,4 +118,5 @@ def _apply_soul_changes(soul: str, changes: list[dict[str, Any]]) -> str:
 
 def _now() -> str:
     import time
+
     return time.strftime("%Y-%m-%d %H:%M:%S")

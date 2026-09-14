@@ -46,13 +46,15 @@ def calendar_surprise_detect(
 
         severity = "major" if surprise_pct >= 50.0 else "minor"
 
-        surprises.append({
-            "name": event.get("name", ""),
-            "actual": actual,
-            "forecast": forecast,
-            "surprise_pct": round(surprise_pct, 2),
-            "severity": severity,
-            "importance": importance,
-        })
+        surprises.append(
+            {
+                "name": event.get("name", ""),
+                "actual": actual,
+                "forecast": forecast,
+                "surprise_pct": round(surprise_pct, 2),
+                "severity": severity,
+                "importance": importance,
+            }
+        )
 
     return surprises

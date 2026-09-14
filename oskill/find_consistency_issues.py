@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from typing import Callable
 
 from oprim import coherence_compute, entity_graph_search
 
@@ -36,7 +35,7 @@ def find_consistency_issues(
         coherence_compute detects contradiction evidence from confirmed nodes.
         entity_graph_search finds supersede cycles via graph traversal.
     """
-    # 1. Label conflicts via pattern matching (ported + enhanced from staging _cap_find_consistency_issues)
+    # 1. Label conflicts via pattern matching (ported and enhanced from staging).
     buckets: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for nid, node in nodes.items():
         title = (node or {}).get("title", "")

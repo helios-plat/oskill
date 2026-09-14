@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -78,9 +79,9 @@ def walk_forward_optimization_pipeline(
         if n_iterations is not None and walk_count >= n_iterations:
             break
 
-        X_train = X.iloc[t: t + train_window]
-        y_train = y.iloc[t: t + train_window]
-        X_test = X.iloc[t + train_window: t + train_window + test_window]
+        X_train = X.iloc[t : t + train_window]
+        y_train = y.iloc[t : t + train_window]
+        X_test = X.iloc[t + train_window : t + train_window + test_window]
 
         params = optimization_function(X_train, y_train)
         oos_ret = strategy_fn(X_test, params)

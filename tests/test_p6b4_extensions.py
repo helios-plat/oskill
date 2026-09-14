@@ -5,23 +5,25 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import pytest
-
 from oskill._schemas import Script
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # script_writer — template_prompt extension
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestScriptWriterTemplatePrompt:
     def _make_llm(self, title: str = "Test") -> Any:
-        resp = json.dumps({
-            "title": title, "description": "d",
-            "scenes": [{"index": 0, "narration": "n", "duration_s": 5.0,
-                        "visual_description": "v"}],
-            "estimated_duration_s": 5.0,
-        })
+        resp = json.dumps(
+            {
+                "title": title,
+                "description": "d",
+                "scenes": [
+                    {"index": 0, "narration": "n", "duration_s": 5.0, "visual_description": "v"}
+                ],
+                "estimated_duration_s": 5.0,
+            }
+        )
         return lambda **kw: {"content": resp}
 
     async def test_template_prompt_injected_as_system(self) -> None:
@@ -31,15 +33,28 @@ class TestScriptWriterTemplatePrompt:
 
         def _llm(**kw: Any) -> dict[str, Any]:
             calls.append(kw)
-            return {"content": json.dumps({
-                "title": "T", "description": "d",
-                "scenes": [{"index": 0, "narration": "n", "duration_s": 5.0,
-                            "visual_description": "v"}],
-                "estimated_duration_s": 5.0,
-            })}
+            return {
+                "content": json.dumps(
+                    {
+                        "title": "T",
+                        "description": "d",
+                        "scenes": [
+                            {
+                                "index": 0,
+                                "narration": "n",
+                                "duration_s": 5.0,
+                                "visual_description": "v",
+                            }
+                        ],
+                        "estimated_duration_s": 5.0,
+                    }
+                )
+            }
 
         await script_writer(
-            topic="test", target_duration_s=60, llm=_llm,
+            topic="test",
+            target_duration_s=60,
+            llm=_llm,
             template_prompt="You are a quant finance expert. Generate {topic} content.",
         )
         system_msg = calls[0]["messages"][0]["content"]
@@ -52,12 +67,23 @@ class TestScriptWriterTemplatePrompt:
 
         def _llm(**kw: Any) -> dict[str, Any]:
             calls.append(kw)
-            return {"content": json.dumps({
-                "title": "T", "description": "d",
-                "scenes": [{"index": 0, "narration": "n", "duration_s": 5.0,
-                            "visual_description": "v"}],
-                "estimated_duration_s": 5.0,
-            })}
+            return {
+                "content": json.dumps(
+                    {
+                        "title": "T",
+                        "description": "d",
+                        "scenes": [
+                            {
+                                "index": 0,
+                                "narration": "n",
+                                "duration_s": 5.0,
+                                "visual_description": "v",
+                            }
+                        ],
+                        "estimated_duration_s": 5.0,
+                    }
+                )
+            }
 
         await script_writer(topic="test", target_duration_s=60, llm=_llm)
         system_msg = calls[0]["messages"][0]["content"]
@@ -70,19 +96,34 @@ class TestScriptWriterTemplatePrompt:
 
         def _llm(**kw: Any) -> dict[str, Any]:
             calls.append(kw)
-            return {"content": json.dumps({
-                "title": "T", "description": "d",
-                "scenes": [{"index": 0, "narration": "n", "duration_s": 5.0,
-                            "visual_description": "v"}],
-                "estimated_duration_s": 5.0,
-            })}
+            return {
+                "content": json.dumps(
+                    {
+                        "title": "T",
+                        "description": "d",
+                        "scenes": [
+                            {
+                                "index": 0,
+                                "narration": "n",
+                                "duration_s": 5.0,
+                                "visual_description": "v",
+                            }
+                        ],
+                        "estimated_duration_s": 5.0,
+                    }
+                )
+            }
 
         await script_writer(
-            topic="t", target_duration_s=60, llm=_llm,
+            topic="t",
+            target_duration_s=60,
+            llm=_llm,
             template_prompt="TEMPLATE_A",
         )
         await script_writer(
-            topic="t", target_duration_s=60, llm=_llm,
+            topic="t",
+            target_duration_s=60,
+            llm=_llm,
             template_prompt="TEMPLATE_B",
         )
         assert calls[0]["messages"][0]["content"] == "TEMPLATE_A"
@@ -92,7 +133,9 @@ class TestScriptWriterTemplatePrompt:
         from oskill.script_writer import script_writer
 
         result = await script_writer(
-            topic="cats", target_duration_s=30, llm=self._make_llm(),
+            topic="cats",
+            target_duration_s=30,
+            llm=self._make_llm(),
         )
         assert isinstance(result, Script)
         assert result.title == "Test"
@@ -102,50 +145,84 @@ class TestScriptWriterTemplatePrompt:
 # storyboard_planner — motion field extension
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestStoryboardPlannerMotion:
     def _script(self) -> Script:
         return Script(
-            title="T", description="d",
-            scenes=[{"index": 0, "narration": "n", "duration_s": 5.0,
-                     "visual_description": "v"}],
+            title="T",
+            description="d",
+            scenes=[{"index": 0, "narration": "n", "duration_s": 5.0, "visual_description": "v"}],
             estimated_duration_s=5.0,
         )
 
     async def test_motion_field_parsed(self) -> None:
         from oskill.storyboard_planner import storyboard_planner
 
-        resp = json.dumps({"shots": [{
-            "shot_id": "s1", "scene_index": 0, "visual_description": "v",
-            "narration": "n", "duration_s": 3.0, "importance": 5,
-            "motion": "pan_left",
-        }]})
+        resp = json.dumps(
+            {
+                "shots": [
+                    {
+                        "shot_id": "s1",
+                        "scene_index": 0,
+                        "visual_description": "v",
+                        "narration": "n",
+                        "duration_s": 3.0,
+                        "importance": 5,
+                        "motion": "pan_left",
+                    }
+                ]
+            }
+        )
         board = await storyboard_planner(
-            script=self._script(), llm=lambda **kw: {"content": resp},
+            script=self._script(),
+            llm=lambda **kw: {"content": resp},
         )
         assert board.shots[0].motion == "pan_left"
 
     async def test_motion_null_compat(self) -> None:
         from oskill.storyboard_planner import storyboard_planner
 
-        resp = json.dumps({"shots": [{
-            "shot_id": "s1", "scene_index": 0, "visual_description": "v",
-            "narration": "n", "duration_s": 3.0, "importance": 5,
-            "motion": None,
-        }]})
+        resp = json.dumps(
+            {
+                "shots": [
+                    {
+                        "shot_id": "s1",
+                        "scene_index": 0,
+                        "visual_description": "v",
+                        "narration": "n",
+                        "duration_s": 3.0,
+                        "importance": 5,
+                        "motion": None,
+                    }
+                ]
+            }
+        )
         board = await storyboard_planner(
-            script=self._script(), llm=lambda **kw: {"content": resp},
+            script=self._script(),
+            llm=lambda **kw: {"content": resp},
         )
         assert board.shots[0].motion is None
 
     async def test_motion_absent_defaults_none(self) -> None:
         from oskill.storyboard_planner import storyboard_planner
 
-        resp = json.dumps({"shots": [{
-            "shot_id": "s1", "scene_index": 0, "visual_description": "v",
-            "narration": "n", "duration_s": 3.0, "importance": 5,
-        }]})
+        resp = json.dumps(
+            {
+                "shots": [
+                    {
+                        "shot_id": "s1",
+                        "scene_index": 0,
+                        "visual_description": "v",
+                        "narration": "n",
+                        "duration_s": 3.0,
+                        "importance": 5,
+                    }
+                ]
+            }
+        )
         board = await storyboard_planner(
-            script=self._script(), llm=lambda **kw: {"content": resp},
+            script=self._script(),
+            llm=lambda **kw: {"content": resp},
         )
         assert board.shots[0].motion is None
 
@@ -156,10 +233,22 @@ class TestStoryboardPlannerMotion:
 
         def _llm(**kw: Any) -> dict[str, Any]:
             calls.append(kw)
-            return {"content": json.dumps({"shots": [{
-                "shot_id": "s1", "scene_index": 0, "visual_description": "v",
-                "narration": "n", "duration_s": 3.0, "importance": 5,
-            }]})}
+            return {
+                "content": json.dumps(
+                    {
+                        "shots": [
+                            {
+                                "shot_id": "s1",
+                                "scene_index": 0,
+                                "visual_description": "v",
+                                "narration": "n",
+                                "duration_s": 3.0,
+                                "importance": 5,
+                            }
+                        ]
+                    }
+                )
+            }
 
         await storyboard_planner(script=self._script(), llm=_llm)
         system = calls[0]["messages"][0]["content"]
@@ -170,18 +259,24 @@ class TestStoryboardPlannerMotion:
 # P7-B4: script_writer subjects parameter
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestScriptWriterSubjects:
-    _RESP = json.dumps({
-        "title": "T", "description": "d",
-        "scenes": [{"index": 0, "narration": "n", "duration_s": 5.0,
-                    "visual_description": "v"}],
-        "estimated_duration_s": 5.0,
-    })
+    _RESP = json.dumps(
+        {
+            "title": "T",
+            "description": "d",
+            "scenes": [
+                {"index": 0, "narration": "n", "duration_s": 5.0, "visual_description": "v"}
+            ],
+            "estimated_duration_s": 5.0,
+        }
+    )
 
     def _make_capturing_llm(self, calls: list[dict[str, Any]]) -> Any:
         def _llm(**kw: Any) -> dict[str, Any]:
             calls.append(kw)
             return {"content": self._RESP}
+
         return _llm
 
     async def test_subjects_none_prompt_unchanged(self) -> None:
@@ -190,7 +285,9 @@ class TestScriptWriterSubjects:
 
         calls: list[dict[str, Any]] = []
         await script_writer(
-            topic="cats", target_duration_s=60, llm=self._make_capturing_llm(calls),
+            topic="cats",
+            target_duration_s=60,
+            llm=self._make_capturing_llm(calls),
             subjects=None,
         )
         system = calls[0]["messages"][0]["content"]
@@ -204,7 +301,9 @@ class TestScriptWriterSubjects:
         calls: list[dict[str, Any]] = []
         refs = [SubjectRef(subject_id="h1", name="Alice", description="主角侦探")]
         await script_writer(
-            topic="mystery", target_duration_s=60, llm=self._make_capturing_llm(calls),
+            topic="mystery",
+            target_duration_s=60,
+            llm=self._make_capturing_llm(calls),
             subjects=refs,
         )
         system = calls[0]["messages"][0]["content"]
@@ -224,7 +323,9 @@ class TestScriptWriterSubjects:
             SubjectRef(subject_id="c", name="Carol", description="受害者"),
         ]
         await script_writer(
-            topic="crime", target_duration_s=120, llm=self._make_capturing_llm(calls),
+            topic="crime",
+            target_duration_s=120,
+            llm=self._make_capturing_llm(calls),
             subjects=refs,
         )
         system = calls[0]["messages"][0]["content"]
@@ -236,17 +337,28 @@ class TestScriptWriterSubjects:
 # P7-B4: storyboard_planner subjects + style_marker + lighting_control
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestStoryboardPlannerP7B4:
-    _SHOT_RESP = json.dumps({"shots": [{
-        "shot_id": "s1", "scene_index": 0, "visual_description": "v",
-        "narration": "n", "duration_s": 3.0, "importance": 5,
-    }]})
+    _SHOT_RESP = json.dumps(
+        {
+            "shots": [
+                {
+                    "shot_id": "s1",
+                    "scene_index": 0,
+                    "visual_description": "v",
+                    "narration": "n",
+                    "duration_s": 3.0,
+                    "importance": 5,
+                }
+            ]
+        }
+    )
 
     def _script(self) -> Script:
         return Script(
-            title="T", description="d",
-            scenes=[{"index": 0, "narration": "n", "duration_s": 5.0,
-                     "visual_description": "v"}],
+            title="T",
+            description="d",
+            scenes=[{"index": 0, "narration": "n", "duration_s": 5.0, "visual_description": "v"}],
             estimated_duration_s=5.0,
         )
 
@@ -254,6 +366,7 @@ class TestStoryboardPlannerP7B4:
         def _llm(**kw: Any) -> dict[str, Any]:
             calls.append(kw)
             return {"content": self._SHOT_RESP}
+
         return _llm
 
     async def test_all_none_backward_compat(self) -> None:
@@ -262,8 +375,11 @@ class TestStoryboardPlannerP7B4:
 
         calls: list[dict[str, Any]] = []
         board = await storyboard_planner(
-            script=self._script(), llm=self._make_capturing_llm(calls),
-            subjects=None, style_marker=None, lighting_control=None,
+            script=self._script(),
+            llm=self._make_capturing_llm(calls),
+            subjects=None,
+            style_marker=None,
+            lighting_control=None,
         )
         assert len(board.shots) == 1
         system = calls[0]["messages"][0]["content"]
@@ -279,7 +395,8 @@ class TestStoryboardPlannerP7B4:
         calls: list[dict[str, Any]] = []
         refs = [SubjectRef(subject_id="x", name="Zara", description="女主角")]
         await storyboard_planner(
-            script=self._script(), llm=self._make_capturing_llm(calls),
+            script=self._script(),
+            llm=self._make_capturing_llm(calls),
             subjects=refs,
         )
         system = calls[0]["messages"][0]["content"]
@@ -293,7 +410,8 @@ class TestStoryboardPlannerP7B4:
 
         calls: list[dict[str, Any]] = []
         await storyboard_planner(
-            script=self._script(), llm=self._make_capturing_llm(calls),
+            script=self._script(),
+            llm=self._make_capturing_llm(calls),
             style_marker="科普",
         )
         system = calls[0]["messages"][0]["content"]
@@ -305,7 +423,8 @@ class TestStoryboardPlannerP7B4:
 
         calls: list[dict[str, Any]] = []
         await storyboard_planner(
-            script=self._script(), llm=self._make_capturing_llm(calls),
+            script=self._script(),
+            llm=self._make_capturing_llm(calls),
             lighting_control="暖",
         )
         system = calls[0]["messages"][0]["content"]
@@ -319,8 +438,11 @@ class TestStoryboardPlannerP7B4:
         calls: list[dict[str, Any]] = []
         refs = [SubjectRef(subject_id="p", name="Pan", description="英雄")]
         await storyboard_planner(
-            script=self._script(), llm=self._make_capturing_llm(calls),
-            subjects=refs, style_marker="热血", lighting_control="戏剧",
+            script=self._script(),
+            llm=self._make_capturing_llm(calls),
+            subjects=refs,
+            style_marker="热血",
+            lighting_control="戏剧",
         )
         system = calls[0]["messages"][0]["content"]
         assert "Pan" in system

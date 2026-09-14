@@ -1,19 +1,18 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
+
 import fnmatch
-import json
-import re
-import uuid
 from dataclasses import dataclass
 from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
 
 @dataclass
 class ToolScore:
     name: str
     score: float
     reason: str
+
 
 @dataclass
 class HookCmd:
@@ -23,12 +22,16 @@ class HookCmd:
 
 
 def _to_str_list(v: Any) -> list[str]:
-    if isinstance(v, list): return [str(x) for x in v]
+    if isinstance(v, list):
+        return [str(x) for x in v]
     return []
 
+
 def _to_dict_list(v: Any) -> list[dict]:
-    if isinstance(v, list): return [x for x in v if isinstance(x, dict)]
+    if isinstance(v, list):
+        return [x for x in v if isinstance(x, dict)]
     return []
+
 
 def build_subagent_prompt(
     subagent_def: dict[str, Any],
@@ -73,8 +76,16 @@ def build_subagent_prompt(
     all_tools = subagent_def.get("tools", [])
 
     # 按 permissions.mode 过滤工具
-    READ_ONLY_NAMES = {"file_read", "dir_list", "glob_match", "git_status",
-                       "git_diff", "git_log", "lsp_diagnostics", "lsp_hover"}
+    READ_ONLY_NAMES = {
+        "file_read",
+        "dir_list",
+        "glob_match",
+        "git_status",
+        "git_diff",
+        "git_log",
+        "lsp_diagnostics",
+        "lsp_hover",
+    }
     if mode == "plan":
         scoped = [t for t in all_tools if t.get("name") in READ_ONLY_NAMES]
     elif mode == "bypass":
@@ -92,10 +103,14 @@ def build_subagent_prompt(
 
     return {"system": system, "scoped_tools": scoped}
 
+
 def _to_str_list(v: Any) -> list[str]:
-    if isinstance(v, list): return [str(x) for x in v]
+    if isinstance(v, list):
+        return [str(x) for x in v]
     return []
 
+
 def _to_dict_list(v: Any) -> list[dict]:
-    if isinstance(v, list): return [x for x in v if isinstance(x, dict)]
+    if isinstance(v, list):
+        return [x for x in v if isinstance(x, dict)]
     return []

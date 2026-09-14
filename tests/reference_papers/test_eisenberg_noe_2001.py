@@ -12,6 +12,7 @@ uniqueness of the clearing vector p*).  The key clearing condition is:
 
 where π_{ji} = L_{ji} / p̄_j is the relative liability matrix.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -19,10 +20,10 @@ import pytest
 
 from oskill.networks.clearing import eisenberg_noe_clearing
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _build_3node_example() -> tuple[np.ndarray, np.ndarray]:
     """3-node example from Section 4 of Eisenberg-Noe (2001).
@@ -32,11 +33,13 @@ def _build_3node_example() -> tuple[np.ndarray, np.ndarray]:
     Node 2 owes node 0: 30, node 1: 40
     External assets: [60, 70, 80]
     """
-    L = np.array([
-        [0.0, 100.0, 50.0],
-        [80.0, 0.0, 60.0],
-        [30.0, 40.0, 0.0],
-    ])
+    L = np.array(
+        [
+            [0.0, 100.0, 50.0],
+            [80.0, 0.0, 60.0],
+            [30.0, 40.0, 0.0],
+        ]
+    )
     e = np.array([60.0, 70.0, 80.0])
     return L, e
 
@@ -58,15 +61,14 @@ def _clearing_condition_satisfied(
 # Tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.academic_reference
 def test_clearing_condition_fixed_point():
     """p* must satisfy the fixed-point clearing condition (Theorem 1)."""
     L, e = _build_3node_example()
     result = eisenberg_noe_clearing(L, e, method="fixed_point")
     p = result["clearing_vector"]
-    assert _clearing_condition_satisfied(p, L, e), (
-        f"Clearing condition violated: p={p}"
-    )
+    assert _clearing_condition_satisfied(p, L, e), f"Clearing condition violated: p={p}"
 
 
 @pytest.mark.academic_reference
@@ -75,9 +77,7 @@ def test_clearing_condition_fictitious_default():
     L, e = _build_3node_example()
     result = eisenberg_noe_clearing(L, e, method="fictitious_default")
     p = result["clearing_vector"]
-    assert _clearing_condition_satisfied(p, L, e), (
-        f"Clearing condition violated: p={p}"
-    )
+    assert _clearing_condition_satisfied(p, L, e), f"Clearing condition violated: p={p}"
 
 
 @pytest.mark.academic_reference
@@ -113,17 +113,21 @@ def test_recovery_rates_in_unit_interval():
 @pytest.mark.academic_reference
 def test_fully_solvent_system():
     """When external assets far exceed liabilities, no defaults should occur."""
-    L = np.array([
-        [0.0, 10.0, 0.0],
-        [0.0, 0.0, 10.0],
-        [10.0, 0.0, 0.0],
-    ])
+    L = np.array(
+        [
+            [0.0, 10.0, 0.0],
+            [0.0, 0.0, 10.0],
+            [10.0, 0.0, 0.0],
+        ]
+    )
     e = np.array([1000.0, 1000.0, 1000.0])
     result = eisenberg_noe_clearing(L, e)
     assert not np.any(result["default_status"]), "No defaults expected in solvent system."
     np.testing.assert_allclose(
-        result["recovery_rates"], 1.0, atol=1e-6,
-        err_msg="Full recovery expected when assets >> liabilities."
+        result["recovery_rates"],
+        1.0,
+        atol=1e-6,
+        err_msg="Full recovery expected when assets >> liabilities.",
     )
 
 
@@ -134,8 +138,10 @@ def test_both_methods_agree():
     r1 = eisenberg_noe_clearing(L, e, method="fixed_point")
     r2 = eisenberg_noe_clearing(L, e, method="fictitious_default")
     np.testing.assert_allclose(
-        r1["clearing_vector"], r2["clearing_vector"], atol=1e-5,
-        err_msg="Methods disagree on clearing vector."
+        r1["clearing_vector"],
+        r2["clearing_vector"],
+        atol=1e-5,
+        err_msg="Methods disagree on clearing vector.",
     )
 
 
@@ -148,11 +154,13 @@ def test_cascade_default_scenario():
     """
     # Node 0: owes 200 total, receives only from node 2 (10) and node 1 (10)
     # Nodes 1 and 2 depend on node 0 repayment
-    L = np.array([
-        [0.0, 150.0, 50.0],   # node 0 owes 200 total
-        [10.0, 0.0, 5.0],     # node 1 owes 15 total
-        [10.0, 5.0, 0.0],     # node 2 owes 15 total
-    ])
+    L = np.array(
+        [
+            [0.0, 150.0, 50.0],  # node 0 owes 200 total
+            [10.0, 0.0, 5.0],  # node 1 owes 15 total
+            [10.0, 5.0, 0.0],  # node 2 owes 15 total
+        ]
+    )
     # Node 0 has no external assets — must partially default
     e = np.array([0.0, 5.0, 5.0])
     result = eisenberg_noe_clearing(L, e)

@@ -10,9 +10,10 @@
 
 Added: oskill v3.25.12
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 
@@ -29,6 +30,7 @@ class ForceAnalysisResult:
     answer_leaked : bool
         True 表示检测到可能泄露答案（触发红线保护）
     """
+
     assistant_text: str
     equation_ready: bool = False
     answer_leaked: bool = False
@@ -56,7 +58,9 @@ _FORCE_SYSTEM = """你是一位高中物理老师，正在用苏格拉底引导�
 }"""
 
 
-_OPENING_QUESTION = "好的，我们一起来分析这道题。首先，这个物体处于什么运动状态？（静止、匀速、加速？）"
+_OPENING_QUESTION = (
+    "好的，我们一起来分析这道题。首先，这个物体处于什么运动状态？（静止、匀速、加速？）"
+)
 
 
 async def physics_force_analysis_guide(
@@ -121,7 +125,11 @@ async def physics_force_analysis_guide(
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        data = {"assistant_text": "你认为这个物体受到哪几类力的作用？", "equation_ready": False, "answer_leaked": False}
+        data = {
+            "assistant_text": "你认为这个物体受到哪几类力的作用？",
+            "equation_ready": False,
+            "answer_leaked": False,
+        }
 
     assistant_text: str = data.get("assistant_text", "请继续分析受力情况。")
     equation_ready: bool = bool(data.get("equation_ready", False))

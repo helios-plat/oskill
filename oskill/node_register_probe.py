@@ -93,9 +93,7 @@ def node_register_probe(
                 docker_host_url=None,
             )
         else:
-            last_error = (
-                f"docker info via SSH failed (exit {ssh_res.exit_code}): {ssh_res.stderr}"
-            )
+            last_error = f"docker info via SSH failed (exit {ssh_res.exit_code}): {ssh_res.stderr}"
     except Exception as exc:
         last_error = str(exc)
 

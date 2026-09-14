@@ -7,8 +7,8 @@ import pytest
 
 from oskill.causal import symbolic_transfer_entropy
 
-
 # ─── basic API ───────────────────────────────────────────────────────────────
+
 
 def test_ste_returns_te_key():
     """Basic call returns a dict with 'te' key."""
@@ -91,6 +91,4 @@ def test_ste_staniek_lehnertz_2008():
     te_xy = symbolic_transfer_entropy(x, y, d=3, lag=1)["te"]
     te_yx = symbolic_transfer_entropy(y, x, d=3, lag=1)["te"]
 
-    assert te_xy > te_yx, (
-        f"Expected TE(x→y)={te_xy:.4f} > TE(y→x)={te_yx:.4f} for driven system"
-    )
+    assert te_xy > te_yx, f"Expected TE(x→y)={te_xy:.4f} > TE(y→x)={te_yx:.4f} for driven system"

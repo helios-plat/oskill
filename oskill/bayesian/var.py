@@ -6,7 +6,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from scipy.stats import invwishart
 
 
 def _ar1_residual_variance(series: np.ndarray) -> float:
@@ -30,12 +29,14 @@ def _build_lag_matrix(data: np.ndarray, p: int) -> tuple[np.ndarray, np.ndarray]
     for lag in range(1, p + 1):
         start = (lag - 1) * K + 1
         end = lag * K + 1
-        Z[:, start:end] = data[p - lag: T - lag]
+        Z[:, start:end] = data[p - lag : T - lag]
     Y_eff = data[p:, :]
     return Z, Y_eff
 
 
-def _impulse_responses(A_mean: np.ndarray, Sigma: np.ndarray, K: int, p: int, horizon: int = 10) -> np.ndarray:
+def _impulse_responses(
+    A_mean: np.ndarray, Sigma: np.ndarray, K: int, p: int, horizon: int = 10
+) -> np.ndarray:
     """Compute structural impulse responses via Cholesky decomposition of Sigma."""
     try:
         P = np.linalg.cholesky(Sigma)
@@ -51,9 +52,9 @@ def _impulse_responses(A_mean: np.ndarray, Sigma: np.ndarray, K: int, p: int, ho
     Phi[0] = np.eye(K)
 
     for h in range(1, horizon + p):
-        for l in range(1, p + 1):
-            if h - l >= 0:
-                Phi[h] = Phi[h] + A_coef[:, l - 1, :].T @ Phi[h - l]
+        for lag in range(1, p + 1):
+            if h - lag >= 0:
+                Phi[h] = Phi[h] + A_coef[:, lag - 1, :].T @ Phi[h - lag]
 
     for h in range(horizon):
         IR[:, :, h] = (Phi[h] @ P).T  # IR[shock, response, h]
@@ -107,7 +108,7 @@ def bayesian_var(
     Reference:
         Karlsson (2013); Doan, Litterman, Sims (1984).
     """
-    rng = np.random.default_rng(seed)
+    _rng = np.random.default_rng(seed)
 
     if isinstance(data, pd.DataFrame):
         data_arr = data.values.astype(np.float64)
@@ -151,9 +152,9 @@ def bayesian_var(
         V0_diag = np.zeros(n_coef)
         V0_diag[0] = 1e6  # constant: diffuse
 
-        for l in range(1, p + 1):
+        for lag in range(1, p + 1):
             for j in range(K):
-                col_idx = 1 + (l - 1) * K + j
+                col_idx = 1 + (lag - 1) * K + j
                 for i in range(K):
                     # We'll store per-equation later; for simplicity use mean
                     pass
@@ -163,10 +164,10 @@ def bayesian_var(
         for i in range(K):
             v_diag = np.zeros(n_coef)
             v_diag[0] = 1.0 / 1e6  # diffuse constant
-            for l in range(1, p + 1):
+            for lag in range(1, p + 1):
                 for j in range(K):
-                    col_idx = 1 + (l - 1) * K + j
-                    scale = (minnesota_lambda / (l ** minnesota_decay)) ** 2
+                    col_idx = 1 + (lag - 1) * K + j
+                    scale = (minnesota_lambda / (lag**minnesota_decay)) ** 2
                     if i == j:
                         var_ij = scale / sigma_i[i]
                     else:
@@ -199,12 +200,16 @@ def bayesian_var(
             Sigma_post_diag[i] = bN_i / (aN_i - 1.0)
 
             from scipy.special import gammaln
+
             _, logdet0 = np.linalg.slogdet(S0_i)
             _, logdetN = np.linalg.slogdet(SN_i)
             log_ml += (
-                gammaln(aN_i) - gammaln(1.0)
-                + 1.0 * np.log(1.0) - aN_i * np.log(bN_i)
-                + 0.5 * logdet0 - 0.5 * logdetN
+                gammaln(aN_i)
+                - gammaln(1.0)
+                + 1.0 * np.log(1.0)
+                - aN_i * np.log(bN_i)
+                + 0.5 * logdet0
+                - 0.5 * logdetN
                 - T_eff / 2.0 * np.log(2.0 * np.pi)
             )
 

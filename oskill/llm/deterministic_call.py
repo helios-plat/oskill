@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 import warnings
-from datetime import datetime, timezone
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 from oprim import canonical_json, sha256_hash
 
@@ -137,7 +138,7 @@ def deterministic_llm_call(
         "stop_reason": client_result.get("stop_reason"),
     }
 
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
 
     return {
         "response": response,
@@ -161,25 +162,17 @@ def _validate_json_schema(obj: Any, schema: dict) -> None:
     schema_type = schema.get("type")
     if schema_type == "object":
         if not isinstance(obj, dict):
-            raise LLMResponseValidationError(
-                f"Expected JSON object, got {type(obj).__name__}"
-            )
+            raise LLMResponseValidationError(f"Expected JSON object, got {type(obj).__name__}")
         required = schema.get("required", [])
         for key in required:
             if key not in obj:
                 raise LLMResponseValidationError(f"Required field missing: {key!r}")
     elif schema_type == "array":
         if not isinstance(obj, list):
-            raise LLMResponseValidationError(
-                f"Expected JSON array, got {type(obj).__name__}"
-            )
+            raise LLMResponseValidationError(f"Expected JSON array, got {type(obj).__name__}")
     elif schema_type == "string":
         if not isinstance(obj, str):
-            raise LLMResponseValidationError(
-                f"Expected string, got {type(obj).__name__}"
-            )
+            raise LLMResponseValidationError(f"Expected string, got {type(obj).__name__}")
     elif schema_type == "number":
         if not isinstance(obj, (int, float)):
-            raise LLMResponseValidationError(
-                f"Expected number, got {type(obj).__name__}"
-            )
+            raise LLMResponseValidationError(f"Expected number, got {type(obj).__name__}")

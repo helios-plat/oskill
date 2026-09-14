@@ -9,9 +9,8 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from PIL import Image
-
 from obase import ProviderRegistry
+from PIL import Image
 
 
 @pytest.fixture(autouse=True)

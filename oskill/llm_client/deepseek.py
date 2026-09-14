@@ -5,6 +5,7 @@ Used by oskill.llm_agent.* (Phase 3 P15) and ultimately Helivex strategies.
 
 Reference: https://api-docs.deepseek.com/api/create-chat-completion
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -12,9 +13,9 @@ import json
 import time
 
 import aiohttp
-
 from oprim.crypto import sha256_hash
 from oprim.serialization import canonical_json
+
 from oskill.llm_client.exceptions import (
     LLMAPIError,
     LLMRateLimit,
@@ -25,10 +26,10 @@ from oskill.llm_client.exceptions import (
 # Cost per 1k tokens (USD), as of 2026-05.
 # Update when DeepSeek pricing changes.
 _COST_PER_1K: dict[str, tuple[float, float]] = {
-    "deepseek-chat":     (0.00027, 0.0011),   # deepseek-v3 standard
-    "deepseek-reasoner": (0.00055, 0.0022),   # deepseek-r1 standard
-    "deepseek-v3":       (0.00027, 0.0011),   # alias
-    "deepseek-r1":       (0.00055, 0.0022),   # alias
+    "deepseek-chat": (0.00027, 0.0011),  # deepseek-v3 standard
+    "deepseek-reasoner": (0.00055, 0.0022),  # deepseek-r1 standard
+    "deepseek-v3": (0.00027, 0.0011),  # alias
+    "deepseek-r1": (0.00055, 0.0022),  # alias
 }
 
 
@@ -84,7 +85,9 @@ async def call(
 
     # Canonical prompt hash for audit — stable across Python dict orderings
     prompt_canonical = canonical_json(messages)
-    prompt_bytes = prompt_canonical.encode() if isinstance(prompt_canonical, str) else prompt_canonical
+    prompt_bytes = (
+        prompt_canonical.encode() if isinstance(prompt_canonical, str) else prompt_canonical
+    )
     raw_hash = sha256_hash(prompt_bytes)
     prompt_hash = raw_hash.hex() if isinstance(raw_hash, bytes) else raw_hash
 
@@ -116,7 +119,7 @@ async def call(
         except (LLMTimeout, LLMUnavailable) as exc:
             last_exc = exc
             if attempt < retries:
-                await asyncio.sleep(2 ** attempt)  # exponential backoff
+                await asyncio.sleep(2**attempt)  # exponential backoff
                 continue
             raise
 
@@ -162,7 +165,7 @@ async def _do_call(
                 except (aiohttp.ContentTypeError, json.JSONDecodeError) as exc:
                     raise LLMAPIError(f"deepseek response not JSON: {exc}") from exc
 
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         raise LLMTimeout(f"deepseek timeout after {timeout_sec}s") from exc
     except aiohttp.ClientError as exc:
         raise LLMUnavailable(f"deepseek client error: {exc}") from exc
@@ -176,9 +179,7 @@ async def _do_call(
         output_tokens: int = usage["completion_tokens"]
         model_id: str = data.get("model", requested_model)
     except (KeyError, IndexError, TypeError) as exc:
-        raise LLMAPIError(
-            f"deepseek response malformed: {exc}: {str(data)[:200]}"
-        ) from exc
+        raise LLMAPIError(f"deepseek response malformed: {exc}: {str(data)[:200]}") from exc
 
     # Cost calculation
     cost_pair = _COST_PER_1K.get(requested_model) or _COST_PER_1K.get(model_id)

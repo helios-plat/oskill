@@ -6,7 +6,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-
 SeverityLabel = Literal["critical", "high", "medium", "low", "info"]
 
 _SEVERITY_THRESHOLDS = [

@@ -8,7 +8,6 @@ import json
 import pytest
 
 from oskill.wechat_publish import (
-    Article,
     WechatAccountRegistry,
     create_image_post,
     inspect_article,
@@ -32,8 +31,11 @@ def test_upload_image_injected_client_ok():
 
 
 def test_upload_image_error():
-    result = upload_image("/tmp/a.png", access_token="tok",
-                          client=lambda **kw: {"errcode": 40001, "errmsg": "bad token"})
+    result = upload_image(
+        "/tmp/a.png",
+        access_token="tok",
+        client=lambda **kw: {"errcode": 40001, "errmsg": "bad token"},
+    )
     assert result["ok"] is False
     assert result["errcode"] == 40001
 
@@ -45,8 +47,7 @@ def test_upload_image_missing_file_default_client():
 
 
 def test_create_image_post_pure_assembly():
-    result = create_image_post(["media://m1", "media://m2"], title="多图",
-                               upload=False)
+    result = create_image_post(["media://m1", "media://m2"], title="多图", upload=False)
     assert result["ok"] is True
     articles = result["draft"]["articles"]
     assert len(articles) == 2
@@ -57,11 +58,11 @@ def test_create_image_post_pure_assembly():
 
 def test_create_image_post_uploads_then_assembles():
     def client(**kw):
-        return {"media_id": "up-" + kw.get("path", "x").split("/")[-1],
-                "url": "http://img"}
+        return {"media_id": "up-" + kw.get("path", "x").split("/")[-1], "url": "http://img"}
 
-    result = create_image_post(["/tmp/a.png", "/tmp/b.png"], title="T",
-                               access_token="tok", client=client)
+    result = create_image_post(
+        ["/tmp/a.png", "/tmp/b.png"], title="T", access_token="tok", client=client
+    )
     assert result["ok"] is True
     assert result["media_ids"] == ["up-a.png", "up-b.png"]
 
@@ -95,11 +96,12 @@ def test_account_remove(tmp_path):
 
 
 def test_inspect_article_full():
-    article = produce_article("# 标题\n\n正文带 <img src='http://i'/>",
-                              title="T" * 70, summary="S", cover_url="http://c")
+    article = produce_article(
+        "# 标题\n\n正文带 <img src='http://i'/>", title="T" * 70, summary="S", cover_url="http://c"
+    )
     report = inspect_article(article)
     assert report["title_length"] == 70
-    assert report["title_ok"] is False            # 超 64 字
+    assert report["title_ok"] is False  # 超 64 字
     assert report["summary_ok"] is True
     assert report["cover_ok"] is True
     assert report["content_ok"] is True
@@ -108,8 +110,7 @@ def test_inspect_article_full():
 
 
 def test_inspect_article_compliance_scan():
-    article = produce_article("# 标题\n\n全网最好的服务\n", title="好",
-                              summary="", cover_url="")
+    article = produce_article("# 标题\n\n全网最好的服务\n", title="好", summary="", cover_url="")
     report = inspect_article(article)
     assert report["compliance"]["pass"] is False
     assert any(h["keyword"] in ("最", "最好") for h in report["compliance"]["hits"])

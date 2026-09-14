@@ -4,6 +4,7 @@ Composites:
     - oskill.hmm_regime_detect  (decode current regime)
     - oprim.risk_limit_check    (enforce desirable-regime threshold)
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -56,12 +57,14 @@ def regime_gate_eval(
     risk_check = risk_limit_check(
         0.0,  # position_value placeholder (not used for this gate)
         max_position=1.0,
-        rules=[{
-            "name": "regime_gate",
-            "limit": 1.0,
-            "value": is_desirable,
-            "direction": "below",
-        }],
+        rules=[
+            {
+                "name": "regime_gate",
+                "limit": 1.0,
+                "value": is_desirable,
+                "direction": "below",
+            }
+        ],
     )
 
     gate_open = risk_check["pass"]

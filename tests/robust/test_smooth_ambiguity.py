@@ -1,4 +1,5 @@
 """Tests for smooth_ambiguity_portfolio (KMM 2005)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -32,7 +33,10 @@ def test_required_keys(two_model_data: tuple) -> None:
     models, prior = two_model_data
     result = smooth_ambiguity_portfolio(models, prior_over_models=prior)
     expected_keys = (
-        "weights", "expected_utility_by_model", "ambiguity_premium", "model_belief_distortion",
+        "weights",
+        "expected_utility_by_model",
+        "ambiguity_premium",
+        "model_belief_distortion",
     )
     for key in expected_keys:
         assert key in result
@@ -65,9 +69,7 @@ def test_eu_by_model_shape(two_model_data: tuple) -> None:
 def test_model_belief_distortion_sums_to_one(two_model_data: tuple) -> None:
     models, prior = two_model_data
     result = smooth_ambiguity_portfolio(models, prior_over_models=prior)
-    np.testing.assert_allclose(
-        result["model_belief_distortion"].sum(), 1.0, atol=1e-6
-    )
+    np.testing.assert_allclose(result["model_belief_distortion"].sum(), 1.0, atol=1e-6)
 
 
 def test_three_models(three_model_data: tuple) -> None:

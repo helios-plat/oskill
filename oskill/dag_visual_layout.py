@@ -75,14 +75,16 @@ def dag_visual_layout(
         x_start = max(50, (canvas_w - layer_w) // 2)
         y = 50 + li * layer_gap
         for ni, nid in enumerate(layer):
-            positioned.append({
-                "id": nid,
-                "label": _node_label(nodes, nid),
-                "x": x_start + ni * node_gap,
-                "y": y,
-                "status": statuses.get(nid, "pending"),
-                "layer": li,
-            })
+            positioned.append(
+                {
+                    "id": nid,
+                    "label": _node_label(nodes, nid),
+                    "x": x_start + ni * node_gap,
+                    "y": y,
+                    "status": statuses.get(nid, "pending"),
+                    "layer": li,
+                }
+            )
 
     return {
         "status": "computed",

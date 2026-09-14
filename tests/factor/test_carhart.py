@@ -32,8 +32,16 @@ class TestCarhart4Factor:
         rng = np.random.default_rng(1)
         asset_ret, factor_returns, _, _ = _make_carhart_data(rng)
         result = carhart_4_factor_model(asset_ret, factor_returns)
-        for key in ["alpha", "betas", "beta_t_stats", "alpha_t_stat",
-                    "r_squared", "adjusted_r_squared", "residual_std", "n_obs"]:
+        for key in [
+            "alpha",
+            "betas",
+            "beta_t_stats",
+            "alpha_t_stat",
+            "r_squared",
+            "adjusted_r_squared",
+            "residual_std",
+            "n_obs",
+        ]:
             assert key in result
 
     def test_betas_has_mom_factor(self):

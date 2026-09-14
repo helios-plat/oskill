@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.fractional_diff import fractional_differentiation
 
@@ -62,7 +61,7 @@ class TestFractionalDifferentiation:
     def test_fixed_width_parameter(self):
         """fixed_width should limit the number of lags used."""
         x = np.linspace(1, 100, 100)
-        result_default = fractional_differentiation(x, d=0.5, threshold=1e-5)
+        _result_default = fractional_differentiation(x, d=0.5, threshold=1e-5)
         result_fixed = fractional_differentiation(x, d=0.5, fixed_width=5)
         # fixed_width=5 means up to 5 additional lag weights (w_1..w_5)
         # so window_size <= 6, output length >= T - 5 = 95

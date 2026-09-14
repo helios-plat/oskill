@@ -18,8 +18,11 @@ def returns_matrix():
 def test_cscv_basic(returns_matrix):
     result = combinatorially_symmetric_cv(returns_matrix, n_splits=4)
     expected_keys = {
-        "cscv_pbo", "rank_logits", "is_overfit",
-        "performance_degradation_pct", "haircut_to_apply",
+        "cscv_pbo",
+        "rank_logits",
+        "is_overfit",
+        "performance_degradation_pct",
+        "haircut_to_apply",
     }
     assert set(result.keys()) == expected_keys
 

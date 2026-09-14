@@ -68,8 +68,17 @@ class WorkspaceRAGSkill:
     # ── 索引 ─────────────────────────────────────────────────────────
     def _python_files(self) -> list[Path]:
         excluded = {
-            "__pycache__", ".git", ".venv", "venv", "node_modules", ".mypy_cache",
-            ".pytest_cache", ".ruff_cache", "dist", "build", "site",
+            "__pycache__",
+            ".git",
+            ".venv",
+            "venv",
+            "node_modules",
+            ".mypy_cache",
+            ".pytest_cache",
+            ".ruff_cache",
+            "dist",
+            "build",
+            "site",
         }
         files = []
         for p in sorted(self.workspace_root.rglob("*.py")):

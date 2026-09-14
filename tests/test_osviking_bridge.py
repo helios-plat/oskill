@@ -1,30 +1,28 @@
 """Tests for oskill.osviking_bridge (OpenViking <-> Veya bridge)."""
+
 from __future__ import annotations
 
 import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from oskill.memory_assets import (
-    AssetRegistry,
-    MemoryAsset,
-    Principal,
-    ASSET_CODEGRAPH,
     ASSET_CHAT_MEMORY,
+    ASSET_CODEGRAPH,
     ASSET_SKILL,
     ASSET_WIKI,
     VISIBILITY_PRIVATE,
-    VISIBILITY_TEAM,
     VISIBILITY_RESTRICTED,
+    VISIBILITY_TEAM,
+    AssetRegistry,
+    MemoryAsset,
 )
 from oskill.osviking_bridge import (
     OvAssetBridge,
     bridge_from_openviking,
     bridge_to_openviking,
-    integrate_with_veya,
     integrate_to_openviking,
+    integrate_with_veya,
 )
 
 
@@ -101,28 +99,32 @@ class TestOvAssetBridge:
     def test_bridge_to_openviking_v1(self):
         """Test exporting Veya assets to OpenViking v1 format."""
         registry = AssetRegistry()
-        registry.register(MemoryAsset(
-            id="veya_mem_1",
-            asset_type=ASSET_CHAT_MEMORY,
-            owner="alice",
-            visibility=VISIBILITY_PRIVATE,
-            title="Test memory",
-            content="Content here",
-        ))
-        registry.register(MemoryAsset(
-            id="veya_skill_1",
-            asset_type=ASSET_SKILL,
-            owner="bob",
-            visibility=VISIBILITY_TEAM,
-            title="Test skill",
-            content="Skill content",
-        ))
+        registry.register(
+            MemoryAsset(
+                id="veya_mem_1",
+                asset_type=ASSET_CHAT_MEMORY,
+                owner="alice",
+                visibility=VISIBILITY_PRIVATE,
+                title="Test memory",
+                content="Content here",
+            )
+        )
+        registry.register(
+            MemoryAsset(
+                id="veya_skill_1",
+                asset_type=ASSET_SKILL,
+                owner="bob",
+                visibility=VISIBILITY_TEAM,
+                title="Test skill",
+                content="Skill content",
+            )
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             out_path = Path(tmpdir) / "ov_import.json"
-            bridge = OvAssetBridge(registry=registry).to_openviking_v1(out_path)
+            _bridge = OvAssetBridge(registry=registry).to_openviking_v1(out_path)
 
-            with open(out_path, "r") as f:
+            with open(out_path) as f:
                 exported = json.load(f)
 
         assert "assets" in exported
@@ -142,24 +144,27 @@ class TestOvAssetBridge:
     def test_roundtrip_bridge(self):
         """Test round-trip: Veya -> OpenViking -> Veya preserves data."""
         from oskill.memory_assets import ACL
+
         original_registry = AssetRegistry()
-        original_registry.register(MemoryAsset(
-            id="roundtrip_1",
-            asset_type=ASSET_CODEGRAPH,
-            owner="alice",
-            visibility=VISIBILITY_RESTRICTED,
-            title="Roundtrip test",
-            content="Roundtrip content",
-            acl=ACL(users=["alice"], roles=["admin"], agents=["agent1"]),
-            version=5,
-        ))
+        original_registry.register(
+            MemoryAsset(
+                id="roundtrip_1",
+                asset_type=ASSET_CODEGRAPH,
+                owner="alice",
+                visibility=VISIBILITY_RESTRICTED,
+                title="Roundtrip test",
+                content="Roundtrip content",
+                acl=ACL(users=["alice"], roles=["admin"], agents=["agent1"]),
+                version=5,
+            )
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             out_path = Path(tmpdir) / "roundtrip.json"
-            
+
             # Export Veya -> OpenViking
             OvAssetBridge(registry=original_registry).to_openviking_v1(out_path)
-            
+
             # Import OpenViking -> Veya
             new_registry = AssetRegistry()
             bridge = OvAssetBridge(registry=new_registry).from_openviking_v1(out_path)
@@ -208,7 +213,7 @@ class TestOvAssetBridge:
 
             # Test bridge_to_openviking
             bridge_to_openviking(reg, out_path)
-            with open(out_path, "r") as f:
+            with open(out_path) as f:
                 exported = json.load(f)
             assert len(exported["assets"]) == 1
 
@@ -233,7 +238,7 @@ class TestOvAssetBridge:
             ov_path = Path(tmpdir) / "ov.json"
             with open(ov_path, "w") as f:
                 json.dump(ov_data, f)
-            
+
             registry = integrate_with_veya(ov_path)
             assert "int_1" in registry.assets
             assert registry.assets["int_1"].asset_type == ASSET_SKILL
@@ -241,20 +246,22 @@ class TestOvAssetBridge:
     def test_integrate_to_openviking(self):
         """Test integrate_to_openviking helper."""
         registry = AssetRegistry()
-        registry.register(MemoryAsset(
-            id="int_out_1",
-            asset_type=ASSET_WIKI,
-            owner="test",
-            visibility=VISIBILITY_TEAM,
-            title="Wiki integration",
-            content="Wiki content",
-        ))
+        registry.register(
+            MemoryAsset(
+                id="int_out_1",
+                asset_type=ASSET_WIKI,
+                owner="test",
+                visibility=VISIBILITY_TEAM,
+                title="Wiki integration",
+                content="Wiki content",
+            )
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             out_path = Path(tmpdir) / "out.json"
             integrate_to_openviking(registry, out_path)
-            
-            with open(out_path, "r") as f:
+
+            with open(out_path) as f:
                 exported = json.load(f)
             assert len(exported["assets"]) == 1
             assert exported["assets"][0]["type"] == "wiki"
@@ -266,7 +273,7 @@ class TestOvAssetBridge:
             ov_path = Path(tmpdir) / "empty.json"
             with open(ov_path, "w") as f:
                 json.dump(ov_data, f)
-            
+
             bridge = OvAssetBridge().from_openviking_v1(ov_path)
             assert len(bridge.registry.assets) == 0
             assert bridge.mapped_counts == {"chat_memory": 0, "skill": 0, "wiki": 0, "codegraph": 0}
@@ -292,7 +299,7 @@ class TestOvAssetBridge:
             ov_path = Path(tmpdir) / "unknown.json"
             with open(ov_path, "w") as f:
                 json.dump(ov_data, f)
-            
+
             bridge = OvAssetBridge().from_openviking_v1(ov_path)
             asset = bridge.registry.assets["unknown_1"]
             assert asset.asset_type == ASSET_CODEGRAPH
@@ -301,10 +308,29 @@ class TestOvAssetBridge:
         """Test bridge statistics."""
         ov_data = {
             "assets": [
-                {"id": f"mem_{i}", "type": "chat_memory", "owner": "a", "visibility": "team", "title": f"M{i}", "content": "C", "acl": {}, "version": 1}
+                {
+                    "id": f"mem_{i}",
+                    "type": "chat_memory",
+                    "owner": "a",
+                    "visibility": "team",
+                    "title": f"M{i}",
+                    "content": "C",
+                    "acl": {},
+                    "version": 1,
+                }
                 for i in range(3)
-            ] + [
-                {"id": f"skill_{i}", "type": "skill", "owner": "a", "visibility": "team", "title": f"S{i}", "content": "C", "acl": {}, "version": 1}
+            ]
+            + [
+                {
+                    "id": f"skill_{i}",
+                    "type": "skill",
+                    "owner": "a",
+                    "visibility": "team",
+                    "title": f"S{i}",
+                    "content": "C",
+                    "acl": {},
+                    "version": 1,
+                }
                 for i in range(2)
             ]
         }
@@ -313,10 +339,10 @@ class TestOvAssetBridge:
             ov_path = Path(tmpdir) / "stats.json"
             with open(ov_path, "w") as f:
                 json.dump(ov_data, f)
-            
+
             bridge = OvAssetBridge().from_openviking_v1(ov_path)
             stats = bridge.get_stats()
-            
+
             assert stats["total_assets"] == 5
             assert stats["mapped_counts"]["chat_memory"] == 3
             assert stats["mapped_counts"]["skill"] == 2

@@ -19,7 +19,7 @@ def _ess_1d(chain: np.ndarray) -> int:
         return 1
     max_lag = min(n // 4, 100)
     acf = np.correlate(x, x, mode="full")
-    acf = acf[n - 1:] / (var * n)
+    acf = acf[n - 1 :] / (var * n)
     cumsum = 0.0
     for k in range(1, max_lag + 1):
         if acf[k] <= 0:
@@ -78,7 +78,7 @@ def hierarchical_bayes_normal(
     G = len(group_names)
     n_g = np.array([len(arr) for arr in group_arrays])
     sum_y = np.array([arr.sum() for arr in group_arrays])
-    sum_y2 = np.array([(arr ** 2).sum() for arr in group_arrays])
+    sum_y2 = np.array([(arr**2).sum() for arr in group_arrays])
 
     total_iters = n_warmup + n_mcmc_samples
 
@@ -92,22 +92,24 @@ def hierarchical_bayes_normal(
     mu_cur = np.array([arr.mean() if len(arr) > 0 else 0.0 for arr in group_arrays])
     theta_cur = float(mu_cur.mean())
     tau_cur = 1.0
-    sigma2_cur = np.array([max(np.var(arr, ddof=1) if len(arr) > 1 else 1.0, 1e-4) for arr in group_arrays])
+    sigma2_cur = np.array(
+        [max(np.var(arr, ddof=1) if len(arr) > 1 else 1.0, 1e-4) for arr in group_arrays]
+    )
 
-    prior_prec_theta = 1.0 / (population_prior_std ** 2)
+    prior_prec_theta = 1.0 / (population_prior_std**2)
     log_tau_cur = np.log(tau_cur)
 
     for it in range(total_iters):
         # 1. Sample mu_g | theta, tau, sigma_g, data
         for g in range(G):
-            v_g2 = 1.0 / (n_g[g] / sigma2_cur[g] + 1.0 / tau_cur ** 2)
-            m_g = v_g2 * (sum_y[g] / sigma2_cur[g] + theta_cur / tau_cur ** 2)
+            v_g2 = 1.0 / (n_g[g] / sigma2_cur[g] + 1.0 / tau_cur**2)
+            m_g = v_g2 * (sum_y[g] / sigma2_cur[g] + theta_cur / tau_cur**2)
             mu_cur[g] = m_g + np.sqrt(v_g2) * rng.standard_normal()
 
         # 2. Sample theta | mu_g, tau
-        prec_theta_post = prior_prec_theta + G / tau_cur ** 2
+        prec_theta_post = prior_prec_theta + G / tau_cur**2
         mean_theta_post = (
-            population_prior_mean * prior_prec_theta + mu_cur.sum() / tau_cur ** 2
+            population_prior_mean * prior_prec_theta + mu_cur.sum() / tau_cur**2
         ) / prec_theta_post
         theta_cur = mean_theta_post + rng.standard_normal() / np.sqrt(prec_theta_post)
 
@@ -119,8 +121,8 @@ def hierarchical_bayes_normal(
             if tau_val <= 0:
                 return -np.inf
             # HalfNormal(1) log-density: -0.5*(tau/1)^2 + log(tau) adjustment
-            log_prior = -0.5 * tau_val ** 2
-            log_lik = -G * np.log(tau_val) - 0.5 * np.sum((mu_cur - theta_cur) ** 2) / tau_val ** 2
+            log_prior = -0.5 * tau_val**2
+            log_lik = -G * np.log(tau_val) - 0.5 * np.sum((mu_cur - theta_cur) ** 2) / tau_val**2
             return log_prior + log_lik
 
         log_accept = _log_tau_posterior(tau_prop) - _log_tau_posterior(tau_cur)

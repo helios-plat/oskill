@@ -7,48 +7,69 @@ from typing import Any
 
 import pytest
 
+from oskill._schemas import Scene, Script, Shot, ShotPlan, Storyboard
 from oskill.consistency_check import ConsistencyCheckError, consistency_check
-from oskill._schemas import Script, Scene, Shot, ShotPlan, Storyboard
 from oskill.script_writer import ScriptWriterError, script_writer
 from oskill.shot_generator import ShotGeneratorError, shot_generator
 from oskill.storyboard_planner import StoryboardPlannerError, storyboard_planner
 
-
 # --- Fixtures ---
+
 
 def _make_llm(response: dict[str, Any] | list[Any] | str):
     """Create a mock LLM that returns given JSON."""
+
     def _llm(*, messages: list[dict[str, Any]], **kw: Any) -> dict[str, Any]:
         if isinstance(response, str):
             return {"content": response}
         return {"content": json.dumps(response, ensure_ascii=False)}
+
     return _llm
 
 
 def _make_script() -> Script:
     return Script(
-        title="Test", description="Desc",
+        title="Test",
+        description="Desc",
         scenes=[Scene(index=0, narration="Hello", duration_s=5.0, visual_description="A cat")],
         estimated_duration_s=5.0,
     )
 
 
 def _make_storyboard() -> Storyboard:
-    return Storyboard(shots=[
-        Shot(shot_id="s1", scene_index=0, visual_description="cat", narration="Hi",
-             duration_s=3.0, importance=8),
-        Shot(shot_id="s2", scene_index=0, visual_description="dog", narration="Bye",
-             duration_s=2.0, importance=5),
-    ])
+    return Storyboard(
+        shots=[
+            Shot(
+                shot_id="s1",
+                scene_index=0,
+                visual_description="cat",
+                narration="Hi",
+                duration_s=3.0,
+                importance=8,
+            ),
+            Shot(
+                shot_id="s2",
+                scene_index=0,
+                visual_description="dog",
+                narration="Bye",
+                duration_s=2.0,
+                importance=5,
+            ),
+        ]
+    )
 
 
 # --- script_writer tests ---
 
+
 class TestScriptWriter:
     async def test_normal_generation(self) -> None:
-        data = {"title": "T", "description": "D", "scenes": [
-            {"index": 0, "narration": "Hi", "duration_s": 5, "visual_description": "V"}
-        ], "estimated_duration_s": 5}
+        data = {
+            "title": "T",
+            "description": "D",
+            "scenes": [{"index": 0, "narration": "Hi", "duration_s": 5, "visual_description": "V"}],
+            "estimated_duration_s": 5,
+        }
         result = await script_writer(topic="cats", target_duration_s=60, llm=_make_llm(data))
         assert result.title == "T"
         assert len(result.scenes) == 1
@@ -67,48 +88,97 @@ class TestScriptWriter:
 
     async def test_template_prompt_used(self) -> None:
         captured: list[dict[str, Any]] = []
+
         def _llm(*, messages: list[dict[str, Any]], **kw: Any) -> dict[str, Any]:
             captured.append(messages[0])
-            return {"content": json.dumps({"title": "T", "description": "D",
-                    "scenes": [{"index": 0, "narration": "N", "duration_s": 5,
-                    "visual_description": "V"}], "estimated_duration_s": 5})}
+            return {
+                "content": json.dumps(
+                    {
+                        "title": "T",
+                        "description": "D",
+                        "scenes": [
+                            {
+                                "index": 0,
+                                "narration": "N",
+                                "duration_s": 5,
+                                "visual_description": "V",
+                            }
+                        ],
+                        "estimated_duration_s": 5,
+                    }
+                )
+            }
+
         await script_writer(topic="x", target_duration_s=60, llm=_llm, template_prompt="CUSTOM")
         assert captured[0]["content"] == "CUSTOM"
 
     async def test_multiple_scenes(self) -> None:
-        data = {"title": "T", "description": "D", "scenes": [
-            {"index": i, "narration": f"N{i}", "duration_s": 5, "visual_description": f"V{i}"}
-            for i in range(5)
-        ], "estimated_duration_s": 25}
+        data = {
+            "title": "T",
+            "description": "D",
+            "scenes": [
+                {"index": i, "narration": f"N{i}", "duration_s": 5, "visual_description": f"V{i}"}
+                for i in range(5)
+            ],
+            "estimated_duration_s": 25,
+        }
         result = await script_writer(topic="x", target_duration_s=25, llm=_make_llm(data))
         assert len(result.scenes) == 5
 
     async def test_language_param(self) -> None:
         captured: list[dict[str, Any]] = []
+
         def _llm(*, messages: list[dict[str, Any]], **kw: Any) -> dict[str, Any]:
             captured.append(messages[0])
-            return {"content": json.dumps({"title": "T", "description": "D",
-                    "scenes": [{"index": 0, "narration": "N", "duration_s": 5,
-                    "visual_description": "V"}], "estimated_duration_s": 5})}
+            return {
+                "content": json.dumps(
+                    {
+                        "title": "T",
+                        "description": "D",
+                        "scenes": [
+                            {
+                                "index": 0,
+                                "narration": "N",
+                                "duration_s": 5,
+                                "visual_description": "V",
+                            }
+                        ],
+                        "estimated_duration_s": 5,
+                    }
+                )
+            }
+
         await script_writer(topic="x", target_duration_s=60, llm=_llm, language="en")
         assert "en" in captured[0]["content"]
 
     async def test_estimated_duration(self) -> None:
-        data = {"title": "T", "description": "D", "scenes": [
-            {"index": 0, "narration": "N", "duration_s": 30, "visual_description": "V"}
-        ], "estimated_duration_s": 30}
+        data = {
+            "title": "T",
+            "description": "D",
+            "scenes": [{"index": 0, "narration": "N", "duration_s": 30, "visual_description": "V"}],
+            "estimated_duration_s": 30,
+        }
         result = await script_writer(topic="x", target_duration_s=30, llm=_make_llm(data))
         assert result.estimated_duration_s == 30
 
 
 # --- storyboard_planner tests ---
 
+
 class TestStoryboardPlanner:
     async def test_normal_planning(self) -> None:
-        data = {"shots": [
-            {"shot_id": "s1", "scene_index": 0, "visual_description": "V",
-             "narration": "N", "duration_s": 2, "importance": 5}
-        ]}
+        data = {
+            "shots": [
+                {
+                    "shot_id": "s1",
+                    "scene_index": 0,
+                    "visual_description": "V",
+                    "narration": "N",
+                    "duration_s": 2,
+                    "importance": 5,
+                }
+            ]
+        }
         result = await storyboard_planner(script=_make_script(), llm=_make_llm(data))
         assert len(result.shots) == 1
 
@@ -126,43 +196,79 @@ class TestStoryboardPlanner:
             await storyboard_planner(script=_make_script(), llm=_make_llm({"shots": "bad"}))
 
     async def test_multiple_shots(self) -> None:
-        data = {"shots": [
-            {"shot_id": f"s{i}", "scene_index": 0, "visual_description": "V",
-             "narration": "N", "duration_s": 1, "importance": i}
-            for i in range(5)
-        ]}
+        data = {
+            "shots": [
+                {
+                    "shot_id": f"s{i}",
+                    "scene_index": 0,
+                    "visual_description": "V",
+                    "narration": "N",
+                    "duration_s": 1,
+                    "importance": i,
+                }
+                for i in range(5)
+            ]
+        }
         result = await storyboard_planner(script=_make_script(), llm=_make_llm(data))
         assert len(result.shots) == 5
 
     async def test_importance_field(self) -> None:
-        data = {"shots": [
-            {"shot_id": "s1", "scene_index": 0, "visual_description": "V",
-             "narration": "N", "duration_s": 2, "importance": 9}
-        ]}
+        data = {
+            "shots": [
+                {
+                    "shot_id": "s1",
+                    "scene_index": 0,
+                    "visual_description": "V",
+                    "narration": "N",
+                    "duration_s": 2,
+                    "importance": 9,
+                }
+            ]
+        }
         result = await storyboard_planner(script=_make_script(), llm=_make_llm(data))
         assert result.shots[0].importance == 9
 
     async def test_motion_field(self) -> None:
-        data = {"shots": [
-            {"shot_id": "s1", "scene_index": 0, "visual_description": "V",
-             "narration": "N", "duration_s": 2, "importance": 5, "motion": "pan_left"}
-        ]}
+        data = {
+            "shots": [
+                {
+                    "shot_id": "s1",
+                    "scene_index": 0,
+                    "visual_description": "V",
+                    "narration": "N",
+                    "duration_s": 2,
+                    "importance": 5,
+                    "motion": "pan_left",
+                }
+            ]
+        }
         result = await storyboard_planner(script=_make_script(), llm=_make_llm(data))
         assert result.shots[0].motion == "pan_left"
 
     async def test_shots_per_scene_params(self) -> None:
-        data = {"shots": [
-            {"shot_id": "s1", "scene_index": 0, "visual_description": "V",
-             "narration": "N", "duration_s": 2, "importance": 5}
-        ]}
+        data = {
+            "shots": [
+                {
+                    "shot_id": "s1",
+                    "scene_index": 0,
+                    "visual_description": "V",
+                    "narration": "N",
+                    "duration_s": 2,
+                    "importance": 5,
+                }
+            ]
+        }
         result = await storyboard_planner(
-            script=_make_script(), llm=_make_llm(data),
-            shots_per_scene_min=1, shots_per_scene_max=5,
+            script=_make_script(),
+            llm=_make_llm(data),
+            shots_per_scene_min=1,
+            shots_per_scene_max=5,
         )
         assert len(result.shots) >= 1
 
 
 # --- shot_generator tests ---
+
 
 class TestShotGenerator:
     async def test_normal_generation(self) -> None:
@@ -216,6 +322,7 @@ class TestShotGenerator:
 
 # --- consistency_check tests ---
 
+
 class TestConsistencyCheck:
     async def test_normal_pass(self) -> None:
         shots = [ShotPlan(shot_id="s1", image_prompt="p", tts_text="t", duration_s=3)]
@@ -226,8 +333,10 @@ class TestConsistencyCheck:
 
     async def test_with_issues(self) -> None:
         shots = [ShotPlan(shot_id="s1", image_prompt="p", tts_text="t", duration_s=3)]
-        data = {"issues": [{"shot_id": "s1", "description": "color mismatch", "severity": "high"}],
-                "overall_score": 0.6}
+        data = {
+            "issues": [{"shot_id": "s1", "description": "color mismatch", "severity": "high"}],
+            "overall_score": 0.6,
+        }
         result = await consistency_check(shots=shots, llm=_make_llm(data))
         assert len(result.issues) == 1
 
@@ -259,9 +368,12 @@ class TestConsistencyCheck:
 
     async def test_multiple_issues(self) -> None:
         shots = [ShotPlan(shot_id="s1", image_prompt="p", tts_text="t", duration_s=3)]
-        data = {"issues": [
-            {"shot_id": "s1", "description": "issue1", "severity": "low"},
-            {"shot_id": "s1", "description": "issue2", "severity": "high"},
-        ], "overall_score": 0.4}
+        data = {
+            "issues": [
+                {"shot_id": "s1", "description": "issue1", "severity": "low"},
+                {"shot_id": "s1", "description": "issue2", "severity": "high"},
+            ],
+            "overall_score": 0.4,
+        }
         result = await consistency_check(shots=shots, llm=_make_llm(data))
         assert len(result.issues) == 2

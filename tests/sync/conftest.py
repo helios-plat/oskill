@@ -7,9 +7,8 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from oprim.meta_db.duckdb import open_meta_db
-from oprim.storage.protocol import StorageFile, UploadResult
+from oprim.storage.protocol import UploadResult
 
 _MIGRATIONS_DIR = (
     Path(__file__).parent.parent.parent.parent / "oprim" / "oprim" / "meta_db" / "migrations"

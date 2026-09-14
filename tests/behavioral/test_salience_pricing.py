@@ -1,4 +1,5 @@
 """Tests for salience_asset_pricing (BGS 2013 AER)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -32,8 +33,11 @@ def test_keys_present(single_asset_data: tuple) -> None:
     asset, market = single_asset_data
     result = salience_asset_pricing(asset, market)
     expected_keys = (
-        "salient_price", "rational_price", "mispricing",
-        "distorted_probabilities", "salience_scores",
+        "salient_price",
+        "rational_price",
+        "mispricing",
+        "distorted_probabilities",
+        "salience_scores",
     )
     for key in expected_keys:
         assert key in result
@@ -44,8 +48,10 @@ def test_delta_one_gives_rational_price(single_asset_data: tuple) -> None:
     asset, market = single_asset_data
     result = salience_asset_pricing(asset, market, delta=1.0)
     np.testing.assert_allclose(
-        result["salient_price"], result["rational_price"], rtol=1e-6,
-        err_msg="delta=1 should give salient_price == rational_price"
+        result["salient_price"],
+        result["rational_price"],
+        rtol=1e-6,
+        err_msg="delta=1 should give salient_price == rational_price",
     )
 
 

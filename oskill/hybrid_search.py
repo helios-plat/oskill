@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 from dataclasses import dataclass, field
+from datetime import UTC
 from typing import Any, Literal, Protocol
 
-from oprim._exceptions import OprimError
 from oprim._logging import log
 from oprim.embedding import embed_text
 from oprim.fulltext import open_fulltext_index
@@ -382,13 +381,13 @@ _TIME_RANGE_DELTAS = {
 
 def _apply_time_range(results: list[SearchResult], time_range: str) -> list[SearchResult]:
     """Filter results by created_at against a named time window."""
-    from datetime import datetime, timezone, timedelta
+    from datetime import datetime, timedelta
 
     days = _TIME_RANGE_DELTAS.get(time_range)
     if days is None:
         log.warning("oskill.hybrid_search.unknown_time_range", time_range=time_range)
         return results
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    cutoff = (datetime.now(UTC) - timedelta(days=days)).isoformat()
     return [
         r
         for r in results

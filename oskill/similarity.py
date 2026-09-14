@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import warnings
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 STABILITY_NEW = "experimental"  # for Sprint 0 additions only
 
@@ -113,9 +112,7 @@ def historical_analogy_search(
                 )
             if same_len:
                 db_matrix = np.array([db_list[i] for i in same_len])
-                dist_matrix = oprim.euclidean_distance_matrix(
-                    query.reshape(1, -1), db_matrix
-                )
+                dist_matrix = oprim.euclidean_distance_matrix(query.reshape(1, -1), db_matrix)
                 for j, idx in enumerate(same_len):
                     dists[idx] = dist_matrix[0, j]
 
@@ -125,6 +122,7 @@ def historical_analogy_search(
     ranks: dict[str, np.ndarray] = {}
     for method, dists in distances.items():
         from scipy.stats import rankdata
+
         # rankdata handles ties with 'average' method; inf gets highest rank
         r = rankdata(dists, method="average")
         ranks[method] = r
@@ -153,13 +151,15 @@ def historical_analogy_search(
 
     results = []
     for rank_pos, idx in enumerate(top_indices):
-        results.append({
-            "rank": rank_pos + 1,
-            "historical_idx": int(idx),
-            "ensemble_score": float(scores[idx]),
-            "distances_per_method": {m: float(distances[m][idx]) for m in methods},
-            "ranks_per_method": {m: int(ranks[m][idx]) for m in methods},
-        })
+        results.append(
+            {
+                "rank": rank_pos + 1,
+                "historical_idx": int(idx),
+                "ensemble_score": float(scores[idx]),
+                "distances_per_method": {m: float(distances[m][idx]) for m in methods},
+                "ranks_per_method": {m: int(ranks[m][idx]) for m in methods},
+            }
+        )
 
     return results
 
@@ -393,7 +393,7 @@ def multi_dim_nearest_search(
     anchor_vec: list[float],
     history_vecs: list[tuple],
     k: int = 20,
-    weights: Optional[list[float]] = None,
+    weights: list[float] | None = None,
     distance_metric: Literal["euclidean", "cosine", "weighted_euclidean"] = "weighted_euclidean",
 ) -> list[dict]:
     """Find k nearest historical neighbors for a multi-dimensional anchor vector.
@@ -441,7 +441,7 @@ def multi_dim_nearest_search(
 
         if distance_metric in ("euclidean", "weighted_euclidean"):
             diff = (anchor - hv) * w
-            dist = float(np.sqrt(np.sum(diff ** 2)))
+            dist = float(np.sqrt(np.sum(diff**2)))
         elif distance_metric == "cosine":
             anchor_norm = np.linalg.norm(anchor)
             hv_norm = np.linalg.norm(hv)
@@ -508,8 +508,14 @@ def forward_outcome_distribution(
             return None
         start_ohlcv = ohlcv_lookup[sorted_dates[idx]]
         end_ohlcv = ohlcv_lookup[sorted_dates[end_idx]]
-        start_price = start_ohlcv[3] if isinstance(start_ohlcv, (list, tuple)) else start_ohlcv.get("close", 0)
-        end_price = end_ohlcv[3] if isinstance(end_ohlcv, (list, tuple)) else end_ohlcv.get("close", 0)
+        start_price = (
+            start_ohlcv[3]
+            if isinstance(start_ohlcv, (list, tuple))
+            else start_ohlcv.get("close", 0)
+        )
+        end_price = (
+            end_ohlcv[3] if isinstance(end_ohlcv, (list, tuple)) else end_ohlcv.get("close", 0)
+        )
         if start_price <= 0:
             return None
         return (end_price - start_price) / start_price
@@ -524,8 +530,13 @@ def forward_outcome_distribution(
 
         if not rets:
             by_period[period] = {
-                "mean_return": 0.0, "median_return": 0.0, "win_rate": 0.0,
-                "p25": 0.0, "p75": 0.0, "p10": 0.0, "p90": 0.0,
+                "mean_return": 0.0,
+                "median_return": 0.0,
+                "win_rate": 0.0,
+                "p25": 0.0,
+                "p75": 0.0,
+                "p10": 0.0,
+                "p90": 0.0,
             }
             continue
 

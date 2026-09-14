@@ -14,7 +14,7 @@ def _huber_loss(u: np.ndarray, delta: float) -> np.ndarray:
                delta*(|u| - 0.5*delta)  otherwise
     """
     abs_u = np.abs(u)
-    return np.where(abs_u <= delta, 0.5 * u ** 2, delta * (abs_u - 0.5 * delta))
+    return np.where(abs_u <= delta, 0.5 * u**2, delta * (abs_u - 0.5 * delta))
 
 
 def _pinball_loss(
@@ -39,7 +39,7 @@ def _pinball_loss(
 
 def quantile_regression_loss(
     predicted_quantiles: np.ndarray,  # shape (batch, n_quantiles)
-    target_returns: np.ndarray,        # shape (batch,) or (batch, n_quantiles)
+    target_returns: np.ndarray,  # shape (batch,) or (batch, n_quantiles)
     quantile_levels: np.ndarray | None = None,
     *,
     huber_delta: float = 1.0,
@@ -91,15 +91,13 @@ def quantile_regression_loss(
     else:
         taus = np.asarray(quantile_levels, dtype=np.float64)
         if len(taus) != n_q:
-            raise ValueError(
-                f"quantile_levels length {len(taus)} does not match n_quantiles {n_q}"
-            )
+            raise ValueError(f"quantile_levels length {len(taus)} does not match n_quantiles {n_q}")
 
     # u[b, j, i] = target[b, j] - pred[b, i]
     # pq: (batch, n_q=i), tr: (batch, n_q=j)
     # Expand: pred (batch, 1, n_q), target (batch, n_q, 1)
-    pred_exp = pq[:, np.newaxis, :]          # (batch, 1, n_q)
-    target_exp = tr[:, :, np.newaxis]        # (batch, n_q, 1)
+    pred_exp = pq[:, np.newaxis, :]  # (batch, 1, n_q)
+    target_exp = tr[:, :, np.newaxis]  # (batch, n_q, 1)
     taus_exp = taus[np.newaxis, np.newaxis, :]  # (1, 1, n_q)
 
     u = target_exp - pred_exp  # (batch, n_q_target, n_q_pred)

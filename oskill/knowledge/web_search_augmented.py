@@ -1,4 +1,5 @@
 """Public web search via SearXNG metasearch engine."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
-import os
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from oprim.storage.protocol import UploadResult
+
 from oskill.sync.errors import SnapshotError
 from oskill.sync.restore_from_snapshot import restore_from_snapshot
 from oskill.sync.snapshot_backup import snapshot_backup
@@ -153,7 +152,7 @@ class TestRestoreFromSnapshot:
             await restore_from_snapshot("snap_f1", db, storage)
 
     async def test_round_trip_backup_restore(self, db):
-        from tests.sync.conftest import seed_substrate, seed_note
+        from tests.sync.conftest import seed_note, seed_substrate
 
         seed_substrate(db, "sub_1", "01HX")
         seed_note(db, "note_1")
@@ -163,17 +162,12 @@ class TestRestoreFromSnapshot:
         storage_upload.upload = AsyncMock(
             return_value=UploadResult(file_id="snap_f1", size=1000, md5="x")
         )
-        backup_result = await snapshot_backup(USER, DEVICE, db, storage_upload)
-
-        # Capture what was uploaded
-        call_args = storage_upload.upload.call_args
-        tmp_path_used = call_args.args[0]
+        await snapshot_backup(USER, DEVICE, db, storage_upload)
 
         # The file was deleted after upload, so we'll re-create it from what we know
         # Instead, test round-trip by doing backup then restore using the actual file
 
         # Use a persistent temp file to capture uploaded content
-        import tempfile as _tf
 
         content_holder: list[str] = []
 
@@ -187,7 +181,6 @@ class TestRestoreFromSnapshot:
 
         # Restore onto a fresh db
         from oprim.meta_db.duckdb import open_meta_db
-        import tempfile
 
         with tempfile.TemporaryDirectory() as td:
             db2 = open_meta_db(Path(td) / "meta.duckdb")
@@ -199,7 +192,7 @@ class TestRestoreFromSnapshot:
                     db2.execute(stmt)
 
             storage3 = _make_storage(content_holder[0])
-            result = await restore_from_snapshot("snap_f2", db2, storage3)
+            _result = await restore_from_snapshot("snap_f2", db2, storage3)
 
             rows = db2.fetchall("SELECT id FROM substrates WHERE id = 'sub_1'")
             assert len(rows) == 1

@@ -171,9 +171,7 @@ def spectral_asset_clustering(
                 affinity, normalization="symmetric", n_eigenvalues=min(20, N)
             )
             eigs = lap_result["eigenvalues"]
-            eg_result = spectral_eigengap_detect(
-                eigs, method="largest_gap", max_k=min(10, N - 1)
-            )
+            eg_result = spectral_eigengap_detect(eigs, method="largest_gap", max_k=min(10, N - 1))
             k = int(eg_result.get("n_components", k_default))
             k = max(2, min(k, N - 1))
         else:

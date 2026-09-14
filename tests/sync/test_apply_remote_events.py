@@ -2,22 +2,20 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from oprim.storage.protocol import StorageFile
-from oskill.sync.apply_remote_events import ApplyResult, apply_remote_events, _parse_jsonl
-from oskill.sync.errors import ApplyError
 
+from oskill.sync.apply_remote_events import _parse_jsonl, apply_remote_events
+from oskill.sync.errors import ApplyError
 from tests.sync.conftest import (
-    make_event_dict,
     jsonl_content,
-    seed_substrate,
+    make_event_dict,
     seed_concept,
     seed_note,
+    seed_substrate,
 )
 
 USER = "u1"

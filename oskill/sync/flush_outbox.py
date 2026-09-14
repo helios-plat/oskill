@@ -1,4 +1,5 @@
 """oskill.sync.flush_outbox — upload local changefeed events to remote storage."""
+
 from __future__ import annotations
 
 import json

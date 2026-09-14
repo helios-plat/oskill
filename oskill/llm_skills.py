@@ -8,28 +8,34 @@ LLM 经 LLMCaller Protocol 注入（C批已有）。
 semantic_search 的向量检索经 VectorStoreHandle Protocol 注入。
 全部 stateless，不持久化。
 """
+
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
-import os
 from typing import Any, Protocol, runtime_checkable
 
 from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "oprim"))
 try:
     from oprim.fs import file_read
     from oprim.text import count_tokens
 except ImportError:  # pragma: no cover
-    def file_read(path, **kw): return open(path, errors='replace').read()  # type: ignore  # pragma: no cover
-    def count_tokens(text, **kw): return max(1, len(str(text)) // 4)  # type: ignore  # pragma: no cover
+
+    def file_read(path, **kw):
+        return open(path, errors="replace").read()  # type: ignore  # pragma: no cover
+
+    def count_tokens(text, **kw):
+        return max(1, len(str(text)) // 4)  # type: ignore  # pragma: no cover
 
 
 # ---------------------------------------------------------------------------
 # VectorStoreHandle Protocol（semantic_search 用）
 # ---------------------------------------------------------------------------
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -58,6 +64,7 @@ class VectorStoreHandle(Protocol):
 # ---------------------------------------------------------------------------
 # summarize_file
 # ---------------------------------------------------------------------------
+
 
 async def summarize_file(
     path: str,
@@ -98,15 +105,17 @@ async def summarize_file(
     if toks > max_content_tokens:
         # 粗截断：按比例取前缀
         ratio = max_content_tokens / toks
-        content = content[:int(len(content) * ratio)]
+        content = content[: int(len(content) * ratio)]
 
-    messages = [{
-        "role": "user",
-        "content": (
-            f"Summarize this file in 2-4 sentences. Focus on what it does "
-            f"and key exported symbols.\n\nFile: {path}\n\n```\n{content}\n```"
-        ),
-    }]
+    messages = [
+        {
+            "role": "user",
+            "content": (
+                f"Summarize this file in 2-4 sentences. Focus on what it does "
+                f"and key exported symbols.\n\nFile: {path}\n\n```\n{content}\n```"
+            ),
+        }
+    ]
 
     try:
         response = await caller(messages=messages, tools=None, max_tokens=256)
@@ -122,6 +131,7 @@ async def summarize_file(
 # ---------------------------------------------------------------------------
 # compress_context
 # ---------------------------------------------------------------------------
+
 
 async def compress_context(
     messages: list[dict],
@@ -162,15 +172,13 @@ async def compress_context(
     # 保留首 1 条（system/user）和末 2 条（最近上下文）
     keep_first = messages[:1]
     keep_last = messages[-2:] if len(messages) > 3 else []
-    middle = messages[1:len(messages) - len(keep_last)] if keep_last else messages[1:]
+    middle = messages[1 : len(messages) - len(keep_last)] if keep_last else messages[1:]
 
     if not middle:
         return list(messages)  # pragma: no cover
 
     # 用 LLM 压缩 middle 部分
-    history_text = "\n".join(
-        f"[{m.get('role','?')}]: {_msg_text(m)[:500]}" for m in middle
-    )
+    history_text = "\n".join(f"[{m.get('role', '?')}]: {_msg_text(m)[:500]}" for m in middle)
     compress_prompt = (
         f"Summarize this conversation history in 3-5 sentences, "
         f"preserving key decisions, code changes, and findings:\n\n{history_text}"
@@ -201,7 +209,8 @@ def _msg_text(msg: dict) -> str:
         return content
     if isinstance(content, list):  # pragma: no cover
         return " ".join(  # pragma: no cover
-            b.get("text", "") for b in content  # pragma: no cover
+            b.get("text", "")
+            for b in content  # pragma: no cover
             if isinstance(b, dict) and b.get("type") == "text"  # pragma: no cover
         )  # pragma: no cover
     return str(content)  # pragma: no cover
@@ -210,6 +219,7 @@ def _msg_text(msg: dict) -> str:
 # ---------------------------------------------------------------------------
 # plan_decompose
 # ---------------------------------------------------------------------------
+
 
 async def plan_decompose(
     goal: str,
@@ -264,8 +274,8 @@ async def plan_decompose(
     # 解析 JSON
     raw_text = raw_text.strip()
     # 去除 markdown fence
-    raw_text = re.sub(r'^```(?:json)?\s*', '', raw_text, flags=re.MULTILINE)
-    raw_text = re.sub(r'```\s*$', '', raw_text, flags=re.MULTILINE)
+    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text, flags=re.MULTILINE)
+    raw_text = re.sub(r"```\s*$", "", raw_text, flags=re.MULTILINE)
 
     try:
         items = json.loads(raw_text.strip())
@@ -273,7 +283,7 @@ async def plan_decompose(
             items = []  # pragma: no cover
     except (json.JSONDecodeError, ValueError):
         # 回退：尝试提取 JSON 数组
-        m = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        m = re.search(r"\[.*\]", raw_text, re.DOTALL)
         if m:
             try:  # pragma: no cover
                 items = json.loads(m.group(0))  # pragma: no cover
@@ -286,13 +296,15 @@ async def plan_decompose(
     for item in items[:max_subtasks]:
         if not isinstance(item, dict):
             continue  # pragma: no cover
-        subtasks.append(SubTask(
-            id=str(item.get("id", f"task_{len(subtasks)+1}")),
-            title=str(item.get("title", "")),
-            description=str(item.get("description", "")),
-            dependencies=[str(d) for d in item.get("dependencies", [])],
-            estimated_complexity=str(item.get("estimated_complexity", "medium")),
-        ))
+        subtasks.append(
+            SubTask(
+                id=str(item.get("id", f"task_{len(subtasks) + 1}")),
+                title=str(item.get("title", "")),
+                description=str(item.get("description", "")),
+                dependencies=[str(d) for d in item.get("dependencies", [])],
+                estimated_complexity=str(item.get("estimated_complexity", "medium")),
+            )
+        )
 
     return subtasks
 
@@ -300,6 +312,7 @@ async def plan_decompose(
 # ---------------------------------------------------------------------------
 # rank_relevant_files
 # ---------------------------------------------------------------------------
+
 
 async def rank_relevant_files(
     query: str,
@@ -328,16 +341,17 @@ async def rank_relevant_files(
         >>> ranked[0][1] > 0
         True
     """
-    query_words = set(re.findall(r'\w+', query.lower()))
+    query_words = set(re.findall(r"\w+", query.lower()))
 
     scored: list[tuple[str, float]] = []
     for rf in repo_map.files:
-        path_words = set(re.findall(r'\w+', rf.path.lower()))
+        path_words = set(re.findall(r"\w+", rf.path.lower()))
         sym_words = set(
-            w for sym in rf.symbols
-            for w in re.findall(r'\w+', (sym.name + " " + sym.signature).lower())
+            w
+            for sym in rf.symbols
+            for w in re.findall(r"\w+", (sym.name + " " + sym.signature).lower())
         )
-        head_words = set(re.findall(r'\w+', rf.head_lines.lower()))
+        head_words = set(re.findall(r"\w+", rf.head_lines.lower()))
         all_words = path_words | sym_words | head_words
 
         overlap = len(query_words & all_words)
@@ -355,6 +369,7 @@ async def rank_relevant_files(
 # ---------------------------------------------------------------------------
 # build_repo_context
 # ---------------------------------------------------------------------------
+
 
 async def build_repo_context(
     task: str,
@@ -423,6 +438,7 @@ async def build_repo_context(
 # semantic_search
 # ---------------------------------------------------------------------------
 
+
 async def semantic_search(
     query: str,
     *,
@@ -470,17 +486,19 @@ async def semantic_search(
         raise LLMOskillError("semantic_search: vector store search failed", cause=e)
 
     chunks: list[Chunk] = []
-    for item in (raw or []):
+    for item in raw or []:
         if not isinstance(item, dict):
             continue
-        chunks.append(Chunk(
-            content=item.get("content", ""),
-            start_line=item.get("start_line", 0),
-            end_line=item.get("end_line", 0),
-            token_count=item.get("token_count", count_tokens(item.get("content", ""))),
-            path=item.get("path", ""),
-            language=item.get("language", ""),
-            chunk_id=item.get("chunk_id", ""),
-        ))
+        chunks.append(
+            Chunk(
+                content=item.get("content", ""),
+                start_line=item.get("start_line", 0),
+                end_line=item.get("end_line", 0),
+                token_count=item.get("token_count", count_tokens(item.get("content", ""))),
+                path=item.get("path", ""),
+                language=item.get("language", ""),
+                chunk_id=item.get("chunk_id", ""),
+            )
+        )
 
     return chunks

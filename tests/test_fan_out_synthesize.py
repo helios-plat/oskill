@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from oskill._fan_out_synthesize import fan_out_and_synthesize
 
 

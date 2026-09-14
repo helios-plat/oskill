@@ -1,24 +1,22 @@
 """Tests for K-G1 through K-G5 graph skills."""
+
 from __future__ import annotations
 
 import json
-import math
-from dataclasses import dataclass, field
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
+from oprim._aii_graph_types import ConflictPair
 
-from oskill._conflict_resolution import conflict_resolution
-from oskill._two_step_ingest import two_step_ingest
-from oskill._relevance_compute import relevance_compute
-from oskill._graph_expand_retrieval import graph_expand_retrieval
 from oskill._cascade_delete import cascade_delete
-from oprim._aii_graph_types import ConflictPair, GraphRetrievalResult, CascadeDeleteResult
-
+from oskill._conflict_resolution import conflict_resolution
+from oskill._graph_expand_retrieval import graph_expand_retrieval
+from oskill._relevance_compute import relevance_compute
+from oskill._two_step_ingest import two_step_ingest
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _vec_same(dim=4):
     return [1.0] + [0.0] * (dim - 1)
@@ -30,8 +28,10 @@ def _vec_near(dim=4):
 
 def _make_llm(payload):
     text = json.dumps(payload, ensure_ascii=False)
+
     async def llm(*, messages, system=None, max_tokens=256, **kw):
         return {"content": [{"type": "text", "text": text}], "usage": {}}
+
     return llm
 
 
@@ -51,9 +51,16 @@ def _make_db(neighbors_map=None, data_map=None, source_ku_map=None, ku_source_ma
 # K-G1: conflict_resolution
 # ---------------------------------------------------------------------------
 
+
 class TestConflictResolution:
     async def test_genuine_conflict_returns_pair(self):
-        llm = _make_llm({"conflict_type": "factual_contradiction", "description": "A and B contradict", "severity": "high"})
+        llm = _make_llm(
+            {
+                "conflict_type": "factual_contradiction",
+                "description": "A and B contradict",
+                "severity": "high",
+            }
+        )
         result = await conflict_resolution(
             new_ku_texts=["该药物增加血压"],
             new_ku_embeddings=[[1.0, 0.0, 0.0, 0.0]],
@@ -81,7 +88,9 @@ class TestConflictResolution:
         assert result == []
 
     async def test_grade_always_unverified(self):
-        llm = _make_llm({"conflict_type": "stance_opposition", "description": "opposing", "severity": "medium"})
+        llm = _make_llm(
+            {"conflict_type": "stance_opposition", "description": "opposing", "severity": "medium"}
+        )
         result = await conflict_resolution(
             new_ku_texts=["支持该政策"],
             new_ku_embeddings=[[1.0, 0.0, 0.0, 0.0]],
@@ -96,11 +105,13 @@ class TestConflictResolution:
 
     async def test_grade_not_in_init_signature(self):
         import inspect
+
         sig = inspect.signature(ConflictPair.__init__)
         assert "grade" not in sig.parameters
 
     async def test_low_similarity_skips_llm(self):
         call_count = [0]
+
         async def counting_llm(*, messages, **kw):
             call_count[0] += 1
             return {"content": [{"type": "text", "text": "null"}], "usage": {}}
@@ -130,7 +141,9 @@ class TestConflictResolution:
         assert result == []
 
     async def test_new_ku_idx_correct(self):
-        llm = _make_llm({"conflict_type": "factual_contradiction", "description": "x", "severity": "low"})
+        llm = _make_llm(
+            {"conflict_type": "factual_contradiction", "description": "x", "severity": "low"}
+        )
         result = await conflict_resolution(
             new_ku_texts=["A不conflict", "B增加C减少"],
             new_ku_embeddings=[[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]],
@@ -145,7 +158,9 @@ class TestConflictResolution:
             assert pair.new_ku_idx == 1
 
     async def test_severity_preserved(self):
-        llm = _make_llm({"conflict_type": "scope_conflict", "description": "scope", "severity": "medium"})
+        llm = _make_llm(
+            {"conflict_type": "scope_conflict", "description": "scope", "severity": "medium"}
+        )
         result = await conflict_resolution(
             new_ku_texts=["促进代谢"],
             new_ku_embeddings=[[1.0, 0.0, 0.0, 0.0]],
@@ -163,19 +178,31 @@ class TestConflictResolution:
 # K-G2: two_step_ingest
 # ---------------------------------------------------------------------------
 
+
 class TestTwoStepIngest:
     def _make_step_llm(self, step1_data, step2_data):
         call_count = [0]
+
         async def llm(*, messages, system=None, max_tokens=1024, **kw):
             call_count[0] += 1
             if call_count[0] == 1:
                 return {"content": [{"type": "text", "text": json.dumps(step1_data)}], "usage": {}}
             return {"content": [{"type": "text", "text": json.dumps(step2_data)}], "usage": {}}
+
         return llm
 
     async def test_returns_two_step_result(self):
-        s1 = {"entities": ["E1"], "concepts": ["C1"], "conflict_candidates": [], "structure": "linear"}
-        s2 = {"ku_candidates": [{"title": "KU1", "content": "content", "type": "theorem", "confidence": "high"}]}
+        s1 = {
+            "entities": ["E1"],
+            "concepts": ["C1"],
+            "conflict_candidates": [],
+            "structure": "linear",
+        }
+        s2 = {
+            "ku_candidates": [
+                {"title": "KU1", "content": "content", "type": "theorem", "confidence": "high"}
+            ]
+        }
         result = await two_step_ingest(
             source_text="Some mathematical theorem about convergence.",
             existing_ku_summaries=["Theorem about divergence"],
@@ -187,9 +214,11 @@ class TestTwoStepIngest:
 
     async def test_two_llm_calls_made(self):
         calls = []
+
         async def counting_llm(*, messages, system=None, max_tokens=1024, **kw):
             calls.append(messages[0]["content"])
             return {"content": [{"type": "text", "text": "{}"}], "usage": {}}
+
         await two_step_ingest(
             source_text="text",
             existing_ku_summaries=[],
@@ -199,18 +228,30 @@ class TestTwoStepIngest:
 
     async def test_step2_prompt_contains_step1_analysis(self):
         calls = []
-        s1 = {"entities": ["UniqueEntity999"], "concepts": [], "conflict_candidates": [], "structure": ""}
+        s1 = {
+            "entities": ["UniqueEntity999"],
+            "concepts": [],
+            "conflict_candidates": [],
+            "structure": "",
+        }
+
         async def recording_llm(*, messages, system=None, max_tokens=1024, **kw):
             calls.append(messages[0]["content"])
             if len(calls) == 1:
                 return {"content": [{"type": "text", "text": json.dumps(s1)}], "usage": {}}
             return {"content": [{"type": "text", "text": "{}"}], "usage": {}}
+
         await two_step_ingest(source_text="text", existing_ku_summaries=[], llm=recording_llm)
         assert len(calls) == 2
         assert "UniqueEntity999" in calls[1]  # Step 1 result in Step 2 prompt
 
     async def test_conflict_candidates_are_candidates_not_confirmed(self):
-        s1 = {"entities": [], "concepts": [], "conflict_candidates": ["possible conflict with X"], "structure": ""}
+        s1 = {
+            "entities": [],
+            "concepts": [],
+            "conflict_candidates": ["possible conflict with X"],
+            "structure": "",
+        }
         s2 = {"ku_candidates": []}
         result = await two_step_ingest(
             source_text="text", existing_ku_summaries=[], llm=self._make_step_llm(s1, s2)
@@ -221,28 +262,41 @@ class TestTwoStepIngest:
     async def test_no_existing_summaries_works(self):
         s1 = {"entities": [], "concepts": [], "conflict_candidates": [], "structure": ""}
         s2 = {"ku_candidates": []}
-        result = await two_step_ingest(source_text="text", existing_ku_summaries=[], llm=self._make_step_llm(s1, s2))
+        result = await two_step_ingest(
+            source_text="text", existing_ku_summaries=[], llm=self._make_step_llm(s1, s2)
+        )
         assert isinstance(result.analysis, dict)
 
     async def test_llm_failure_returns_empty_defaults(self):
         async def failing_llm(*, messages, **kw):
             return {"content": [{"type": "text", "text": "not json"}], "usage": {}}
-        result = await two_step_ingest(source_text="text", existing_ku_summaries=[], llm=failing_llm)
+
+        result = await two_step_ingest(
+            source_text="text", existing_ku_summaries=[], llm=failing_llm
+        )
         assert isinstance(result.ku_candidates, list)
         assert isinstance(result.conflict_candidates, list)
 
     async def test_ku_candidates_are_dicts(self):
         s1 = {"entities": [], "concepts": [], "conflict_candidates": [], "structure": ""}
-        s2 = {"ku_candidates": [{"title": "T", "content": "C", "type": "claim", "confidence": "low"}]}
-        result = await two_step_ingest(source_text="t", existing_ku_summaries=[], llm=self._make_step_llm(s1, s2))
+        s2 = {
+            "ku_candidates": [{"title": "T", "content": "C", "type": "claim", "confidence": "low"}]
+        }
+        result = await two_step_ingest(
+            source_text="t", existing_ku_summaries=[], llm=self._make_step_llm(s1, s2)
+        )
         assert all(isinstance(k, dict) for k in result.ku_candidates)
 
     async def test_multiple_existing_summaries_in_step1(self):
         calls = []
+
         async def recording_llm(*, messages, system=None, max_tokens=1024, **kw):
             calls.append(messages[0]["content"])
             return {"content": [{"type": "text", "text": "{}"}], "usage": {}}
-        await two_step_ingest(source_text="t", existing_ku_summaries=["s1", "s2", "s3"], llm=recording_llm)
+
+        await two_step_ingest(
+            source_text="t", existing_ku_summaries=["s1", "s2", "s3"], llm=recording_llm
+        )
         assert "s1" in calls[0] and "s2" in calls[0]
 
 
@@ -250,13 +304,20 @@ class TestTwoStepIngest:
 # K-G3: relevance_compute
 # ---------------------------------------------------------------------------
 
+
 class TestRelevanceCompute:
     def _base_args(self, **overrides):
         args = dict(
-            ku_id_a="a", ku_id_b="b",
-            edges=[], sources_a=[], sources_b=[],
-            neighbors_a=[], neighbors_b=[], neighbor_degree={},
-            type_a="theorem", type_b="theorem",
+            ku_id_a="a",
+            ku_id_b="b",
+            edges=[],
+            sources_a=[],
+            sources_b=[],
+            neighbors_a=[],
+            neighbors_b=[],
+            neighbor_degree={},
+            type_a="theorem",
+            type_b="theorem",
         )
         args.update(overrides)
         return args
@@ -293,6 +354,7 @@ class TestRelevanceCompute:
 # K-G4: graph_expand_retrieval
 # ---------------------------------------------------------------------------
 
+
 class TestGraphExpandRetrieval:
     def _simple_db(self, adj: dict[str, list[str]], data: dict[str, dict] | None = None):
         db = MagicMock()
@@ -303,6 +365,7 @@ class TestGraphExpandRetrieval:
     def _relevance_fn(self, score: float = 1.0):
         def fn(**kw):
             return score
+
         return fn
 
     async def test_single_hop_returns_neighbors(self):
@@ -375,8 +438,10 @@ class TestGraphExpandRetrieval:
     async def test_results_sorted_by_score_descending(self):
         scores = {"n1": 5.0, "n2": 1.0, "n3": 3.0}
         db = self._simple_db({"seed": ["n1", "n2", "n3"]})
+
         def varying_relevance(**kw):
             return scores.get(kw.get("ku_id_b", ""), 0.0)
+
         result = await graph_expand_retrieval(
             seed_ku_ids=["seed"],
             query_embedding=[1.0],
@@ -420,6 +485,7 @@ class TestGraphExpandRetrieval:
 # ---------------------------------------------------------------------------
 # K-G5: cascade_delete
 # ---------------------------------------------------------------------------
+
 
 class TestCascadeDelete:
     async def test_dry_run_does_not_delete(self):
@@ -478,7 +544,11 @@ class TestCascadeDelete:
     async def test_multiple_shared_all_preserved(self):
         db = _make_db(
             source_ku_map={"src1": ["k1", "k2", "k3"]},
-            ku_source_map={"k1": ["src1", "src2"], "k2": ["src1", "src3"], "k3": ["src1", "src2", "src3"]},
+            ku_source_map={
+                "k1": ["src1", "src2"],
+                "k2": ["src1", "src3"],
+                "k3": ["src1", "src2", "src3"],
+            },
         )
         result = await cascade_delete(source_id="src1", db_conn=db, dry_run=True)
         assert set(result.preserved_ku_ids) == {"k1", "k2", "k3"}

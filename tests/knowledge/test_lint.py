@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import json
-from datetime import datetime, timezone
-
-import pytest
+from datetime import UTC, datetime
 
 from oprim.meta_db import open_meta_db
+
 from oskill.knowledge._context import meta_db_path
 from oskill.knowledge.lint import LintIssue, lint
 
@@ -66,10 +64,11 @@ class TestLint:
 
     async def test_invalid_medium_is_error(self, stratum_home):
         db = await _setup_db(stratum_home)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         # Use a valid-looking ULID: 26 chars, Crockford base32
         db.execute(
-            "INSERT INTO substrates (id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO substrates (id, title, mime, source_path, file_hash, byte_size, "
+            "meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
             [
                 "01ARZ3NDEKTSV4RRFFQ69G5FAV",
                 "test",
@@ -88,7 +87,6 @@ class TestLint:
 
     async def test_orphan_derivative_is_error(self, stratum_home):
         db = await _setup_db(stratum_home)
-        now = datetime.now(timezone.utc).isoformat()
         db.execute(
             "INSERT INTO derivative (id, substrate_id, kind) VALUES (?,?,?)",
             ["01ARZ3NDEKTSV4RRFFQ69G5FAX", "NONEXISTENT_SUBSTRATE_ID_00", "markdown"],
@@ -99,9 +97,10 @@ class TestLint:
 
     async def test_valid_substrate_no_issues(self, stratum_home):
         db = await _setup_db(stratum_home)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO substrates (id, title, mime, source_path, file_hash, byte_size, "
+            "meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
             [
                 "01ARZ3NDEKTSV4RRFFQ69G5FAV",
                 "test",
@@ -120,7 +119,6 @@ class TestLint:
 
     async def test_scope_substrate_only(self, stratum_home):
         db = await _setup_db(stratum_home)
-        now = datetime.now(timezone.utc).isoformat()
         db.execute(
             "INSERT INTO derivative (id, substrate_id, kind) VALUES (?,?,?)",
             ["01ARZ3NDEKTSV4RRFFQ69G5FAX", "NONEXISTENT00000000000000A", "markdown"],

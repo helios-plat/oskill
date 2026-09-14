@@ -276,10 +276,7 @@ def select_rulebooks(
         book_tokens = [t for t in book.split("-") if len(t) >= 4]
         if any(tw in book_tokens for tw in task_words):
             score += 2
-        elif any(
-            t.startswith(tw) or tw.startswith(t)
-            for t in book_tokens for tw in task_words
-        ):
+        elif any(t.startswith(tw) or tw.startswith(t) for t in book_tokens for tw in task_words):
             score += 2
         if score > 0:
             scored.append((score, book))

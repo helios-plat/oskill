@@ -44,8 +44,15 @@ def dollar_bar_aggregation(
     if ticks.empty:
         return pd.DataFrame(
             columns=[
-                "open", "high", "low", "close", "volume", "dollar_volume",
-                "tick_count", "timestamp_start", "timestamp_end",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "dollar_volume",
+                "tick_count",
+                "timestamp_start",
+                "timestamp_end",
             ]
         )
 
@@ -157,8 +164,15 @@ def volume_imbalance_bar(
     if ticks.empty:
         return pd.DataFrame(
             columns=[
-                "open", "high", "low", "close", "volume", "dollar_volume",
-                "tick_count", "timestamp_start", "timestamp_end",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "dollar_volume",
+                "tick_count",
+                "timestamp_start",
+                "timestamp_end",
             ]
         )
 
@@ -180,7 +194,7 @@ def volume_imbalance_bar(
         expected_imb = static_threshold
     else:
         # Seed with first few ticks
-        expected_imb = float(np.abs(signed_vols[:min(ewma_window, len(signed_vols))]).mean())
+        expected_imb = float(np.abs(signed_vols[: min(ewma_window, len(signed_vols))]).mean())
         if expected_imb <= 0:
             expected_imb = 1.0
 
@@ -278,8 +292,15 @@ def tick_imbalance_bar(
     if ticks.empty:
         return pd.DataFrame(
             columns=[
-                "open", "high", "low", "close", "volume", "dollar_volume",
-                "tick_count", "timestamp_start", "timestamp_end",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "dollar_volume",
+                "tick_count",
+                "timestamp_start",
+                "timestamp_end",
             ]
         )
 
@@ -298,7 +319,7 @@ def tick_imbalance_bar(
     if static_threshold is not None:
         expected_imb = static_threshold
     else:
-        expected_imb = float(np.abs(b[:min(ewma_window, len(b))]).mean())
+        expected_imb = float(np.abs(b[: min(ewma_window, len(b))]).mean())
         if expected_imb <= 0:
             expected_imb = 1.0
 

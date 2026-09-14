@@ -1,16 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import file_read
-import ast
-import json
+
 import re
-import sys
-import os
 from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import file_read
+
 
 def resolve_memory_hierarchy(
     *,
@@ -61,7 +58,7 @@ def resolve_memory_hierarchy(
         # 解析 @import 指令
         result_lines = []
         for line in content.splitlines():
-            m = re.match(r'^@import\s+(.+)', line.strip())
+            m = re.match(r"^@import\s+(.+)", line.strip())
             if m and import_count < max_imports:
                 import_path = m.group(1).strip()
                 if not Path(import_path).is_absolute():

@@ -1,10 +1,9 @@
 """Fixtures for knowledge skill tests."""
 
 from __future__ import annotations
-import os
-from pathlib import Path
-import pytest
+
 import fitz
+import pytest
 from PIL import Image
 
 # ---------------------------------------------------------------------------
@@ -113,6 +112,7 @@ def stratum_schema(stratum_home):
     Returns the stratum_home path so it can serve as a drop-in replacement.
     """
     from oprim.meta_db import open_meta_db
+
     from oskill.knowledge._context import meta_db_path
 
     db_p = meta_db_path()

@@ -1,6 +1,13 @@
 """Tests for Wave 2 oskills and omodul."""
+
 import pytest
-from oskill.wave2_skills import *  # noqa: F403, F405
+
+from oskill.wave2_skills import (
+    cross_asset_score_normalization,
+    ic_root_cause_decompose,
+    regime_dynamic_weight_adjustment,
+    signal_directionality_profile,
+)
 
 
 def test_ic_root_cause():
@@ -13,6 +20,7 @@ def test_ic_root_cause():
     assert "matrix" in r
     assert "diagnosis_summary" in r
 
+
 def test_signal_directionality():
     r = signal_directionality_profile(
         signal_matrix=[[0.1, -0.1]] * 50,
@@ -22,6 +30,7 @@ def test_signal_directionality():
     assert len(r["dimensions"]) == 2
     assert "summary" in r
 
+
 def test_cross_asset_normalization():
     r = cross_asset_score_normalization(
         asset_scores={"BTC": 65, "Gold": 42},
@@ -29,6 +38,7 @@ def test_cross_asset_normalization():
     )
     assert len(r["ranking"]) == 2
     assert r["top_opportunity"] in ("BTC", "Gold")
+
 
 def test_regime_weight_adjustment():
     r = regime_dynamic_weight_adjustment(
@@ -38,6 +48,7 @@ def test_regime_weight_adjustment():
     )
     assert r["adjusted_weights"]["trend"] > 0.15 * r["normalization_factor"]
     assert sum(r["adjusted_weights"].values()) == pytest.approx(1.0, abs=0.001)
+
 
 def test_regime_weight_unknown_regime():
     r = regime_dynamic_weight_adjustment(

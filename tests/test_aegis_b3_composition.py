@@ -5,17 +5,14 @@ caddy_route_add (composition oskill elements — mock oprim callables).
 import json
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from oskill.retrieve_runbook import RetrieveRunbookResult, RunbookEntry, retrieve_runbook
-from oskill.synthesize_action_plan import ActionPlanResult, ActionStep, synthesize_action_plan
+from oskill.caddy_route_add import CaddyRouteAddResult, caddy_route_add
+from oskill.retrieve_runbook import RetrieveRunbookResult, retrieve_runbook
+from oskill.synthesize_action_plan import ActionPlanResult, synthesize_action_plan
 from oskill.verify_health_after_action import (
     HealthVerifyResult,
     verify_health_after_action,
     verify_health_after_action_detail,
 )
-from oskill.caddy_route_add import CaddyRouteAddResult, caddy_route_add
-
 
 # ─── retrieve_runbook ─────────────────────────────────────────────────────────
 

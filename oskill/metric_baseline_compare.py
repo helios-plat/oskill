@@ -7,23 +7,23 @@ class MetricDelta(BaseModel):
     metric_name: str
     baseline_value: float
     current_value: float
-    delta_percent: float               # (current - baseline) / baseline × 100
-    degraded: bool                     # 按 degradation_threshold 判断
+    delta_percent: float  # (current - baseline) / baseline × 100
+    degraded: bool  # 按 degradation_threshold 判断
 
 
 class BaselineCompareResult(BaseModel):
     degraded_metrics: list[MetricDelta]
     improved_metrics: list[MetricDelta]
-    overall_health_score: float        # 0-1, 1=完全健康
+    overall_health_score: float  # 0-1, 1=完全健康
     verdict: Literal["healthy", "degraded", "critical"]
 
 
 def metric_baseline_compare(
     *,
-    current_metrics: dict[str, float],    # {metric_name: value}
+    current_metrics: dict[str, float],  # {metric_name: value}
     baseline_metrics: dict[str, float],
-    degradation_threshold: float = 0.2,   # 20% 恶化算 degraded
-    critical_threshold: float = 0.5,      # 50% 恶化算 critical
+    degradation_threshold: float = 0.2,  # 20% 恶化算 degraded
+    critical_threshold: float = 0.5,  # 50% 恶化算 critical
     metric_directions: dict[str, Literal["higher_is_better", "lower_is_better"]] | None = None,
 ) -> BaselineCompareResult:
     """对比当前指标与基线, 输出 health verdict."""
@@ -37,10 +37,7 @@ def metric_baseline_compare(
 
     if not common_metrics:
         return BaselineCompareResult(
-            degraded_metrics=[],
-            improved_metrics=[],
-            overall_health_score=1.0,
-            verdict="healthy"
+            degraded_metrics=[], improved_metrics=[], overall_health_score=1.0, verdict="healthy"
         )
 
     for name in common_metrics:
@@ -58,7 +55,7 @@ def metric_baseline_compare(
         if direction == "lower_is_better":
             if delta_percent > degradation_threshold:
                 is_degraded = True
-        else: # higher_is_better
+        else:  # higher_is_better
             if delta_percent < -degradation_threshold:
                 is_degraded = True
 
@@ -67,7 +64,7 @@ def metric_baseline_compare(
             baseline_value=baseline,
             current_value=current,
             delta_percent=delta_percent * 100,
-            degraded=is_degraded
+            degraded=is_degraded,
         )
 
         if is_degraded:
@@ -100,5 +97,5 @@ def metric_baseline_compare(
         degraded_metrics=degraded_metrics,
         improved_metrics=improved_metrics,
         overall_health_score=max(0.0, score),
-        verdict=verdict
+        verdict=verdict,
     )

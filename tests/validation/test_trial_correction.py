@@ -45,8 +45,11 @@ def test_correction_fdr_by_basic(p_values):
 def test_correction_returns_correct_keys(p_values):
     result = bonferroni_holm_correction(p_values)
     expected_keys = {
-        "corrected_p_values", "is_significant_per_test",
-        "is_significant_corrected", "method", "fdr_or_fwer",
+        "corrected_p_values",
+        "is_significant_per_test",
+        "is_significant_corrected",
+        "method",
+        "fdr_or_fwer",
     }
     assert set(result.keys()) == expected_keys
 

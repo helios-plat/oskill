@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 from oprim import canonical_json, sha256_hash
 
@@ -74,16 +75,14 @@ def multi_model_ensemble(
     cfg_keys = set(model_configs.keys())
     if fn_keys != cfg_keys:
         raise ValueError(
-            f"client_fns keys {sorted(fn_keys)} do not match "
-            f"model_configs keys {sorted(cfg_keys)}"
+            f"client_fns keys {sorted(fn_keys)} do not match model_configs keys {sorted(cfg_keys)}"
         )
 
     if weights is not None:
         w_keys = set(weights.keys())
         if w_keys != fn_keys:
             raise ValueError(
-                f"weights keys {sorted(w_keys)} do not match "
-                f"client_fns keys {sorted(fn_keys)}"
+                f"weights keys {sorted(w_keys)} do not match client_fns keys {sorted(fn_keys)}"
             )
 
     # 2. Format prompt
@@ -193,7 +192,7 @@ def _aggregate(
             else:
                 consensus_label = tied_labels[0]
         agreement_score = max_count / n
-        is_unanimous = (max_count == n)
+        is_unanimous = max_count == n
         has_consensus = True
 
     elif aggregation == "weighted_vote":
@@ -208,7 +207,7 @@ def _aggregate(
         total_weight = sum(weights.values())
         agreement_score = weighted_sums[consensus_label] / total_weight if total_weight > 0 else 0.0
         counter = Counter(labels)
-        is_unanimous = (len(set(labels)) == 1)
+        is_unanimous = len(set(labels)) == 1
         has_consensus = True
 
     elif aggregation == "score_averaging":
@@ -229,7 +228,7 @@ def _aggregate(
         consensus_label = str(mean_score)
         agreement_score = 1.0 - (max(scores) - min(scores)) / (max(abs(s) for s in scores) + 1e-9)
         agreement_score = max(0.0, min(1.0, agreement_score))
-        is_unanimous = (len(set(scores)) == 1)
+        is_unanimous = len(set(scores)) == 1
         has_consensus = True
 
     elif aggregation == "agreement_only":

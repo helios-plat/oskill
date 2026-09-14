@@ -7,8 +7,8 @@ import pytest
 
 from oskill.signal_detection import adx, cusum_detector, platt_calibration
 
-
 # ─── ADX tests ───────────────────────────────────────────────────────────────
+
 
 def _make_ohlc(n: int = 30, trend: float = 0.0, rng_seed: int = 42):
     """Create synthetic OHLC arrays."""
@@ -61,6 +61,7 @@ def test_adx_result_in_valid_range():
 
 
 # ─── CUSUM tests ──────────────────────────────────────────────────────────────
+
 
 def test_cusum_returns_dict_keys():
     """cusum_detector must return dict with pos_cusum, neg_cusum, signals."""
@@ -123,6 +124,7 @@ def test_cusum_page_1954():
 
 
 # ─── Platt calibration tests ──────────────────────────────────────────────────
+
 
 def test_platt_too_few_samples_returns_defaults():
     """len < 10 → center=0, scale=1, log_loss=inf."""

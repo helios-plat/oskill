@@ -1,8 +1,8 @@
 """Conformal prediction workflows."""
 
-from oskill.conformal.split_cp import conformal_prediction_interval
 from oskill.conformal.adaptive_cp import adaptive_conformal_inference
 from oskill.conformal.change_point_cp import conformal_with_change_points
+from oskill.conformal.split_cp import conformal_prediction_interval
 
 __all__ = [
     "conformal_prediction_interval",

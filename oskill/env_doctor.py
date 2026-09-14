@@ -138,8 +138,7 @@ def detect_platform() -> dict[str, Any]:
         distro = _read_os_release_id()
 
     pkg_managers = [
-        name for name in ("winget", "scoop", "choco", "brew", "apt", "dnf", "pacman")
-        if _have(name)
+        name for name in ("winget", "scoop", "choco", "brew", "apt", "dnf", "pacman") if _have(name)
     ]
     return {
         "system": system,
@@ -278,9 +277,7 @@ def run_doctor(
                     "stderr": res.stderr[-500:],
                 }
         # 复检缺失必须项
-        recheck = check_dependencies(
-            [spec for spec in specs if spec.name in missing_required]
-        )
+        recheck = check_dependencies([spec for spec in specs if spec.name in missing_required])
         for r in recheck:
             if r.status == "ok" and r.name in missing_required:
                 missing_required.remove(r.name)

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from oskill._schemas import FrameConsistencyResult, ReferenceSet
+from oskill._schemas import ReferenceSet
 from oskill.mllm_frame_consistency_check import (
     FrameConsistencyError,
     mllm_frame_consistency_check,

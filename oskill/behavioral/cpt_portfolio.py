@@ -1,4 +1,5 @@
 """CPT portfolio optimization using Cumulative Prospect Theory."""
+
 from __future__ import annotations
 
 from typing import Any, Literal
@@ -183,6 +184,7 @@ def cpt_portfolio_optimize(
             "nit": int(result.nit),
         }
     else:  # scipy_de
+
         def penalized_obj(w: np.ndarray) -> float:
             penalty = 1e4 * (np.sum(w) - 1.0) ** 2
             return obj(w) + penalty

@@ -17,8 +17,8 @@ def _autocorr(x: np.ndarray, max_lag: int) -> np.ndarray:
     if var < 1e-14:
         return np.zeros(max_lag)
     acf = np.correlate(x_centered, x_centered, mode="full")
-    acf = acf[n - 1:] / (var * n)
-    return acf[1: max_lag + 1]
+    acf = acf[n - 1 :] / (var * n)
+    return acf[1 : max_lag + 1]
 
 
 def _effective_sample_size(samples: np.ndarray) -> float:
@@ -94,7 +94,11 @@ def bayesian_linear_regression(
 
     # Defaults for priors
     m0 = np.zeros(p) if prior_mean is None else np.asarray(prior_mean, dtype=np.float64)
-    S0 = 0.01 * np.eye(p) if prior_precision is None else np.asarray(prior_precision, dtype=np.float64)
+    S0 = (
+        0.01 * np.eye(p)
+        if prior_precision is None
+        else np.asarray(prior_precision, dtype=np.float64)
+    )
 
     # Posterior precision and mean (conjugate update ignoring sigma — see Bishop 3.50–3.54)
     SN = S0 + X_arr.T @ X_arr
@@ -119,10 +123,14 @@ def bayesian_linear_regression(
     sign0, logdet0 = np.linalg.slogdet(S0)
     signN, logdetN = np.linalg.slogdet(SN)
     from scipy.special import gammaln
+
     log_ml = (
-        gammaln(aN) - gammaln(noise_prior_alpha)
-        + noise_prior_alpha * np.log(noise_prior_beta) - aN * np.log(bN)
-        + 0.5 * logdet0 - 0.5 * logdetN
+        gammaln(aN)
+        - gammaln(noise_prior_alpha)
+        + noise_prior_alpha * np.log(noise_prior_beta)
+        - aN * np.log(bN)
+        + 0.5 * logdet0
+        - 0.5 * logdetN
         - n / 2.0 * np.log(2.0 * np.pi)
     )
 
@@ -154,7 +162,11 @@ def bayesian_linear_regression(
 
             # Sample sigma^2 | beta ~ InvGamma(aN, bN_cur)
             resid = y_arr - X_arr @ beta_cur
-            bN_cur = noise_prior_beta + 0.5 * resid @ resid + 0.5 * (beta_cur - m0) @ S0 @ (beta_cur - m0)
+            bN_cur = (
+                noise_prior_beta
+                + 0.5 * resid @ resid
+                + 0.5 * (beta_cur - m0) @ S0 @ (beta_cur - m0)
+            )
             sigma2_cur = invgamma.rvs(aN, scale=bN_cur, random_state=rng.integers(0, 2**31))
 
             beta_chain[i] = beta_cur

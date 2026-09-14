@@ -7,10 +7,10 @@ import pytest
 
 from oskill.rag.chunking import chunking_strategy_apply
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_text(n_chars: int = 200) -> str:
     """Generate deterministic text of approximately n_chars."""
@@ -42,6 +42,7 @@ SENTENCE_TEXT = (
 # Test: fixed_size
 # ---------------------------------------------------------------------------
 
+
 def test_chunking_fixed_size_no_overlap():
     text = "A" * 200
     chunks = chunking_strategy_apply(text, strategy="fixed_size", chunk_size=50, chunk_overlap=0)
@@ -64,6 +65,7 @@ def test_chunking_fixed_size_with_overlap():
 # Test: sentence
 # ---------------------------------------------------------------------------
 
+
 def test_chunking_sentence_basic():
     chunks = chunking_strategy_apply(
         SENTENCE_TEXT, strategy="sentence", chunk_size=60, chunk_overlap=0
@@ -82,6 +84,7 @@ def test_chunking_sentence_basic():
 # Test: paragraph
 # ---------------------------------------------------------------------------
 
+
 def test_chunking_paragraph_basic():
     chunks = chunking_strategy_apply(PARAGRAPH_TEXT, strategy="paragraph")
     assert len(chunks) == 3
@@ -93,6 +96,7 @@ def test_chunking_paragraph_basic():
 # ---------------------------------------------------------------------------
 # Test: recursive
 # ---------------------------------------------------------------------------
+
 
 def test_chunking_recursive_falls_back_to_smaller_separator():
     # Text with no double newlines — should fall through to single \n or sentence split
@@ -107,6 +111,7 @@ def test_chunking_recursive_falls_back_to_smaller_separator():
 # ---------------------------------------------------------------------------
 # Test: semantic
 # ---------------------------------------------------------------------------
+
 
 def test_chunking_semantic_requires_embedding_fn():
     with pytest.raises(ValueError, match="embedding_fn"):
@@ -144,6 +149,7 @@ def test_chunking_semantic_merges_similar():
 # Test: validation errors
 # ---------------------------------------------------------------------------
 
+
 def test_chunking_invalid_strategy_raises():
     with pytest.raises(ValueError, match="Unknown strategy"):
         chunking_strategy_apply("some text", strategy="invalid_strategy")  # type: ignore[arg-type]
@@ -156,14 +162,13 @@ def test_chunking_invalid_chunk_size_raises():
 
 def test_chunking_overlap_ge_chunk_size_raises():
     with pytest.raises(ValueError, match="chunk_overlap"):
-        chunking_strategy_apply(
-            "some text", strategy="fixed_size", chunk_size=10, chunk_overlap=10
-        )
+        chunking_strategy_apply("some text", strategy="fixed_size", chunk_size=10, chunk_overlap=10)
 
 
 # ---------------------------------------------------------------------------
 # Test: metadata
 # ---------------------------------------------------------------------------
+
 
 def test_chunking_metadata_includes_strategy_and_indexes():
     text = "Hello world. This is a test. Multiple sentences here."
@@ -182,6 +187,7 @@ def test_chunking_metadata_includes_strategy_and_indexes():
 # ---------------------------------------------------------------------------
 # Academic reference test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.academic_reference
 def test_chunking_kamradt_5_level_alignment():

@@ -52,8 +52,13 @@ def test_full_cpcv_basic(reg_data):
     X, y = reg_data
     result = full_combinatorial_purged_cv(X, y, _SimpleRegressor(), n_paths=10, seed=0)
     expected_keys = {
-        "mean_score", "score_distribution", "std_score", "p_values",
-        "haircut_estimate", "n_paths_run", "embargo_periods",
+        "mean_score",
+        "score_distribution",
+        "std_score",
+        "p_values",
+        "haircut_estimate",
+        "n_paths_run",
+        "embargo_periods",
     }
     assert set(result.keys()) == expected_keys
 
@@ -74,7 +79,9 @@ def test_full_cpcv_n_paths_run_le_n_paths(reg_data):
 
 def test_full_cpcv_embargo_periods_computed(reg_data):
     X, y = reg_data
-    result = full_combinatorial_purged_cv(X, y, _SimpleRegressor(), embargo_pct=0.05, n_paths=5, seed=3)
+    result = full_combinatorial_purged_cv(
+        X, y, _SimpleRegressor(), embargo_pct=0.05, n_paths=5, seed=3
+    )
     assert result["embargo_periods"] >= 1
 
 

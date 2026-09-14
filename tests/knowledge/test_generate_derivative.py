@@ -1,8 +1,8 @@
 """Tests for generate_derivative."""
+
 from __future__ import annotations
-from pathlib import Path
-from unittest.mock import patch, MagicMock
-import pytest
+
+from unittest.mock import patch
 
 from oskill.knowledge.generate_derivative import generate_derivative
 
@@ -45,6 +45,7 @@ class TestGenerateDerivative:
         """If PDF has TOC, chapters should be present."""
         with patch("oskill.generate_derivative.parse_pdf") as mock_parse:
             from oprim.parser.parse_pdf import ParsedContent
+
             mock_parse.return_value = ParsedContent(
                 markdown="# Chapter 1\n\nContent",
                 plaintext="Chapter 1 Content",
@@ -56,5 +57,6 @@ class TestGenerateDerivative:
             result = await generate_derivative("sub07", simple_pdf, "paper")
         assert "chapters" in result
         import json
+
         chapters = json.loads(result["chapters"])
         assert len(chapters) > 0

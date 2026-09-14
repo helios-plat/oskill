@@ -11,6 +11,7 @@ from oskill.llm.deterministic_call import deterministic_llm_call
 
 def _mock_client(response_text: str, stop_reason: str = "end_turn"):
     """Build a mock client_fn returning fixed text response."""
+
     def client_fn(messages, model, **kwargs):
         return {
             "content": response_text,
@@ -18,6 +19,7 @@ def _mock_client(response_text: str, stop_reason: str = "end_turn"):
             "input_tokens": 10,
             "output_tokens": 5,
         }
+
     return client_fn
 
 
@@ -43,13 +45,17 @@ def test_deterministic_call_basic_text_response():
 def test_deterministic_call_returns_all_required_keys():
     """All 9 required output keys are present."""
     client = _mock_client("ok")
-    result = deterministic_llm_call(
-        "Prompt: {x}", {"x": "val"}, client, model="m"
-    )
+    result = deterministic_llm_call("Prompt: {x}", {"x": "val"}, client, model="m")
     required = {
-        "response", "prompt_rendered", "prompt_fingerprint",
-        "model", "temperature", "seed", "response_format",
-        "metadata", "timestamp_called",
+        "response",
+        "prompt_rendered",
+        "prompt_fingerprint",
+        "model",
+        "temperature",
+        "seed",
+        "response_format",
+        "metadata",
+        "timestamp_called",
     }
     assert required.issubset(result.keys())
 
@@ -69,9 +75,7 @@ def test_deterministic_call_renders_prompt():
 def test_deterministic_call_fingerprint_is_64_char_hex():
     """prompt_fingerprint is a 64-char lowercase hex string."""
     client = _mock_client("ok")
-    result = deterministic_llm_call(
-        "{x}", {"x": "y"}, client, model="m"
-    )
+    result = deterministic_llm_call("{x}", {"x": "y"}, client, model="m")
     fp = result["prompt_fingerprint"]
     assert len(fp) == 64
     assert all(c in "0123456789abcdef" for c in fp)
@@ -97,9 +101,7 @@ def test_deterministic_call_json_response_format():
     """response_format='json' parses JSON response."""
     payload = {"signal": 0.5, "confidence": 0.9}
     client = _mock_client(json.dumps(payload))
-    result = deterministic_llm_call(
-        "{p}", {"p": "x"}, client, model="m", response_format="json"
-    )
+    result = deterministic_llm_call("{p}", {"p": "x"}, client, model="m", response_format="json")
     assert result["response"] == payload
 
 
@@ -109,8 +111,7 @@ def test_deterministic_call_json_schema_valid():
     client = _mock_client(json.dumps(payload))
     schema = {"type": "object", "required": ["action", "size"]}
     result = deterministic_llm_call(
-        "{p}", {"p": "x"}, client, model="m",
-        response_format="json", json_schema=schema
+        "{p}", {"p": "x"}, client, model="m", response_format="json", json_schema=schema
     )
     assert result["response"]["action"] == "buy"
 
@@ -128,9 +129,7 @@ def test_deterministic_call_metadata_populated():
 def test_deterministic_call_seed_passed_to_client():
     """seed is recorded in result when provided."""
     client = _mock_client("ok")
-    result = deterministic_llm_call(
-        "{x}", {"x": "v"}, client, model="m", seed=123
-    )
+    result = deterministic_llm_call("{x}", {"x": "v"}, client, model="m", seed=123)
     assert result["seed"] == 123
 
 
@@ -148,9 +147,7 @@ def test_deterministic_call_invalid_json_raises_format_error():
     """Non-JSON response with response_format='json' raises LLMResponseFormatError."""
     client = _mock_client("not valid json {{{")
     with pytest.raises(LLMResponseFormatError):
-        deterministic_llm_call(
-            "{x}", {"x": "v"}, client, model="m", response_format="json"
-        )
+        deterministic_llm_call("{x}", {"x": "v"}, client, model="m", response_format="json")
 
 
 def test_deterministic_call_schema_missing_required_raises_validation_error():
@@ -160,8 +157,7 @@ def test_deterministic_call_schema_missing_required_raises_validation_error():
     schema = {"type": "object", "required": ["action", "size"]}
     with pytest.raises(LLMResponseValidationError):
         deterministic_llm_call(
-            "{x}", {"x": "v"}, client, model="m",
-            response_format="json", json_schema=schema
+            "{x}", {"x": "v"}, client, model="m", response_format="json", json_schema=schema
         )
 
 
@@ -170,8 +166,12 @@ def test_deterministic_call_schema_object_type_non_dict_raises():
     client = _mock_client(json.dumps([1, 2, 3]))  # a list, not object
     with pytest.raises(LLMResponseValidationError, match="object"):
         deterministic_llm_call(
-            "{x}", {"x": "v"}, client, model="m",
-            response_format="json", json_schema={"type": "object", "required": []}
+            "{x}",
+            {"x": "v"},
+            client,
+            model="m",
+            response_format="json",
+            json_schema={"type": "object", "required": []},
         )
 
 
@@ -180,8 +180,7 @@ def test_deterministic_call_schema_type_array_valid():
     payload = [1, 2, 3]
     client = _mock_client(json.dumps(payload))
     result = deterministic_llm_call(
-        "{x}", {"x": "v"}, client, model="m",
-        response_format="json", json_schema={"type": "array"}
+        "{x}", {"x": "v"}, client, model="m", response_format="json", json_schema={"type": "array"}
     )
     assert result["response"] == [1, 2, 3]
 
@@ -192,8 +191,12 @@ def test_deterministic_call_schema_type_array_invalid_raises():
     client = _mock_client(json.dumps(payload))
     with pytest.raises(LLMResponseValidationError, match="array"):
         deterministic_llm_call(
-            "{x}", {"x": "v"}, client, model="m",
-            response_format="json", json_schema={"type": "array"}
+            "{x}",
+            {"x": "v"},
+            client,
+            model="m",
+            response_format="json",
+            json_schema={"type": "array"},
         )
 
 
@@ -202,8 +205,7 @@ def test_deterministic_call_schema_type_string_valid():
     payload = '"hello world"'
     client = _mock_client(payload)
     result = deterministic_llm_call(
-        "{x}", {"x": "v"}, client, model="m",
-        response_format="json", json_schema={"type": "string"}
+        "{x}", {"x": "v"}, client, model="m", response_format="json", json_schema={"type": "string"}
     )
     assert result["response"] == "hello world"
 
@@ -213,8 +215,12 @@ def test_deterministic_call_schema_type_string_invalid_raises():
     client = _mock_client(json.dumps(42))
     with pytest.raises(LLMResponseValidationError, match="string"):
         deterministic_llm_call(
-            "{x}", {"x": "v"}, client, model="m",
-            response_format="json", json_schema={"type": "string"}
+            "{x}",
+            {"x": "v"},
+            client,
+            model="m",
+            response_format="json",
+            json_schema={"type": "string"},
         )
 
 
@@ -222,8 +228,7 @@ def test_deterministic_call_schema_type_number_valid():
     """Number JSON schema type validation passes for int/float."""
     client = _mock_client(json.dumps(3.14))
     result = deterministic_llm_call(
-        "{x}", {"x": "v"}, client, model="m",
-        response_format="json", json_schema={"type": "number"}
+        "{x}", {"x": "v"}, client, model="m", response_format="json", json_schema={"type": "number"}
     )
     assert result["response"] == pytest.approx(3.14)
 
@@ -233,8 +238,12 @@ def test_deterministic_call_schema_type_number_invalid_raises():
     client = _mock_client(json.dumps("not a number"))
     with pytest.raises(LLMResponseValidationError, match="number"):
         deterministic_llm_call(
-            "{x}", {"x": "v"}, client, model="m",
-            response_format="json", json_schema={"type": "number"}
+            "{x}",
+            {"x": "v"},
+            client,
+            model="m",
+            response_format="json",
+            json_schema={"type": "number"},
         )
 
 
@@ -269,8 +278,7 @@ def test_deterministic_call_fingerprint_is_sha256_of_canonical_payload():
 
     client = _mock_client("analysis result")
     result = deterministic_llm_call(
-        template, variables, client,
-        model=model, temperature=temperature, seed=seed
+        template, variables, client, model=model, temperature=temperature, seed=seed
     )
 
     # Recompute the fingerprint independently

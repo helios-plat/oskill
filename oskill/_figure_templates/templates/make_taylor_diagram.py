@@ -7,12 +7,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
+    import matplotlib.pyplot as plt
+    import numpy as np
 
 
 @dataclass(frozen=True)
@@ -98,7 +99,14 @@ def draw_taylor_grid(ax: plt.Axes, ref_std: float = 1.0, rmax: float = 1.75) -> 
         mask = (x >= 0) & (y >= 0) & (x**2 + y**2 <= rmax**2)
         ax.plot(x[mask], y[mask], ls="--", color="#bdbdbd", lw=0.45, alpha=0.85, zorder=0)
 
-    ax.plot(ref_std * np.cos(theta), ref_std * np.sin(theta), ls="--", color="#cc7c8f", lw=0.65, alpha=0.75)
+    ax.plot(
+        ref_std * np.cos(theta),
+        ref_std * np.sin(theta),
+        ls="--",
+        color="#cc7c8f",
+        lw=0.65,
+        alpha=0.75,
+    )
     ax.plot(rmax * np.cos(theta), rmax * np.sin(theta), color="#999999", lw=0.75)
 
     ax.set_xlim(0, rmax)
@@ -121,7 +129,16 @@ def draw_taylor_grid(ax: plt.Axes, ref_std: float = 1.0, rmax: float = 1.75) -> 
         x, y = polar_to_xy(rmax * 1.02, corr)
         angle = np.degrees(np.arccos(corr)) - 90
         label = f"{corr:.2f}" if corr >= 0.95 else f"{corr:.1f}"
-        ax.text(x, y, label, fontsize=6.2, ha="center", va="center", rotation=angle, rotation_mode="anchor")
+        ax.text(
+            x,
+            y,
+            label,
+            fontsize=6.2,
+            ha="center",
+            va="center",
+            rotation=angle,
+            rotation_mode="anchor",
+        )
 
     label_x, label_y = polar_to_xy(rmax * 0.94, 0.68)
     ax.text(
@@ -138,18 +155,21 @@ def draw_taylor_grid(ax: plt.Axes, ref_std: float = 1.0, rmax: float = 1.75) -> 
 
 
 def draw_panel(ax: plt.Axes, points: list[TaylorPoint], letter: str) -> None:
-    color_map = dict(MODELS)
     draw_taylor_grid(ax)
 
     handles = []
     for model, color in MODELS:
         if model == "Observed":
             x, y = polar_to_xy(1.0, 1.0)
-            handle = ax.scatter(x, y, s=18, marker="o", facecolor=color, edgecolor="black", lw=0.35, zorder=5)
+            handle = ax.scatter(
+                x, y, s=18, marker="o", facecolor=color, edgecolor="black", lw=0.35, zorder=5
+            )
         else:
             point = next(item for item in points if item.model == model)
             x, y = polar_to_xy(point.std, point.corr)
-            handle = ax.scatter(x, y, s=18, marker="o", facecolor=color, edgecolor="black", lw=0.35, zorder=5)
+            handle = ax.scatter(
+                x, y, s=18, marker="o", facecolor=color, edgecolor="black", lw=0.35, zorder=5
+            )
         handles.append(handle)
 
     ax.legend(
@@ -167,7 +187,9 @@ def draw_panel(ax: plt.Axes, points: list[TaylorPoint], letter: str) -> None:
         facecolor="white",
         fancybox=False,
     )
-    ax.text(0.50, -0.22, f"({letter})", transform=ax.transAxes, fontsize=9, ha="center", va="center")
+    ax.text(
+        0.50, -0.22, f"({letter})", transform=ax.transAxes, fontsize=9, ha="center", va="center"
+    )
 
 
 def add_header_and_caption(fig: plt.Figure) -> None:
@@ -193,7 +215,8 @@ def add_header_and_caption(fig: plt.Figure) -> None:
         0.090,
         0.105,
         (
-            "Taylor diagram of the training (a), testing (b), and full dataset (c) of the ML models. "
+            "Taylor diagram of the training (a), testing (b), and full dataset (c) of the ML "
+            "models. "
             "The “Observed” point represents actual measured data from experiments or real-world"
         ),
         fontsize=8.4,

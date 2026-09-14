@@ -1,17 +1,15 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oskill import extract_symbols
-from oprim import detect_language, file_read, glob_match
-import ast
-import json
-import re
-import sys
-import os
+
 from pathlib import Path
-from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import detect_language, file_read, glob_match
+
+from oskill import extract_symbols
+
+from ._types import RepoFile, RepoMap
+
 
 def repo_map_build(
     *,
@@ -39,10 +37,32 @@ def repo_map_build(
         >>> rmap.total_files > 0
         True
     """
-    _IGNORE = {".git", "__pycache__", "node_modules", ".venv", "venv",
-               "dist", "build", ".mypy_cache", ".ruff_cache"}
-    _EXTS = {".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs",
-             ".java", ".kt", ".c", ".cpp", ".cs", ".rb"}
+    _IGNORE = {
+        ".git",
+        "__pycache__",
+        "node_modules",
+        ".venv",
+        "venv",
+        "dist",
+        "build",
+        ".mypy_cache",
+        ".ruff_cache",
+    }
+    _EXTS = {
+        ".py",
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".go",
+        ".rs",
+        ".java",
+        ".kt",
+        ".c",
+        ".cpp",
+        ".cs",
+        ".rb",
+    }
 
     extra_ignore = set(ignore or [])
     files: list[RepoFile] = []
@@ -53,14 +73,14 @@ def repo_map_build(
     except Exception:
         return RepoMap(root=root, files=[], total_files=0, languages={})
 
-    for p in all_paths[:max_files * 2]:  # 多取再过滤
+    for p in all_paths[: max_files * 2]:  # 多取再过滤
         if len(files) >= max_files:
             break
 
         # 过滤目录和忽略项
         if not p.is_file():
             continue  # pragma: no cover
-        rel = str(p.relative_to(root) if hasattr(p, 'relative_to') else p)
+        rel = str(p.relative_to(root) if hasattr(p, "relative_to") else p)
         parts = Path(rel).parts
         if any(part in _IGNORE or part in extra_ignore for part in parts):
             continue  # pragma: no cover
@@ -80,10 +100,14 @@ def repo_map_build(
             syms = []  # pragma: no cover
             size = 0  # pragma: no cover
 
-        files.append(RepoFile(
-            path=str(p), language=lang,
-            size_bytes=size, symbols=syms, head_lines=head,
-        ))
+        files.append(
+            RepoFile(
+                path=str(p),
+                language=lang,
+                size_bytes=size,
+                symbols=syms,
+                head_lines=head,
+            )
+        )
 
-    return RepoMap(root=root, files=files,
-                   total_files=len(files), languages=languages)
+    return RepoMap(root=root, files=files, total_files=len(files), languages=languages)

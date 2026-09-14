@@ -1,4 +1,5 @@
 """Tests for max-min expected utility portfolio optimization."""
+
 from __future__ import annotations
 
 import numpy as np

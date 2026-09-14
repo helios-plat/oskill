@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from oskill._schemas import FrameConsistencyResult, ReferenceSet, ShotFrame
+from oskill._schemas import ReferenceSet, ShotFrame
 
 
 class SelectReferenceError(Exception):
@@ -87,9 +87,7 @@ async def select_reference(
     ]
 
     shot_desc = (
-        current_shot.model_dump()
-        if hasattr(current_shot, "model_dump")
-        else str(current_shot)
+        current_shot.model_dump() if hasattr(current_shot, "model_dump") else str(current_shot)
     )
 
     messages: list[dict[str, Any]] = [
@@ -98,9 +96,9 @@ async def select_reference(
             "content": (
                 "You are selecting reference frames for video generation. "
                 "Given a current shot and timeline history, return JSON: "
-                "{\"character_refs\": {\"<char_id>\": \"<frame_path>\"}, "
-                "\"environment_refs\": {\"<env_id>\": \"<frame_path>\"}, "
-                "\"selected_from\": [\"<shot_id>\", ...]}. "
+                '{"character_refs": {"<char_id>": "<frame_path>"}, '
+                '"environment_refs": {"<env_id>": "<frame_path>"}, '
+                '"selected_from": ["<shot_id>", ...]}. '
                 "Only include characters/environments that appear in history. "
                 "Prefer the most recent, clearest frame."
             ),
@@ -125,9 +123,7 @@ async def select_reference(
     try:
         data = json.loads(content)
     except (json.JSONDecodeError, TypeError) as exc:
-        raise SelectReferenceError(
-            f"LLM returned invalid JSON: {content[:200]}"
-        ) from exc
+        raise SelectReferenceError(f"LLM returned invalid JSON: {content[:200]}") from exc
 
     for char_id, fp in (data.get("character_refs") or {}).items():
         p = Path(fp)

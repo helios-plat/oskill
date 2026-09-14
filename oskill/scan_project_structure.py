@@ -9,6 +9,7 @@ Composes oprim:
 
 IO-orchestration (dir listing). Stateless.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -18,9 +19,21 @@ from oprim import apply_gitignore, detect_project_type, dir_list, glob_match, pa
 from ._hc_types import ProjectMap
 
 _KEY_FILE_PATTERNS = [
-    "*.toml", "*.json", "Makefile", "Dockerfile", "*.yaml", "*.yml",
-    "*.md", "*.cfg", "*.ini", "setup.py", "requirements*.txt",
-    "go.mod", "package.json", "Cargo.toml", "*.gradle",
+    "*.toml",
+    "*.json",
+    "Makefile",
+    "Dockerfile",
+    "*.yaml",
+    "*.yml",
+    "*.md",
+    "*.cfg",
+    "*.ini",
+    "setup.py",
+    "requirements*.txt",
+    "go.mod",
+    "package.json",
+    "Cargo.toml",
+    "*.gradle",
 ]
 
 

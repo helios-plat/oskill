@@ -10,10 +10,10 @@ from oskill.distribution import (
     distribution_shift_test,
 )
 
-
 # ============================================================
 # distribution_shift_test tests
 # ============================================================
+
 
 class TestDistributionShiftTest:
     """Tests for distribution_shift_test."""
@@ -115,11 +115,13 @@ class TestDistributionShiftTest:
         a = rng.normal(0, 1, 200)
         b = rng.normal(0.2, 1, 200)  # slight shift
         # Loose threshold → no detection
-        r_loose = distribution_shift_test(a, b, methods=["wasserstein"],
-                                          wasserstein_threshold_ratio=1.0)
+        r_loose = distribution_shift_test(
+            a, b, methods=["wasserstein"], wasserstein_threshold_ratio=1.0
+        )
         # Tight threshold → detection
-        r_tight = distribution_shift_test(a, b, methods=["wasserstein"],
-                                          wasserstein_threshold_ratio=0.01)
+        r_tight = distribution_shift_test(
+            a, b, methods=["wasserstein"], wasserstein_threshold_ratio=0.01
+        )
         assert r_loose["votes"]["wasserstein"] is False or not r_loose["votes"]["wasserstein"]
         assert r_tight["votes"]["wasserstein"] is True or r_tight["votes"]["wasserstein"]
 
@@ -130,8 +132,10 @@ class TestDistributionShiftTest:
 
     def test_integration_mock_ks(self, mocker):
         """Integration: oprim.kolmogorov_smirnov_test called for 'ks'."""
-        mock_ks = mocker.patch("oskill.distribution.oprim.kolmogorov_smirnov_test",
-                               return_value={"statistic": 0.1, "p_value": 0.5, "n_a": 100, "n_b": 100})
+        mock_ks = mocker.patch(
+            "oskill.distribution.oprim.kolmogorov_smirnov_test",
+            return_value={"statistic": 0.1, "p_value": 0.5, "n_a": 100, "n_b": 100},
+        )
         mocker.patch("oskill.distribution.oprim.distribution_summary", return_value={})
         a = np.random.default_rng(42).normal(0, 1, 100)
         b = np.random.default_rng(43).normal(0, 1, 100)
@@ -149,7 +153,9 @@ class TestDistributionShiftTest:
 
     def test_integration_mock_jsd(self, mocker):
         """Integration: oprim.symmetric_kl_divergence called for 'jsd'."""
-        mock_jsd = mocker.patch("oskill.distribution.oprim.symmetric_kl_divergence", return_value=0.01)
+        mock_jsd = mocker.patch(
+            "oskill.distribution.oprim.symmetric_kl_divergence", return_value=0.01
+        )
         mocker.patch("oskill.distribution.oprim.distribution_summary", return_value={})
         a = np.random.default_rng(42).normal(0, 1, 100)
         b = np.random.default_rng(43).normal(0, 1, 100)
@@ -161,6 +167,7 @@ class TestDistributionShiftTest:
 # detect_outliers_robust tests
 # ============================================================
 
+
 class TestDetectOutliersRobust:
     """Tests for detect_outliers_robust."""
 
@@ -168,7 +175,7 @@ class TestDetectOutliersRobust:
         """[1,2,3,4,5,100] → last is outlier."""
         data = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 100.0])
         result = detect_outliers_robust(data)
-        assert result["outlier_mask"][-1] is True or result["outlier_mask"][-1] == True
+        assert result["outlier_mask"][-1]
 
     def test_no_outliers(self):
         """Normal data → few/no outliers."""
@@ -237,20 +244,28 @@ class TestDetectOutliersRobust:
 
     def test_integration_mock_zscore(self, mocker):
         """Integration: oprim.zscore_normalize called for zscore method."""
-        mock_zs = mocker.patch("oskill.distribution.oprim.zscore_normalize",
-                               return_value=pd.DataFrame(np.zeros((10, 1))))
-        mocker.patch("oskill.distribution.oprim.distribution_summary",
-                     return_value={"q_0.25": -0.5, "q_0.75": 0.5})
+        mock_zs = mocker.patch(
+            "oskill.distribution.oprim.zscore_normalize",
+            return_value=pd.DataFrame(np.zeros((10, 1))),
+        )
+        mocker.patch(
+            "oskill.distribution.oprim.distribution_summary",
+            return_value={"q_0.25": -0.5, "q_0.75": 0.5},
+        )
         data = np.random.default_rng(42).normal(0, 1, 10)
         detect_outliers_robust(data, methods=["zscore"])
         mock_zs.assert_called_once()
 
     def test_integration_mock_distribution_summary(self, mocker):
         """Integration: oprim.distribution_summary called for IQR."""
-        mock_ds = mocker.patch("oskill.distribution.oprim.distribution_summary",
-                               return_value={"q_0.25": -0.67, "q_0.75": 0.67})
-        mocker.patch("oskill.distribution.oprim.zscore_normalize",
-                     return_value=pd.DataFrame(np.zeros((10, 1))))
+        mock_ds = mocker.patch(
+            "oskill.distribution.oprim.distribution_summary",
+            return_value={"q_0.25": -0.67, "q_0.75": 0.67},
+        )
+        mocker.patch(
+            "oskill.distribution.oprim.zscore_normalize",
+            return_value=pd.DataFrame(np.zeros((10, 1))),
+        )
         data = np.random.default_rng(42).normal(0, 1, 10)
         detect_outliers_robust(data, methods=["iqr"])
         mock_ds.assert_called()
@@ -270,6 +285,7 @@ class TestDetectOutliersRobust:
 # ============================================================
 # bootstrap_distribution tests
 # ============================================================
+
 
 class TestBootstrapDistribution:
     """Tests for bootstrap_distribution."""
@@ -298,8 +314,9 @@ class TestBootstrapDistribution:
     def test_include_density_true(self):
         """include_density=True returns density dict."""
         data = np.random.default_rng(42).normal(0, 1, 100)
-        result = bootstrap_distribution(data, np.mean, n_bootstrap=200,
-                                        include_density=True, random_state=42)
+        result = bootstrap_distribution(
+            data, np.mean, n_bootstrap=200, include_density=True, random_state=42
+        )
         assert result["density"] is not None
         assert "x" in result["density"]
         assert "density" in result["density"]
@@ -307,22 +324,25 @@ class TestBootstrapDistribution:
     def test_include_density_false(self):
         """include_density=False returns None."""
         data = np.random.default_rng(42).normal(0, 1, 100)
-        result = bootstrap_distribution(data, np.mean, n_bootstrap=200,
-                                        include_density=False, random_state=42)
+        result = bootstrap_distribution(
+            data, np.mean, n_bootstrap=200, include_density=False, random_state=42
+        )
         assert result["density"] is None
 
     def test_method_percentile(self):
         """method='percentile' works."""
         data = np.random.default_rng(42).normal(0, 1, 100)
-        result = bootstrap_distribution(data, np.mean, method="percentile",
-                                        n_bootstrap=200, random_state=42)
+        result = bootstrap_distribution(
+            data, np.mean, method="percentile", n_bootstrap=200, random_state=42
+        )
         assert result["method"] == "percentile"
 
     def test_method_bca(self):
         """method='bca' works."""
         data = np.random.default_rng(42).normal(0, 1, 100)
-        result = bootstrap_distribution(data, np.mean, method="bca",
-                                        n_bootstrap=200, random_state=42)
+        result = bootstrap_distribution(
+            data, np.mean, method="bca", n_bootstrap=200, random_state=42
+        )
         assert result["method"] == "bca"
 
     def test_random_state_reproducible(self):
@@ -352,10 +372,17 @@ class TestBootstrapDistribution:
 
     def test_integration_mock_bootstrap_ci(self, mocker):
         """Integration: oprim.bootstrap_ci called for bca method."""
-        mock_ci = mocker.patch("oskill.distribution.oprim.bootstrap_ci", return_value={
-            "point_estimate": 0.0, "ci_lower": -0.5, "ci_upper": 0.5,
-            "se": 0.1, "n_bootstrap": 200, "method": "bca",
-        })
+        mock_ci = mocker.patch(
+            "oskill.distribution.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 0.0,
+                "ci_lower": -0.5,
+                "ci_upper": 0.5,
+                "se": 0.1,
+                "n_bootstrap": 200,
+                "method": "bca",
+            },
+        )
         mocker.patch("oskill.distribution.oprim.distribution_summary", return_value={"mean": 0})
         data = np.random.default_rng(42).normal(0, 1, 100)
         bootstrap_distribution(data, np.mean, n_bootstrap=200, method="bca", random_state=42)
@@ -363,35 +390,55 @@ class TestBootstrapDistribution:
 
     def test_integration_mock_distribution_summary(self, mocker):
         """Integration: oprim.distribution_summary called on samples."""
-        mocker.patch("oskill.distribution.oprim.bootstrap_ci", return_value={
-            "point_estimate": 0.0, "ci_lower": -0.5, "ci_upper": 0.5,
-            "se": 0.1, "n_bootstrap": 200, "method": "percentile",
-        })
-        mock_ds = mocker.patch("oskill.distribution.oprim.distribution_summary",
-                               return_value={"mean": 0})
+        mocker.patch(
+            "oskill.distribution.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 0.0,
+                "ci_lower": -0.5,
+                "ci_upper": 0.5,
+                "se": 0.1,
+                "n_bootstrap": 200,
+                "method": "percentile",
+            },
+        )
+        mock_ds = mocker.patch(
+            "oskill.distribution.oprim.distribution_summary", return_value={"mean": 0}
+        )
         data = np.random.default_rng(42).normal(0, 1, 100)
         bootstrap_distribution(data, np.mean, n_bootstrap=200, random_state=42)
         mock_ds.assert_called_once()
 
     def test_integration_mock_kde_density(self, mocker):
         """Integration: oprim.kde_density called when include_density=True."""
-        mocker.patch("oskill.distribution.oprim.bootstrap_ci", return_value={
-            "point_estimate": 0.0, "ci_lower": -0.5, "ci_upper": 0.5,
-            "se": 0.1, "n_bootstrap": 200, "method": "percentile",
-        })
+        mocker.patch(
+            "oskill.distribution.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 0.0,
+                "ci_lower": -0.5,
+                "ci_upper": 0.5,
+                "se": 0.1,
+                "n_bootstrap": 200,
+                "method": "percentile",
+            },
+        )
         mocker.patch("oskill.distribution.oprim.distribution_summary", return_value={"mean": 0})
-        mock_kde = mocker.patch("oskill.distribution.oprim.kde_density",
-                                return_value={"x": np.zeros(10), "density": np.ones(10)})
+        mock_kde = mocker.patch(
+            "oskill.distribution.oprim.kde_density",
+            return_value={"x": np.zeros(10), "density": np.ones(10)},
+        )
         data = np.random.default_rng(42).normal(0, 1, 100)
-        bootstrap_distribution(data, np.mean, n_bootstrap=200, include_density=True, random_state=42)
+        bootstrap_distribution(
+            data, np.mean, n_bootstrap=200, include_density=True, random_state=42
+        )
         mock_kde.assert_called_once()
 
     def test_bootstrap_distribution_percentile_method(self):
         """method='percentile' computes CI directly from bootstrap samples."""
         rng = np.random.default_rng(5)
         data = rng.normal(3.0, 1.0, 200)
-        result = bootstrap_distribution(data, np.mean, method="percentile",
-                                        n_bootstrap=500, random_state=5)
+        result = bootstrap_distribution(
+            data, np.mean, method="percentile", n_bootstrap=500, random_state=5
+        )
         assert result["method"] == "percentile"
         assert result["ci_low"] < result["ci_high"]
         # CI should contain the true mean ≈ 3.0
@@ -401,8 +448,9 @@ class TestBootstrapDistribution:
         """method='basic' (reflection CI) computes ci without crashing."""
         rng = np.random.default_rng(6)
         data = rng.normal(2.0, 1.0, 200)
-        result = bootstrap_distribution(data, np.mean, method="basic",
-                                        n_bootstrap=500, random_state=6)
+        result = bootstrap_distribution(
+            data, np.mean, method="basic", n_bootstrap=500, random_state=6
+        )
         assert result["method"] == "basic"
         assert result["ci_low"] < result["ci_high"]
 

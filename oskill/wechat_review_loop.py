@@ -18,17 +18,16 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from typing import Any
 
 # 触发全文重写的审核准则 (集中配置; 或 section 为 None/""/"__all__")
 FULL_REWRITE_CRITERIA = ("topic_match",)
 
 # 注入函数类型: 返回 None 表示该步失败 (LLM 输出无法解析等)
 WriterFn = Callable[[str, str, str], Awaitable[dict | None]]
-ReviewerFn = Callable[
-    [dict, list[dict], str, str, int], Awaitable[dict | None]
-]
+ReviewerFn = Callable[[dict, list[dict], str, str, int], Awaitable[dict | None]]
 ReviserFn = Callable[[dict, list[dict], str, str], Awaitable[list[dict] | None]]
 ImageResolverFn = Callable[[str], Awaitable[dict]]
 
@@ -98,8 +97,7 @@ def parse_verdict(raw: dict | None) -> tuple[bool, list[ReviewIssue]]:
 def needs_full_rewrite(issues: list[ReviewIssue]) -> bool:
     """判定是否整体性问题 → 全文重写 (集中规则)."""
     return any(
-        i.criterion in FULL_REWRITE_CRITERIA or i.section in (None, "", "__all__")
-        for i in issues
+        i.criterion in FULL_REWRITE_CRITERIA or i.section in (None, "", "__all__") for i in issues
     )
 
 
@@ -194,20 +192,14 @@ class WechatReviewLoop:
             )
             passed, issues = parse_verdict(verdict_raw)
             if passed:
-                action_log.append(
-                    ReviewRound(iteration, verdict_raw or {}, issues, "passed")
-                )
+                action_log.append(ReviewRound(iteration, verdict_raw or {}, issues, "passed"))
                 break
             if iteration == self.max_iterations:
-                action_log.append(
-                    ReviewRound(iteration, verdict_raw or {}, issues, "capped")
-                )
+                action_log.append(ReviewRound(iteration, verdict_raw or {}, issues, "capped"))
                 break
 
             if needs_full_rewrite(issues):
-                constraints = "\n".join(
-                    f"- {i.detail} → {i.fix_instruction}" for i in issues
-                )
+                constraints = "\n".join(f"- {i.detail} → {i.fix_instruction}" for i in issues)
                 new_draft = await self.writer(topic, requirements, constraints)
                 changed = new_draft is not None
                 if new_draft:
@@ -220,9 +212,7 @@ class WechatReviewLoop:
             patches = await self.reviser(draft, [i.to_dict() for i in issues], topic, requirements)
             if patches:
                 draft = merge_revision(draft, patches)
-                action_log.append(
-                    ReviewRound(iteration, verdict_raw or {}, issues, "patch", True)
-                )
+                action_log.append(ReviewRound(iteration, verdict_raw or {}, issues, "patch", True))
             else:
                 # 解析失败 → 原稿不变, 下一轮大概率仍不通过, 靠 max_iterations 兜底
                 action_log.append(

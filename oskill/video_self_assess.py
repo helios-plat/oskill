@@ -91,8 +91,8 @@ async def video_self_assess(
         f"Score this video (0-100) on: script_score, visual_score, pacing_score. "
         f"Script title: {script.title}. Duration: {metrics.duration_s:.1f}s. "
         f"Resolution: {metrics.width}x{metrics.height}. "
-        f"Return JSON: {{\"script_score\": float, \"visual_score\": float, "
-        f"\"pacing_score\": float, \"issues\": [str], \"suggestions\": [str]}}"
+        f'Return JSON: {{"script_score": float, "visual_score": float, '
+        f'"pacing_score": float, "issues": [str], "suggestions": [str]}}'
     )
 
     try:
@@ -129,13 +129,20 @@ async def _extract_frames(video_path: Path, count: int, duration_s: float) -> li
     interval = max(duration_s / (count + 1), 0.1)
 
     cmd = [
-        "ffmpeg", "-y", "-i", str(video_path),
-        "-vf", f"fps=1/{interval:.2f}",
-        "-frames:v", str(count),
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(video_path),
+        "-vf",
+        f"fps=1/{interval:.2f}",
+        "-frames:v",
+        str(count),
         str(tmpdir / "frame_%03d.png"),
     ]
     proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        *cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
     await proc.communicate()
 

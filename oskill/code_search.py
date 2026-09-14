@@ -9,11 +9,12 @@ Composes oprim:
 
 IO-orchestration type. Not used as sub-call by sibling oskills.
 """
+
 from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import List, cast
+from typing import cast
 
 from oprim import (
     apply_gitignore,
@@ -82,10 +83,7 @@ async def code_search(
     if gitignore_path.exists():
         patterns = parse_gitignore(gitignore_path.read_text(encoding="utf-8"))
         hit_paths = [Path(h.path) for h in hits]
-        allowed = {
-            str(p)
-            for p in apply_gitignore(hit_paths, patterns=patterns, root=root)
-        }
+        allowed = {str(p) for p in apply_gitignore(hit_paths, patterns=patterns, root=root)}
         hits = [h for h in hits if h.path in allowed]
 
     # Sort by mtime using sort_by_mtime helper
@@ -104,4 +102,4 @@ async def code_search(
     path_order = {str(e.path): i for i, e in enumerate(sorted_entries)}
     hits.sort(key=lambda h: path_order.get(h.path, len(hits)))
 
-    return cast(List[Hit], hits)
+    return cast(list[Hit], hits)

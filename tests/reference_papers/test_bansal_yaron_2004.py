@@ -10,6 +10,7 @@ Tests verify that the epstein_zin_solver correctly implements:
 - Reasonable wealth-consumption ratios
 - Positive implied equity premium consistent with BY calibration
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -17,16 +18,15 @@ import pytest
 
 from oskill.recursive_utility.ez_solver import epstein_zin_solver
 
-
 # ---------------------------------------------------------------------------
 # Bansal-Yaron (2004) Table I monthly calibration (annualised μ ≈ 1.8%)
 # ---------------------------------------------------------------------------
 BY_PROCESS = {
-    "mu": 0.0015,         # mean consumption growth (monthly)
-    "rho": 0.979,         # long-run risk persistence
-    "phi": 0.044,         # long-run risk loading
+    "mu": 0.0015,  # mean consumption growth (monthly)
+    "rho": 0.979,  # long-run risk persistence
+    "phi": 0.044,  # long-run risk loading
     "sigma_bar": 0.0078,  # mean conditional volatility
-    "nu": 0.987,          # variance persistence
+    "nu": 0.987,  # variance persistence
     "sigma_omega": 2.3e-6,
 }
 
@@ -34,9 +34,7 @@ BY_PROCESS = {
 @pytest.mark.academic_reference
 def test_returns_dict_with_required_keys():
     """Solver must return a dict containing all documented keys."""
-    result = epstein_zin_solver(
-        BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5
-    )
+    result = epstein_zin_solver(BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5)
     assert isinstance(result, dict), "Expected dict return type."
     required_keys = {
         "value_function",
@@ -53,9 +51,7 @@ def test_returns_dict_with_required_keys():
 @pytest.mark.academic_reference
 def test_value_function_finite_and_positive():
     """Value function must be finite and positive everywhere on the grid."""
-    result = epstein_zin_solver(
-        BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5
-    )
+    result = epstein_zin_solver(BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5)
     vf = result["value_function"]
     assert np.all(np.isfinite(vf)), "Value function contains non-finite values."
     assert np.all(vf > 0), "Value function must be positive."
@@ -65,34 +61,30 @@ def test_value_function_finite_and_positive():
 def test_converged_under_standard_calibration():
     """Solver must converge under the standard BY calibration."""
     result = epstein_zin_solver(
-        BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5,
-        max_iter=500, tol=1e-6,
+        BY_PROCESS,
+        discount=0.99,
+        risk_aversion=10.0,
+        ies=1.5,
+        max_iter=500,
+        tol=1e-6,
     )
-    assert result["converged"], (
-        f"Solver did not converge after {result['iterations']} iterations."
-    )
+    assert result["converged"], f"Solver did not converge after {result['iterations']} iterations."
 
 
 @pytest.mark.academic_reference
 def test_positive_equity_premium_with_by_params():
     """Implied equity premium must be positive with gamma > 1/psi (BY condition)."""
     # gamma=10 > 1/ies=1/1.5≈0.67, so equity premium should be positive
-    result = epstein_zin_solver(
-        BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5
-    )
+    result = epstein_zin_solver(BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5)
     ep = result["equity_premium_implied"]
     assert np.isfinite(ep), "Equity premium must be finite."
-    assert ep >= 0.0, (
-        f"Expected non-negative equity premium with gamma>1/psi, got {ep}"
-    )
+    assert ep >= 0.0, f"Expected non-negative equity premium with gamma>1/psi, got {ep}"
 
 
 @pytest.mark.academic_reference
 def test_wealth_consumption_ratio_reasonable():
     """Wealth-consumption ratio must be a positive finite number."""
-    result = epstein_zin_solver(
-        BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5
-    )
+    result = epstein_zin_solver(BY_PROCESS, discount=0.99, risk_aversion=10.0, ies=1.5)
     wc = result["wealth_consumption_ratio"]
     assert np.isfinite(wc), "Wealth-consumption ratio must be finite."
     assert wc > 0, "Wealth-consumption ratio must be positive."

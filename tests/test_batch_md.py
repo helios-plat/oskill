@@ -10,42 +10,35 @@ Version: oskill v3.21.0
 from __future__ import annotations
 
 import asyncio
-import json
-import time
 
 import pytest
 
-from oskill.solve_and_visualize import (
-    solve_and_visualize,
-    SolveAndVisualizeInput,
-    _guess_problem_type,
-)
-from oskill.socratic_loop import (
-    process_socratic_turn,
-    create_socratic_state,
-    SocraticLoopState,
+from oskill.generate_practice_set import (
+    PracticeSetConfig,
+    generate_practice_set,
 )
 from oskill.interleave_select import (
-    interleave_select,
     QuestionItem,
-    InterleaveResult,
-)
-from oskill.generate_practice_set import (
-    generate_practice_set,
-    PracticeSetConfig,
-    PracticeSetResult,
+    interleave_select,
 )
 from oskill.longitudinal_pattern import (
-    longitudinal_pattern,
     AttemptRecord,
-    LongitudinalPatternResult,
-    KCTrajectory,
+    longitudinal_pattern,
 )
-
+from oskill.socratic_loop import (
+    create_socratic_state,
+    process_socratic_turn,
+)
+from oskill.solve_and_visualize import (
+    SolveAndVisualizeInput,
+    _guess_problem_type,
+    solve_and_visualize,
+)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Mock LLM caller
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _make_caller(text: str):
     async def caller(**kwargs):
@@ -54,12 +47,14 @@ def _make_caller(text: str):
             "stop_reason": "end_turn",
             "usage": {"input_tokens": 10, "output_tokens": 20},
         }
+
     return caller
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # solve_and_visualize
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestSolveAndVisualize:
     def test_solve_quadratic(self):
@@ -75,7 +70,9 @@ class TestSolveAndVisualize:
             assert r.svg.startswith("<svg") or r.svg == ""
 
     def test_conic_type(self):
-        inp = SolveAndVisualizeInput(expression="x**2 + y**2 - 9", problem_type="conic", generate_svg=False)
+        inp = SolveAndVisualizeInput(
+            expression="x**2 + y**2 - 9", problem_type="conic", generate_svg=False
+        )
         r = solve_and_visualize(inp)
         assert r.solvable
         assert "circle" in r.solve_answer
@@ -110,13 +107,12 @@ class TestSolveAndVisualize:
 # socratic_loop
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestSocraticLoop:
     def test_basic_turn(self):
         caller = _make_caller("你觉得应该怎么移项？")
         state = create_socratic_state("x+1=3", "2")
-        result = asyncio.run(
-            process_socratic_turn(state, "我不知道", caller=caller)
-        )
+        result = asyncio.run(process_socratic_turn(state, "我不知道", caller=caller))
         assert result.assistant_text
         assert result.answer_leaked is False
 
@@ -125,9 +121,7 @@ class TestSocraticLoop:
         answer = "42"
         caller = _make_caller(f"答案是 {answer}，你学到了吗？")
         state = create_socratic_state("x=?", answer)
-        result = asyncio.run(
-            process_socratic_turn(state, "我不会", caller=caller)
-        )
+        result = asyncio.run(process_socratic_turn(state, "我不会", caller=caller))
         assert result.answer_leaked is True
         assert answer not in result.assistant_text
         assert result.assistant_text == "这道题你再想想，思路是什么？"
@@ -155,17 +149,13 @@ class TestSocraticLoop:
     def test_step_check_triggered(self):
         caller = _make_caller("检查你的计算")
         state = create_socratic_state("2x=6", "3")
-        result = asyncio.run(
-            process_socratic_turn(state, "我算了，结果是3", caller=caller)
-        )
+        result = asyncio.run(process_socratic_turn(state, "我算了，结果是3", caller=caller))
         assert result.step_check_triggered is True
 
     def test_no_leakage_when_answer_not_in_response(self):
         caller = _make_caller("想想这个等式的两边")
         state = create_socratic_state("x+1=5", "4")
-        result = asyncio.run(
-            process_socratic_turn(state, "不确定", caller=caller)
-        )
+        result = asyncio.run(process_socratic_turn(state, "不确定", caller=caller))
         assert result.answer_leaked is False
 
     def test_turn_number_returned(self):
@@ -178,6 +168,7 @@ class TestSocraticLoop:
 # ─────────────────────────────────────────────────────────────────────────────
 # interleave_select — MANDATORY: test_no_adjacent_same_kc
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestInterleaveSelect:
     def _make_questions(self, kc_pattern: list[str]) -> list[QuestionItem]:
@@ -193,8 +184,7 @@ class TestInterleaveSelect:
         selected = result.selected
         for i in range(len(selected) - 1):
             assert selected[i].kc_id != selected[i + 1].kc_id, (
-                f"Adjacent same kc_id at positions {i} and {i+1}: "
-                f"{selected[i].kc_id}"
+                f"Adjacent same kc_id at positions {i} and {i + 1}: {selected[i].kc_id}"
             )
 
     def test_basic_interleaving(self):
@@ -247,10 +237,7 @@ class TestInterleaveSelect:
     def test_large_interleaving_maintains_constraint(self):
         """Test with 20 questions across 4 KCs."""
         kcs = ["A", "B", "C", "D"]
-        questions = [
-            QuestionItem(f"q{i}", kcs[i % 4], mastery=0.3)
-            for i in range(20)
-        ]
+        questions = [QuestionItem(f"q{i}", kcs[i % 4], mastery=0.3) for i in range(20)]
         result = interleave_select(questions)
         selected = result.selected
         for i in range(len(selected) - 1):
@@ -260,6 +247,7 @@ class TestInterleaveSelect:
 # ─────────────────────────────────────────────────────────────────────────────
 # generate_practice_set
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestGeneratePracticeSet:
     def _bank(self, n: int = 10) -> list[QuestionItem]:
@@ -335,6 +323,7 @@ class TestGeneratePracticeSet:
 # ─────────────────────────────────────────────────────────────────────────────
 # longitudinal_pattern
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestLongitudinalPattern:
     def _records(
@@ -415,9 +404,7 @@ class TestLongitudinalPattern:
         assert r.sessions_analyzed == 2
 
     def test_improving_kcs_classified(self):
-        improving_records = self._records(
-            "geo", [False, False, True, True, True, True]
-        )
+        improving_records = self._records("geo", [False, False, True, True, True, True])
         r = longitudinal_pattern(improving_records)
         if "geo" in r.improving_kcs:
             assert True  # correctly classified

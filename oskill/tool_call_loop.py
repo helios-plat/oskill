@@ -100,26 +100,34 @@ def tool_call_loop(
                 tool_result = tool_handler(tool_name, tool_input)
 
                 # Append tool result to messages
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.get("id"),
-                    "name": tool_name,
-                    "content": (
-                        json.dumps(tool_result) if not isinstance(tool_result, str) else tool_result
-                    ),
-                })
-                step_tool_results.append({
-                    "tool": tool_name,
-                    "input": tool_input,
-                    "output": tool_result,
-                })
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.get("id"),
+                        "name": tool_name,
+                        "content": (
+                            json.dumps(tool_result)
+                            if not isinstance(tool_result, str)
+                            else tool_result
+                        ),
+                    }
+                )
+                step_tool_results.append(
+                    {
+                        "tool": tool_name,
+                        "input": tool_input,
+                        "output": tool_result,
+                    }
+                )
             except Exception as e:
                 stop_reason = "tool_error"
-                steps.append({
-                    "step": i + 1,
-                    "tool_calls": step_tool_results,
-                    "error": str(e),
-                })
+                steps.append(
+                    {
+                        "step": i + 1,
+                        "tool_calls": step_tool_results,
+                        "error": str(e),
+                    }
+                )
                 return {
                     "final_message": messages[-2] if len(messages) >= 2 else assistant_msg,
                     "stop_reason": stop_reason,

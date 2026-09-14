@@ -6,7 +6,9 @@ from datetime import timedelta
 
 import pandas as pd
 
-from oskill.data.calendar_surprise_detect import calendar_surprise_detect
+from oskill.data.calendar_surprise_detect import (
+    calendar_surprise_detect as calendar_surprise_detect,
+)
 
 
 def point_in_time_join(
@@ -39,7 +41,9 @@ def point_in_time_join(
     right_sorted = right.sort_values(right_on).copy()
 
     # Apply publish lag
-    right_sorted["_pit_effective_date"] = pd.to_datetime(right_sorted[right_on]) + timedelta(days=publish_lag_days)
+    right_sorted["_pit_effective_date"] = pd.to_datetime(right_sorted[right_on]) + timedelta(
+        days=publish_lag_days
+    )
 
     # Determine value columns
     if value_cols is None:

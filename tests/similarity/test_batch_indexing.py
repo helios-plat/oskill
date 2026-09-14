@@ -1,8 +1,10 @@
 """Tests for oskill.similarity_indexing (B4)."""
 
 import tempfile
+
 import numpy as np
 import pytest
+
 from oskill.similarity_indexing import batch_similarity_indexing
 
 
@@ -31,6 +33,7 @@ class TestBatchSimilarityIndexing:
             path = f.name
         batch_similarity_indexing(vectors=vecs, method="flat", persist_path=path)
         import pickle
+
         with open(path, "rb") as f:
             data = pickle.load(f)
         assert data["method"] == "flat"

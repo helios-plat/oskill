@@ -18,6 +18,7 @@ Mandates (CI-checked):
   - verified requires BOTH count==1 AND LLM=="consistent"
   - lean_name and type_signature come from mathlib_lookup only, never from LLM
 """
+
 from __future__ import annotations
 
 import inspect
@@ -57,8 +58,8 @@ async def theorem_verify_3way(
     *,
     ku_text: str,
     candidate_lean_names: list[str],
-    mathlib_lookup,       # Callable: (lean_name: str) -> MathlibLookupResult
-    llm,                  # LLMCaller
+    mathlib_lookup,  # Callable: (lean_name: str) -> MathlibLookupResult
+    llm,  # LLMCaller
     strict: bool = True,
 ) -> TheoremVerifyResult:
     """Verify a theorem KU against Mathlib via a three-way check.

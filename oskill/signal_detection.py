@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-from oprim import atr
 
 
 def adx(
@@ -35,7 +34,7 @@ def adx(
     """
     n = len(closes)
     if n < period + 1:
-        raise ValueError(f"Need at least {period+1} bars, got {n}")
+        raise ValueError(f"Need at least {period + 1} bars, got {n}")
 
     # Directional movement
     plus_dm = np.zeros(n - 1)

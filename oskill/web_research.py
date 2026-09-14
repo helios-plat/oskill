@@ -11,6 +11,7 @@ Note: web_search_query oprim not available; caller/parent provides URLs
 or this function performs basic search via http_fetch with search engine URL.
 IO-orchestration (HTTP + LLM). Not used as sub-call by sibling oskills.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -87,6 +88,7 @@ async def web_research(
 
     # Extract URLs from search results (simple regex approach)
     import re
+
     url_pattern = re.compile(r'href="(https?://[^"]+)"')
     found_urls = url_pattern.findall(search_html)
 
@@ -111,11 +113,14 @@ async def web_research(
     # LLM synthesis
     combined = "\n\n---\n\n".join(content_chunks[:max_sources])
     prompt_msgs = [
-        {"role": "user", "content": (
-            f"Research question: {query}\n\n"
-            f"Sources:\n{combined}\n\n"
-            "Provide a concise synthesis of the key findings."
-        )}
+        {
+            "role": "user",
+            "content": (
+                f"Research question: {query}\n\n"
+                f"Sources:\n{combined}\n\n"
+                "Provide a concise synthesis of the key findings."
+            ),
+        }
     ]
 
     try:

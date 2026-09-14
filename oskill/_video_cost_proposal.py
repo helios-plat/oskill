@@ -1,16 +1,17 @@
 """K-video_cost_proposal: structured cost estimation from provider contracts."""
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal
 
 
 @dataclass
 class CostProposal:
-    per_shot: list[dict]      # [{provider, cost_usd, runtime, shot_type, duration_s}]
+    per_shot: list[dict]  # [{provider, cost_usd, runtime, shot_type, duration_s}]
     total_cost_usd: float
-    locked_runtime: str       # "generative" | "code_render" | "mixed"
-    breakdown: dict           # {by_provider: {name: total_usd}, by_runtime: {...}}
+    locked_runtime: str  # "generative" | "code_render" | "mixed"
+    breakdown: dict  # {by_provider: {name: total_usd}, by_runtime: {...}}
 
 
 def video_cost_proposal(
@@ -52,13 +53,15 @@ def video_cost_proposal(
 
         runtime = shot_type if render_runtime == "mixed" else render_runtime
 
-        per_shot.append({
-            "provider": provider,
-            "cost_usd": round(cost, 6),
-            "runtime": runtime,
-            "shot_type": shot_type,
-            "duration_s": duration_s,
-        })
+        per_shot.append(
+            {
+                "provider": provider,
+                "cost_usd": round(cost, 6),
+                "runtime": runtime,
+                "shot_type": shot_type,
+                "duration_s": duration_s,
+            }
+        )
 
         total += cost
         by_provider[provider] = by_provider.get(provider, 0.0) + cost

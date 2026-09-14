@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import warnings
+from collections.abc import Callable
 from itertools import combinations
-from typing import Callable, Literal
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 
 def walk_forward_optimization(
@@ -110,18 +108,20 @@ def walk_forward_optimization(
         is_idx = np.arange(is_start, is_end_final + 1)
         oos_idx = np.arange(oos_start, oos_end + 1)
 
-        folds.append({
-            "fold_id": fold_id,
-            "is_start": int(is_start),
-            "is_end": int(is_end_final + 1),
-            "is_idx": is_idx,
-            "oos_start": int(oos_start),
-            "oos_end": int(oos_end + 1),
-            "oos_idx": oos_idx,
-            "purged_count": int(purged_count),
-            "embargo_count": int(actual_embargo),
-            "gap_periods": int(gap_periods),
-        })
+        folds.append(
+            {
+                "fold_id": fold_id,
+                "is_start": int(is_start),
+                "is_end": int(is_end_final + 1),
+                "is_idx": is_idx,
+                "oos_start": int(oos_start),
+                "oos_end": int(oos_end + 1),
+                "oos_idx": oos_idx,
+                "purged_count": int(purged_count),
+                "embargo_count": int(actual_embargo),
+                "gap_periods": int(gap_periods),
+            }
+        )
         fold_id += 1
 
     return folds
@@ -186,19 +186,20 @@ def cpcv_pipeline(
 
     # Number of paths per LdP: C(n_folds-1, n_test_groups-1)
     from math import comb
+
     n_paths = comb(n_folds - 1, n_test_groups - 1)
 
     embargo_size = max(1, int(n_total * embargo_pct))
 
     splits = []
     for combo_id, test_folds in enumerate(test_combos):
-        test_idx = np.concatenate([
-            np.arange(fold_boundaries[f][0], fold_boundaries[f][1]) for f in test_folds
-        ])
+        test_idx = np.concatenate(
+            [np.arange(fold_boundaries[f][0], fold_boundaries[f][1]) for f in test_folds]
+        )
         train_folds = [f for f in range(n_folds) if f not in test_folds]
-        train_idx = np.concatenate([
-            np.arange(fold_boundaries[f][0], fold_boundaries[f][1]) for f in train_folds
-        ])
+        train_idx = np.concatenate(
+            [np.arange(fold_boundaries[f][0], fold_boundaries[f][1]) for f in train_folds]
+        )
 
         # Apply purge: remove label_horizon from train near test boundaries
         purged = set()
@@ -217,14 +218,16 @@ def cpcv_pipeline(
         remove = purged | embargoed
         train_idx_clean = np.array([i for i in train_idx if i not in remove])
 
-        splits.append({
-            "combo_id": combo_id,
-            "test_folds": list(test_folds),
-            "train_idx": train_idx_clean,
-            "test_idx": test_idx,
-            "purged_count": len(purged & set(train_idx)),
-            "embargo_count": len(embargoed & set(train_idx)),
-        })
+        splits.append(
+            {
+                "combo_id": combo_id,
+                "test_folds": list(test_folds),
+                "train_idx": train_idx_clean,
+                "test_idx": test_idx,
+                "purged_count": len(purged & set(train_idx)),
+                "embargo_count": len(embargoed & set(train_idx)),
+            }
+        )
 
     result: dict = {
         "splits": splits,
@@ -244,7 +247,7 @@ def cpcv_pipeline(
             offset = 0
             for f in test_folds_for_combo:
                 fold_len = fold_boundaries[f][1] - fold_boundaries[f][0]
-                combo_fold_returns[combo_id][f] = ret[offset:offset + fold_len]
+                combo_fold_returns[combo_id][f] = ret[offset : offset + fold_len]
                 offset += fold_len
 
         # Path reconstruction per LdP Ch.12:
@@ -305,13 +308,15 @@ def cpcv_pipeline(
                 n_bootstrap=min(1000, max(100, n_paths * 10)),
             )
 
-            result.update({
-                "paths_sharpe_distribution": summary,
-                "paths_sharpe_ci": (ci["ci_lower"], ci["ci_upper"]),
-                "median_sharpe": float(np.median(paths_sharpe_arr)),
-                "min_sharpe": float(np.min(paths_sharpe_arr)),
-                "max_sharpe": float(np.max(paths_sharpe_arr)),
-            })
+            result.update(
+                {
+                    "paths_sharpe_distribution": summary,
+                    "paths_sharpe_ci": (ci["ci_lower"], ci["ci_upper"]),
+                    "median_sharpe": float(np.median(paths_sharpe_arr)),
+                    "min_sharpe": float(np.min(paths_sharpe_arr)),
+                    "max_sharpe": float(np.max(paths_sharpe_arr)),
+                }
+            )
 
     return result
 
@@ -360,7 +365,6 @@ def regime_aware_rolling(
 
     # Process each regime
     data_df = pd.DataFrame({"value": data})
-    last_value = np.nan
 
     if reset_on_regime_change:
         # For each contiguous regime block, compute rolling independently
@@ -377,12 +381,10 @@ def regime_aware_rolling(
                 continue
 
             # Use oprim.rolling_window_split within this block
-            windows = oprim.rolling_window_split(
-                len(block_data), window_size=window, step=1
-            )
+            windows = oprim.rolling_window_split(len(block_data), window_size=window, step=1)
 
             for win_start, win_end in windows:
-                window_data = block_data[win_start:win_end + 1]
+                window_data = block_data[win_start : win_end + 1]
                 if len(window_data) >= min_periods:
                     val = stat_fn(window_data)
                     result.iloc[block_indices.get_loc(block_indices[win_end])] = val
@@ -396,7 +398,7 @@ def regime_aware_rolling(
         windows = oprim.rolling_window_split(len(data), window_size=window, step=1)
 
         for win_start, win_end in windows:
-            window_data = data.values[win_start:win_end + 1]
+            window_data = data.values[win_start : win_end + 1]
             if len(window_data) >= min_periods:
                 val = stat_fn(window_data)
                 result.iloc[win_end] = val

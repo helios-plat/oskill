@@ -72,9 +72,7 @@ def structural_causal_model_fit(
     # --- Validate DAG ---
     topo_order, is_dag = _topological_sort(full_graph, variables)
     if not is_dag:
-        raise ValueError(
-            "causal_graph contains a cycle. Structural causal models require a DAG."
-        )
+        raise ValueError("causal_graph contains a cycle. Structural causal models require a DAG.")
 
     n, _ = data.shape
 
@@ -118,7 +116,7 @@ def structural_causal_model_fit(
             res = y - y_hat
             residuals[var] = res
             ss_tot = np.sum((y - np.mean(y)) ** 2)
-            ss_res = np.sum(res ** 2)
+            ss_res = np.sum(res**2)
             r_squared_per_var[var] = float(1.0 - ss_res / ss_tot) if ss_tot > 0 else 1.0
 
     # --- Sample from fitted model (natural distribution) ---
@@ -133,9 +131,7 @@ def structural_causal_model_fit(
 
     if do_intervention_var is not None and do_intervention_value is not None:
         if do_intervention_var not in variables:
-            raise ValueError(
-                f"do_intervention_var {do_intervention_var!r} not in data columns"
-            )
+            raise ValueError(f"do_intervention_var {do_intervention_var!r} not in data columns")
         rng2 = np.random.default_rng(43)
         intervention_samples = _sample_from_scm(
             full_graph,
@@ -173,9 +169,8 @@ def structural_causal_model_fit(
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _topological_sort(
-    graph: dict[str, list[str]], variables: list[str]
-) -> tuple[list[str], bool]:
+
+def _topological_sort(graph: dict[str, list[str]], variables: list[str]) -> tuple[list[str], bool]:
     """Kahn's algorithm topological sort. Returns (order, is_dag)."""
     in_degree: dict[str, int] = {v: 0 for v in variables}
     # Build adjacency: parent → children
@@ -271,7 +266,6 @@ def _sample_from_scm(
         elif model["type"] == "linear":
             intercept = model["intercept"]
             coef = model["coefficients"]
-            parents = model["parents"]
             y_hat = np.full(n_samples, intercept)
             for p, c in coef.items():
                 if p in samples:

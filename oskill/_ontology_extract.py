@@ -21,16 +21,17 @@ The validation invariants above are STRUCTURAL (enforce the data contract of
 OntologyExtractResult), not business classification — they stay in the element.
 What the LLM should classify and how lives in the injected prompts.
 """
+
 from __future__ import annotations
 
 import json
 import re
 
 from oprim._aii_graph_types import (
-    OntologyExtractResult,
-    VALID_RELATION_TYPES,
     VALID_KNOWLEDGE_TYPES,
+    VALID_RELATION_TYPES,
     VALID_SUB_TYPES,
+    OntologyExtractResult,
 )
 
 
@@ -93,7 +94,7 @@ async def ontology_extract(
         ...     llm=llm_caller,
         ...     pass1_chunk_tmpl="Analyze: {chunk_text} ...",
         ...     pass1_chunk_system="You are an analyst...",
-        ...     pass1_outline_tmpl="Synthesize {chunk_analyses} for {doc_type}/{source_credibility}...",
+        ...     pass1_outline_tmpl="Synthesize {chunk_analyses} for {doc_type}...",
         ...     pass1_outline_system="You are an architect...",
         ...     pass2_chunk_tmpl="Extract KUs. Outline: {outline}. Text: {chunk_text}. Rules: ...",
         ...     pass2_system="You are a KU extractor...",
@@ -139,8 +140,12 @@ async def ontology_extract(
         max_tokens=1024,
     )
     outline = _parse_json(outline_resp) or {
-        "chapters": [], "core_concepts": [], "main_thread": "",
-        "stance": "", "doc_type": doc_type, "source_credibility": source_credibility,
+        "chapters": [],
+        "core_concepts": [],
+        "main_thread": "",
+        "stance": "",
+        "doc_type": doc_type,
+        "source_credibility": source_credibility,
     }
 
     # ------------------------------------------------------------------
@@ -211,9 +216,7 @@ async def ontology_extract(
     for ku in all_ku_candidates:
         kt = ku.get("knowledge_type", "unknown")
         by_type[kt] = by_type.get(kt, 0) + 1
-    explains_count = sum(
-        1 for e in all_edge_candidates if e.get("relation_type") == "explains"
-    )
+    explains_count = sum(1 for e in all_edge_candidates if e.get("relation_type") == "explains")
     stats = {
         "total": len(all_ku_candidates),
         "by_type": by_type,

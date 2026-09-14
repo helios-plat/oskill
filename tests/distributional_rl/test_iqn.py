@@ -18,6 +18,7 @@ def _make_inputs(batch=10, n_sample=8, n_target=8, seed=0):
 
 # ─── API / basic properties ──────────────────────────────────────────────────
 
+
 def test_returns_scalar_mean_reduction():
     pq, tq, st = _make_inputs()
     loss = implicit_quantile_loss(pq, tq, st)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 import types
-from datetime import date, datetime, timezone
+from datetime import UTC, datetime
 
 # Stub the oskill package entry-point so __init__.py (which pulls in oprim/alembic)
 # is never executed. The individual submodules are pure-Python and load fine.
@@ -87,7 +87,7 @@ class TestCrossLayerSearch:
             pgvector_called.append(True)
             return []
 
-        result = cross_layer_search(
+        _result = cross_layer_search(
             query="hello",
             scope=["user_substrate"],
             tantivy_mgr=mock_tantivy_one,
@@ -203,7 +203,7 @@ def _make_content(
 ) -> ContentMeta:
     from datetime import timedelta
 
-    pub = datetime.now(timezone.utc) - timedelta(days=days_old)
+    pub = datetime.now(UTC) - timedelta(days=days_old)
     return ContentMeta(
         content_id=cid,
         title=f"Title {cid}",

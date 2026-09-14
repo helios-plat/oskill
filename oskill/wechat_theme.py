@@ -18,8 +18,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 # ── 主题 ─────────────────────────────────────────────────────────────
 
@@ -172,9 +173,7 @@ def get_theme(name: str) -> WechatTheme:
     """取主题; 不存在抛 KeyError 并附可用列表 (do not guess)。"""
     theme = _THEMES.get(name)
     if theme is None:
-        raise KeyError(
-            f"unknown theme {name!r}; available: {sorted(_THEMES)}"
-        )
+        raise KeyError(f"unknown theme {name!r}; available: {sorted(_THEMES)}")
     return theme
 
 
@@ -195,8 +194,10 @@ def register_theme(theme: WechatTheme) -> None:
 
 # ── 主题 → 内联样式注入 ─────────────────────────────────────────────
 
-_TAG_STYLE = re.compile(r"<(?P<tag>h[1-6]|p|li|blockquote|pre|code|a|hr|table|td|th|img|ul|ol)"
-                        r"(?P<attrs>[^>]*)>")
+_TAG_STYLE = re.compile(
+    r"<(?P<tag>h[1-6]|p|li|blockquote|pre|code|a|hr|table|td|th|img|ul|ol)"
+    r"(?P<attrs>[^>]*)>"
+)
 
 
 def _style_of(match: re.Match, theme: WechatTheme) -> str:
@@ -211,18 +212,26 @@ def _style_of(match: re.Match, theme: WechatTheme) -> str:
             if theme.title_border
             else ""
         )
-        style = (f"font-size:{theme.title_size}px;font-weight:700;line-height:1.4;"
-                 f"margin:0 0 16px;color:{theme.title_color};{align}{border}")
+        style = (
+            f"font-size:{theme.title_size}px;font-weight:700;line-height:1.4;"
+            f"margin:0 0 16px;color:{theme.title_color};{align}{border}"
+        )
     elif tag in ("h2", "h3", "h4", "h5", "h6"):
-        style = (f"font-size:{max(theme.heading_size - (int(tag[1]) - 2) * 2, 14)}px;"
-                 f"font-weight:700;margin:24px 0 12px;color:{theme.heading_color};")
+        style = (
+            f"font-size:{max(theme.heading_size - (int(tag[1]) - 2) * 2, 14)}px;"
+            f"font-weight:700;margin:24px 0 12px;color:{theme.heading_color};"
+        )
     elif tag == "blockquote":
-        style = (f"margin:16px 0;padding:12px 16px;color:{theme.quote_color};"
-                 f"background:{theme.quote_bg};border-left:4px solid {theme.quote_border};"
-                 f"border-radius:4px;font-size:{theme.body_size}px;")
+        style = (
+            f"margin:16px 0;padding:12px 16px;color:{theme.quote_color};"
+            f"background:{theme.quote_bg};border-left:4px solid {theme.quote_border};"
+            f"border-radius:4px;font-size:{theme.body_size}px;"
+        )
     elif tag == "pre":
-        style = (f"background:{theme.code_bg};color:{theme.code_color};padding:14px 16px;"
-                 f"border-radius:8px;overflow-x:auto;margin:16px 0;font-size:14px;")
+        style = (
+            f"background:{theme.code_bg};color:{theme.code_color};padding:14px 16px;"
+            f"border-radius:8px;overflow-x:auto;margin:16px 0;font-size:14px;"
+        )
     elif tag == "code":
         style = f"background:{theme.code_bg};color:{theme.code_color};font-size:14px;"
     elif tag == "a":
@@ -230,22 +239,35 @@ def _style_of(match: re.Match, theme: WechatTheme) -> str:
     elif tag == "strong":
         style = f"color:{theme.accent_color};font-weight:700;"
     elif tag == "li":
-        style = f"font-size:{theme.body_size}px;line-height:{theme.line_height};color:{theme.body_color};"
+        style = (
+            f"font-size:{theme.body_size}px;"
+            f"line-height:{theme.line_height};color:{theme.body_color};"
+        )
     elif tag == "hr":
         style = f"border:none;border-top:1px solid {theme.divider_color};margin:24px 0;"
     elif tag == "table":
-        style = ("width:100%;border-collapse:collapse;margin:16px 0;"
-                 f"font-size:{max(theme.body_size - 1, 13)}px;color:{theme.body_color};")
+        style = (
+            "width:100%;border-collapse:collapse;margin:16px 0;"
+            f"font-size:{max(theme.body_size - 1, 13)}px;color:{theme.body_color};"
+        )
     elif tag in ("td", "th"):
-        style = (f"border:1px solid {theme.divider_color};padding:8px 10px;"
-                 f"text-align:left;line-height:1.6;")
+        style = (
+            f"border:1px solid {theme.divider_color};padding:8px 10px;"
+            f"text-align:left;line-height:1.6;"
+        )
     elif tag == "img":
         style = "max-width:100%;border-radius:8px;"
     elif tag == "ul":
-        style = f"font-size:{theme.body_size}px;line-height:{theme.line_height};color:{theme.body_color};margin:0 0 16px;padding-left:24px;"
+        style = (
+            f"font-size:{theme.body_size}px;line-height:{theme.line_height};"
+            f"color:{theme.body_color};margin:0 0 16px;padding-left:24px;"
+        )
     else:  # ol
-        style = f"font-size:{theme.body_size}px;line-height:{theme.line_height};color:{theme.body_color};margin:0 0 16px;padding-left:24px;"
-    return f"<{tag}{attrs} style=\"{style}\">"
+        style = (
+            f"font-size:{theme.body_size}px;line-height:{theme.line_height};"
+            f"color:{theme.body_color};margin:0 0 16px;padding-left:24px;"
+        )
+    return f'<{tag}{attrs} style="{style}">'
 
 
 def apply_theme(html: str, theme: WechatTheme | str) -> str:
@@ -326,7 +348,7 @@ def parse_layout_blocks(markdown: str) -> list[LayoutBlock]:
                 opener=opener,
                 body=[b for b in body if b.strip()],
                 caption=caption,
-                raw="\n".join(lines[i:j + 1]),
+                raw="\n".join(lines[i : j + 1]),
             )
         )
         i = j + 1
@@ -407,9 +429,7 @@ def _module_renderers() -> dict[str, Callable[[LayoutBlock, WechatTheme], str]]:
         return "\n".join(parts)
 
     def callout(block: LayoutBlock, theme: WechatTheme, kind: str, color: str) -> str:
-        bg = {"tip": "#f0fdf4", "warning": "#fffbeb", "danger": "#fef2f2"}.get(
-            kind, theme.card_bg
-        )
+        bg = {"tip": "#f0fdf4", "warning": "#fffbeb", "danger": "#fef2f2"}.get(kind, theme.card_bg)
         border = {"tip": "#86efac", "warning": "#fcd34d", "danger": "#fca5a5"}.get(
             kind, theme.card_border
         )
@@ -420,7 +440,7 @@ def _module_renderers() -> dict[str, Callable[[LayoutBlock, WechatTheme], str]]:
             f'<div style="background:{bg};border-left:4px solid {border};'
             f'border-radius:6px;padding:12px 16px;margin:16px 0;">'
             f'<p style="font-size:15px;font-weight:700;color:{color};margin:0 0 4px;">'
-            f'{_esc(caption)}</p>'
+            f"{_esc(caption)}</p>"
             f'<p style="font-size:15px;color:{theme.body_color};margin:0;'
             f'line-height:1.7;">{body}</p></div>'
         )
@@ -438,7 +458,7 @@ def _module_renderers() -> dict[str, Callable[[LayoutBlock, WechatTheme], str]]:
         body = "<br/>".join(_esc(b) for b in block.body)
         return (
             f'<blockquote style="margin:16px 0;padding:12px 16px;color:{theme.quote_color};'
-            f'background:{theme.quote_bg};border-left:4px solid {theme.quote_border};'
+            f"background:{theme.quote_bg};border-left:4px solid {theme.quote_border};"
             f'border-radius:4px;font-size:16px;">{body}</blockquote>'
         )
 
@@ -450,8 +470,7 @@ def _module_renderers() -> dict[str, Callable[[LayoutBlock, WechatTheme], str]]:
                 f'font-size:14px;">— {text} —</p>'
             )
         return (
-            f'<hr style="border:none;border-top:1px solid {theme.divider_color};'
-            f'margin:24px 0;"/>'
+            f'<hr style="border:none;border-top:1px solid {theme.divider_color};margin:24px 0;"/>'
         )
 
     def table(block: LayoutBlock, theme: WechatTheme) -> str:
@@ -506,9 +525,7 @@ def _module_renderers() -> dict[str, Callable[[LayoutBlock, WechatTheme], str]]:
 _LAYOUT_RENDERERS = _module_renderers()
 
 
-def register_layout_module(
-    name: str, renderer: Callable[[LayoutBlock, WechatTheme], str]
-) -> None:
+def register_layout_module(name: str, renderer: Callable[[LayoutBlock, WechatTheme], str]) -> None:
     """注册/覆盖一个布局模块渲染器 (幂等)。"""
     _LAYOUT_RENDERERS[name] = renderer
 
@@ -524,9 +541,7 @@ def render_layout_block(block: LayoutBlock, theme: WechatTheme | str) -> str:
         theme = get_theme(theme)
     renderer = _LAYOUT_RENDERERS.get(block.module)
     if renderer is None:
-        raise KeyError(
-            f"unknown layout module {block.module!r}; available: {layout_modules()}"
-        )
+        raise KeyError(f"unknown layout module {block.module!r}; available: {layout_modules()}")
     return renderer(block, theme)
 
 

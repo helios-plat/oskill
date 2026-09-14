@@ -56,9 +56,7 @@ def denoised_covariance(
     T, N = data.shape
 
     if T < N + 10:
-        raise ValueError(
-            f"Insufficient data: T={T} must be >= N+10={N+10} for denoising"
-        )
+        raise ValueError(f"Insufficient data: T={T} must be >= N+10={N + 10} for denoising")
 
     # Standardize: zero mean, unit variance
     mu = data.mean(axis=0)

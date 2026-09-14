@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.bayesian.var import bayesian_var
 
@@ -26,8 +25,8 @@ def _make_var_data(rng, T=120, K=2, p=1):
     data = np.zeros((T, K))
     data[:p] = rng.standard_normal((p, K))
     for t in range(p, T):
-        for l in range(1, p + 1):
-            data[t] += data[t - l] @ A.T
+        for lag in range(1, p + 1):
+            data[t] += data[t - lag] @ A.T
         data[t] += rng.standard_normal(K) * 0.3
     return data
 
@@ -72,14 +71,12 @@ def test_bvar_uninformative_close_to_ols():
     T, K_actual = data.shape
     T_eff = T - p
     Z = np.ones((T_eff, K_actual * p + 1))
-    Z[:, 1:] = data[p - 1: T - 1]
+    Z[:, 1:] = data[p - 1 : T - 1]
     Y_eff = data[p:]
     ZTZ = Z.T @ Z
     ZTY = Z.T @ Y_eff
     A_ols = np.linalg.solve(ZTZ + 1e-10 * np.eye(K_actual * p + 1), ZTY).T
-    np.testing.assert_allclose(
-        result_uninf["posterior_coefficients_mean"], A_ols, rtol=1e-4
-    )
+    np.testing.assert_allclose(result_uninf["posterior_coefficients_mean"], A_ols, rtol=1e-4)
 
 
 def test_bvar_fevd_sums_to_one():

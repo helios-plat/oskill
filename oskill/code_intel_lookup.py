@@ -9,11 +9,12 @@ Composes oprim:
 
 IO-orchestration (LSP calls). Concurrent via asyncio.gather.
 """
+
 from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import Any, List, Protocol
+from typing import Any, Protocol
 
 from oprim import (
     diagnostics_to_summary,  # noqa: F401
@@ -56,18 +57,17 @@ async def code_intel_lookup(
     refs_task = lsp_find_references(path, pos=lsp_pos, lsp=lsp)
     def_task = lsp_goto_definition(path, pos=lsp_pos, lsp=lsp)
 
-    gathered: List[Any] = list(await asyncio.gather(
-        hover_task, refs_task, def_task, return_exceptions=True
-    ))
+    gathered: list[Any] = list(
+        await asyncio.gather(hover_task, refs_task, def_task, return_exceptions=True)
+    )
     hover_raw: Any = gathered[0]
     refs_raw: Any = gathered[1]
     def_raw: Any = gathered[2]
 
     hover_text = ""
     if isinstance(hover_raw, dict):
-        hover_text = (
-            hover_raw.get("contents", {}).get("value", "")
-            or str(hover_raw.get("contents", ""))
+        hover_text = hover_raw.get("contents", {}).get("value", "") or str(
+            hover_raw.get("contents", "")
         )
     elif isinstance(hover_raw, str):
         hover_text = hover_raw

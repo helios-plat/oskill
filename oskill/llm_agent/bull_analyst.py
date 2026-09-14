@@ -1,4 +1,5 @@
 """Bull-biased analyst — single LLM call."""
+
 from __future__ import annotations
 
 import structlog

@@ -12,11 +12,8 @@ def _as_reservation_price(
     return mid - inventory * risk_aversion * sigma**2 * t
 
 
-def _as_optimal_spread(
-    risk_aversion: float, sigma: float, t: float, intensity_k: float
-) -> float:
+def _as_optimal_spread(risk_aversion: float, sigma: float, t: float, intensity_k: float) -> float:
     """delta = gamma * sigma^2 * T + (2/gamma) * log(1 + gamma/k)"""
-    return (
-        risk_aversion * sigma**2 * t
-        + (2.0 / risk_aversion) * math.log(1.0 + risk_aversion / intensity_k)
+    return risk_aversion * sigma**2 * t + (2.0 / risk_aversion) * math.log(
+        1.0 + risk_aversion / intensity_k
     )

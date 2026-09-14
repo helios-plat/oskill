@@ -1,6 +1,5 @@
 """Tests for oskill.hybrid_retrieve."""
 
-import pytest
 from oskill import hybrid_retrieve
 
 

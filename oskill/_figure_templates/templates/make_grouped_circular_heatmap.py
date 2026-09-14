@@ -7,13 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.patches import Patch, Rectangle
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.patches import Patch, Rectangle
 
 
 @dataclass(frozen=True)
@@ -80,12 +81,16 @@ def make_trait_cmap(spec: TraitSpec) -> mpl.colors.LinearSegmentedColormap:
     )
 
 
-def simulate_heatmap_values(seed: int = 20260629, n_traits: int = 8, n_items: int = 92) -> np.ndarray:
+def simulate_heatmap_values(
+    seed: int = 20260629, n_traits: int = 8, n_items: int = 92
+) -> np.ndarray:
     rng = np.random.default_rng(seed)
     theta = np.linspace(0, 2 * np.pi, n_items, endpoint=False)
     values = np.zeros((n_traits, n_items), dtype=float)
 
-    group_offsets = np.repeat(np.linspace(-0.85, 0.95, len(PAIR_GROUPS)), [g.count for g in PAIR_GROUPS])
+    group_offsets = np.repeat(
+        np.linspace(-0.85, 0.95, len(PAIR_GROUPS)), [g.count for g in PAIR_GROUPS]
+    )
     for trait_idx in range(n_traits):
         phase = trait_idx * 0.72
         wave = 1.35 * np.sin(theta * (1.0 + trait_idx % 3) + phase)
@@ -201,10 +206,21 @@ def draw_stars(
     for trait_outer_idx, item_idx in candidates:
         inner_order_idx = outer_to_inner_index[trait_outer_idx]
         radius = ring_radii_inner_to_outer[inner_order_idx] + ring_height * 0.50
-        ax.text(theta[item_idx], radius, "*", ha="center", va="center", color="#f8f8f8", fontsize=11, fontweight="bold")
+        ax.text(
+            theta[item_idx],
+            radius,
+            "*",
+            ha="center",
+            va="center",
+            color="#f8f8f8",
+            fontsize=11,
+            fontweight="bold",
+        )
 
 
-def add_trait_colorbar_stack(fig: plt.Figure, cmaps: list[mpl.colors.Colormap], norm: mpl.colors.Normalize) -> None:
+def add_trait_colorbar_stack(
+    fig: plt.Figure, cmaps: list[mpl.colors.Colormap], norm: mpl.colors.Normalize
+) -> None:
     left = 0.735
     bottom_top = 0.764
     width = 0.095
@@ -237,7 +253,15 @@ def add_trait_colorbar_stack(fig: plt.Figure, cmaps: list[mpl.colors.Colormap], 
         for spine in cax.spines.values():
             spine.set_color("#111111")
             spine.set_linewidth(0.8)
-        fig.text(left + width + 0.014, bottom + height / 2, spec.name, va="center", ha="left", fontsize=11, zorder=3)
+        fig.text(
+            left + width + 0.014,
+            bottom + height / 2,
+            spec.name,
+            va="center",
+            ha="left",
+            fontsize=11,
+            zorder=3,
+        )
 
 
 def add_center_legend(fig: plt.Figure) -> None:
@@ -245,9 +269,19 @@ def add_center_legend(fig: plt.Figure) -> None:
     ax = fig.add_axes([left, bottom, width, height])
     ax.set_zorder(4)
     ax.axis("off")
-    ax.text(0.00, 1.02, "Exposure and outcome pairs", fontsize=10, fontweight="bold", ha="left", va="bottom")
+    ax.text(
+        0.00,
+        1.02,
+        "Exposure and outcome pairs",
+        fontsize=10,
+        fontweight="bold",
+        ha="left",
+        va="bottom",
+    )
 
-    handles = [Patch(facecolor=group.color, edgecolor="white", label=group.label) for group in PAIR_GROUPS]
+    handles = [
+        Patch(facecolor=group.color, edgecolor="white", label=group.label) for group in PAIR_GROUPS
+    ]
     ax.legend(
         handles=handles,
         loc="upper left",
@@ -284,7 +318,9 @@ def make_figure(output_stem: Path) -> None:
     ring_gap = 0.012
     heatmap_radius = 1.50
     ring_height = 0.115
-    ring_radii = [heatmap_radius + i * (ring_height + ring_gap) for i in range(len(TRAITS_OUTER_TO_INNER))]
+    ring_radii = [
+        heatmap_radius + i * (ring_height + ring_gap) for i in range(len(TRAITS_OUTER_TO_INNER))
+    ]
     outer_radius = ring_radii[-1] + ring_height
     ax.set_ylim(0, outer_radius + 0.70)
 

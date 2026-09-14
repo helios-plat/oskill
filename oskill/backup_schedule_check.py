@@ -56,9 +56,7 @@ def backup_schedule_check(
         now = datetime.now(UTC)
         age_hours = (now - last_modified).total_seconds() / 3600
 
-        status: Literal["ok", "overdue"] = (
-            "ok" if age_hours <= max_age_hours else "overdue"
-        )
+        status: Literal["ok", "overdue"] = "ok" if age_hours <= max_age_hours else "overdue"
 
         return BackupScheduleCheckResult(
             app_slug=app_slug,

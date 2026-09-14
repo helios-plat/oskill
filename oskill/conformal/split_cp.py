@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Literal
 
 import numpy as np
-import pandas as pd
 import oprim
+import pandas as pd
 
 
 def conformal_prediction_interval(
@@ -107,9 +107,7 @@ def conformal_prediction_interval(
     upper = test_pred + q
 
     fingerprint = oprim.sha256_hash(
-        oprim.canonical_json(
-            {"alpha": alpha, "cal_len": n, "score_function": score_function}
-        )
+        oprim.canonical_json({"alpha": alpha, "cal_len": n, "score_function": score_function})
     )
 
     return {

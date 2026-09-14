@@ -9,7 +9,6 @@ import pandas as pd
 
 from oskill.factor.fama_french import fama_french_5_factor_model
 
-
 _CARHART_FACTORS = ["MKT", "SMB", "HML", "MOM"]
 
 

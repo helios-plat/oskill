@@ -1,12 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
+
 import json
 import re
-import sys
-import os
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from ._types import LLMOskillError, SubTask
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -16,7 +17,9 @@ class VectorStoreHandle(Protocol):
     生产实现由 obase.persistence.VectorStore 提供。
     """
 
-    async def search(self, *, vector: list[float], top_k: int=5, filter: dict | None=None) -> list[dict[str, Any]]:
+    async def search(
+        self, *, vector: list[float], top_k: int = 5, filter: dict | None = None
+    ) -> list[dict[str, Any]]:
         """
         向量相似度搜索。
 
@@ -24,6 +27,7 @@ class VectorStoreHandle(Protocol):
             list of {"chunk_id": str, "content": str, "score": float, "path": str}
         """
         ...
+
 
 async def plan_decompose(
     goal: str,
@@ -78,8 +82,8 @@ async def plan_decompose(
     # 解析 JSON
     raw_text = raw_text.strip()
     # 去除 markdown fence
-    raw_text = re.sub(r'^```(?:json)?\s*', '', raw_text, flags=re.MULTILINE)
-    raw_text = re.sub(r'```\s*$', '', raw_text, flags=re.MULTILINE)
+    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text, flags=re.MULTILINE)
+    raw_text = re.sub(r"```\s*$", "", raw_text, flags=re.MULTILINE)
 
     try:
         items = json.loads(raw_text.strip())
@@ -87,7 +91,7 @@ async def plan_decompose(
             items = []  # pragma: no cover
     except (json.JSONDecodeError, ValueError):
         # 回退：尝试提取 JSON 数组
-        m = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        m = re.search(r"\[.*\]", raw_text, re.DOTALL)
         if m:
             try:  # pragma: no cover
                 items = json.loads(m.group(0))  # pragma: no cover
@@ -100,12 +104,14 @@ async def plan_decompose(
     for item in items[:max_subtasks]:
         if not isinstance(item, dict):
             continue  # pragma: no cover
-        subtasks.append(SubTask(
-            id=str(item.get("id", f"task_{len(subtasks)+1}")),
-            title=str(item.get("title", "")),
-            description=str(item.get("description", "")),
-            dependencies=[str(d) for d in item.get("dependencies", [])],
-            estimated_complexity=str(item.get("estimated_complexity", "medium")),
-        ))
+        subtasks.append(
+            SubTask(
+                id=str(item.get("id", f"task_{len(subtasks) + 1}")),
+                title=str(item.get("title", "")),
+                description=str(item.get("description", "")),
+                dependencies=[str(d) for d in item.get("dependencies", [])],
+                estimated_complexity=str(item.get("estimated_complexity", "medium")),
+            )
+        )
 
     return subtasks

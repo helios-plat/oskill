@@ -1,12 +1,11 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import difflib
+
 import re
-from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
+from ._types import ApplyResult, EditOskillError
+
 
 def apply_unified_diff(
     original: str,
@@ -40,12 +39,14 @@ def apply_unified_diff(
     applied = 0
     offset = 0
 
-    hunk_re = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
+    hunk_re = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
 
     try:
         diff_lines = diff.splitlines(keepends=True)
     except Exception as e:  # pragma: no cover
-        raise EditOskillError("apply_unified_diff: failed to parse diff", cause=e)  # pragma: no cover
+        raise EditOskillError(
+            "apply_unified_diff: failed to parse diff", cause=e
+        )  # pragma: no cover
 
     i = 0
     result_lines = list(lines)
@@ -62,12 +63,12 @@ def apply_unified_diff(
 
         while i < len(diff_lines) and not hunk_re.match(diff_lines[i]):
             line = diff_lines[i]
-            raw = line[1:] if line and line[0] in ('+', '-', ' ') else line
-            if line.startswith('-'):
+            raw = line[1:] if line and line[0] in ("+", "-", " ") else line
+            if line.startswith("-"):
                 hunk_old.append(raw)
-            elif line.startswith('+'):
+            elif line.startswith("+"):
                 hunk_new.append(raw)
-            elif line.startswith(' '):
+            elif line.startswith(" "):
                 hunk_old.append(raw)
                 hunk_new.append(raw)
             i += 1
@@ -76,7 +77,7 @@ def apply_unified_diff(
         target_end = target_start + len(hunk_old)
         actual = result_lines[target_start:target_end]
 
-        if [ln.rstrip('\n') for ln in actual] == [ln.rstrip('\n') for ln in hunk_old]:
+        if [ln.rstrip("\n") for ln in actual] == [ln.rstrip("\n") for ln in hunk_old]:
             result_lines[target_start:target_end] = hunk_new
             offset += len(hunk_new) - len(hunk_old)
             applied += 1

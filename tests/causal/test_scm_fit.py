@@ -33,13 +33,18 @@ def _make_chain_scm(n=200, seed=0):
 
 # ─── API / return keys ────────────────────────────────────────────────────────
 
+
 def test_returns_expected_keys():
     data, graph = _make_linear_scm_data()
     result = structural_causal_model_fit(data, graph)
     expected = {
-        "fitted_models", "residuals", "r_squared_per_var",
-        "intervention_samples", "natural_distribution_samples",
-        "intervention_effect_size", "graph_is_dag",
+        "fitted_models",
+        "residuals",
+        "r_squared_per_var",
+        "intervention_samples",
+        "natural_distribution_samples",
+        "intervention_effect_size",
+        "graph_is_dag",
     }
     assert expected == set(result.keys())
 
@@ -90,7 +95,8 @@ def test_natural_distribution_samples_shape():
 def test_intervention_samples_returned():
     data, graph = _make_linear_scm_data()
     result = structural_causal_model_fit(
-        data, graph,
+        data,
+        graph,
         do_intervention_var="X",
         do_intervention_value=5.0,
         n_samples_intervention=100,
@@ -104,7 +110,8 @@ def test_intervention_samples_returned():
 def test_effect_size_computed():
     data, graph = _make_linear_scm_data()
     result = structural_causal_model_fit(
-        data, graph,
+        data,
+        graph,
         do_intervention_var="X",
         do_intervention_value=5.0,
     )

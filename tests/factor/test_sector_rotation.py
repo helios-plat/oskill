@@ -112,9 +112,9 @@ class TestSectorCapitalRotationDetect:
         -> full rotation (intensity=1.0, rotation_detected=True).
         """
         flows = [
-            _make_flow("A", date(2024, 1, 3), 5e6),   # current: tech
-            _make_flow("B", date(2024, 1, 2), 4e6),   # prev: finance
-            _make_flow("C", date(2024, 1, 1), 3e6),   # prev: energy
+            _make_flow("A", date(2024, 1, 3), 5e6),  # current: tech
+            _make_flow("B", date(2024, 1, 2), 4e6),  # prev: finance
+            _make_flow("C", date(2024, 1, 1), 3e6),  # prev: energy
         ]
         classification = {"A": "tech", "B": "finance", "C": "energy"}
         result = sector_capital_rotation_detect(flows, classification, prev_window_days=2, top_n=1)

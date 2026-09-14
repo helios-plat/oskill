@@ -401,7 +401,8 @@ def regime_aware_performance(
     Args:
         returns: Return series.
         regime_labels: Regime label series (same index as returns).
-        metrics: List of metrics to compute. Default: sharpe, max_drawdown, var_95, cumulative_return.
+        metrics: List of metrics to compute. Default: sharpe, max_drawdown, var_95,
+            cumulative_return.
         annualization_factor: Annualization factor.
         var_confidence: VaR confidence level.
         var_method: VaR method.

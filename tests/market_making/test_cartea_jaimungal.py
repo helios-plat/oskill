@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from oskill.market_making.cartea_jaimungal import cartea_jaimungal_optimal_quotes
@@ -42,7 +41,9 @@ def test_cj_returns_baseline_as_quotes():
 
 
 def test_cj_zero_ofi_zero_as_premium():
-    r = cartea_jaimungal_optimal_quotes(100.0, 0, 0.0, volatility=0.01, adverse_selection_aversion=0.5)
+    r = cartea_jaimungal_optimal_quotes(
+        100.0, 0, 0.0, volatility=0.01, adverse_selection_aversion=0.5
+    )
     assert abs(r["adverse_selection_premium"]) < 1e-10
 
 

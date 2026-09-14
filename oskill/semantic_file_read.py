@@ -10,6 +10,7 @@ Composes oprim:
 
 IO-orchestration type (file_read does disk I/O).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -70,9 +71,7 @@ def semantic_file_read(
     if focus:
         lines = content.splitlines(keepends=True)
         focus_lower = focus.lower()
-        focus_indices = [
-            i for i, line in enumerate(lines) if focus_lower in line.lower()
-        ]
+        focus_indices = [i for i, line in enumerate(lines) if focus_lower in line.lower()]
         if focus_indices:
             # Show window around first hit
             center = focus_indices[0]

@@ -1,7 +1,7 @@
 """Generate derivatives (markdown/plaintext/chapters/thumbnail) for a substrate."""
+
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 
 from oprim._logging import log
@@ -61,6 +61,7 @@ def _parse_pdf_derivatives(path: Path, result: dict) -> None:
         result["plaintext"] = parsed.plaintext
         if parsed.chapters:
             import json
+
             result["chapters"] = json.dumps(parsed.chapters)
     except Exception as e:
         log.warning("oskill.generate_derivative.pdf_failed", error=str(e))
@@ -73,6 +74,7 @@ def _parse_epub_derivatives(path: Path, result: dict) -> None:
         result["plaintext"] = parsed.plaintext
         if parsed.chapters:
             import json
+
             result["chapters"] = json.dumps(parsed.chapters)
     except Exception as e:
         log.warning("oskill.generate_derivative.epub_failed", error=str(e))
@@ -84,7 +86,8 @@ def _parse_markdown_derivatives(path: Path, result: dict) -> None:
         result["markdown"] = text
         # Simple plaintext: strip markdown markers
         import re
-        result["plaintext"] = re.sub(r'[#*`\[\]_]', '', text).strip()
+
+        result["plaintext"] = re.sub(r"[#*`\[\]_]", "", text).strip()
     except Exception as e:
         log.warning("oskill.generate_derivative.md_failed", error=str(e))
 

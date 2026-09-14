@@ -106,7 +106,7 @@ def fractional_differentiation(
         result[i] = float(np.dot(W, segment))
 
     if is_series:
-        out_index = index[window_size - 1:]
+        out_index = index[window_size - 1 :]
         return pd.Series(result, index=out_index)
 
     return result

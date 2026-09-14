@@ -892,9 +892,7 @@ def run_verity(
             report.add("PASS", "compile", f"compiled OK: {result.get('pdf')}")
         if rasterize and result.get("pdf"):
             out = (
-                Path(rasterize_dir)
-                if rasterize_dir
-                else Path(cfg.paper_dir) / "_tmp" / "pdf-pages"
+                Path(rasterize_dir) if rasterize_dir else Path(cfg.paper_dir) / "_tmp" / "pdf-pages"
             )
             pages_result = pdf_pages(result["pdf"], out)
             report.pdf_pages = pages_result

@@ -4,6 +4,7 @@ Composites:
     - oprim.cpcv_split       (purged cross-validation fold generation)
     - oprim.deflated_sharpe  (multiple-testing-adjusted performance metric)
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable

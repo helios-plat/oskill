@@ -8,38 +8,53 @@ resolve_memory_hierarchy / select_skill
 归属约束：stateless 纯算法，不持久化。
 IO 操作（file_read / glob_match）通过已有 oprim 函数调用（不是 oprim 间裸调）。
 """
+
 from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import sys
-import os
 from pathlib import Path
 from typing import Any
 
 from ._types import (
-    Chunk, EditBlock, RepoFile, RepoMap, Symbol,
+    Chunk,
+    EditBlock,
+    RepoFile,
+    RepoMap,
+    Symbol,
 )
 from .edit import apply_edit_block
 
 # oprim 函数（批次A已完成）
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "oprim"))
 try:
-    from oprim.fs import file_read, glob_match, dir_list
-    from oprim.text import detect_language, count_tokens
+    from oprim.fs import dir_list, file_read, glob_match
+    from oprim.text import count_tokens, detect_language
 except ImportError:  # pragma: no cover
     # fallback stubs for isolated testing  # pragma: no cover
-    def file_read(path, **kw): return Path(path).read_text(errors='replace')  # type: ignore  # pragma: no cover
-    def glob_match(pat, *, root, **kw): return sorted(Path(root).glob(pat))  # type: ignore  # pragma: no cover
-    def dir_list(path, **kw): return sorted(Path(path).iterdir())  # type: ignore  # pragma: no cover
-    def detect_language(path, **kw): return Path(path).suffix.lstrip('.') or 'unknown'  # type: ignore  # pragma: no cover
-    def count_tokens(text, **kw): return max(1, len(str(text)) // 4)  # type: ignore  # pragma: no cover
+    def file_read(path, **kw):
+        return Path(path).read_text(errors="replace")  # type: ignore  # pragma: no cover
+
+    def glob_match(pat, *, root, **kw):
+        return sorted(Path(root).glob(pat))  # type: ignore  # pragma: no cover
+
+    def dir_list(path, **kw):
+        return sorted(Path(path).iterdir())  # type: ignore  # pragma: no cover
+
+    def detect_language(path, **kw):
+        return Path(path).suffix.lstrip(".") or "unknown"  # type: ignore  # pragma: no cover
+
+    def count_tokens(text, **kw):
+        return max(1, len(str(text)) // 4)  # type: ignore  # pragma: no cover
 
 
 # ---------------------------------------------------------------------------
 # syntax_check
 # ---------------------------------------------------------------------------
+
 
 def syntax_check(
     content: str,
@@ -72,25 +87,31 @@ def syntax_check(
         try:
             ast.parse(content)
         except SyntaxError as e:
-            errors.append({
-                "line": e.lineno or 1,
-                "message": str(e.msg),
-                "severity": 1,
-                "language": "python",
-            })
+            errors.append(
+                {
+                    "line": e.lineno or 1,
+                    "message": str(e.msg),
+                    "severity": 1,
+                    "language": "python",
+                }
+            )
         except Exception as e:  # pragma: no cover
-            errors.append({"line": 1, "message": str(e), "severity": 1, "language": "python"})  # pragma: no cover
+            errors.append(
+                {"line": 1, "message": str(e), "severity": 1, "language": "python"}
+            )  # pragma: no cover
 
     elif lang == "json":
         try:
             json.loads(content)
         except json.JSONDecodeError as e:
-            errors.append({
-                "line": e.lineno,
-                "message": e.msg,
-                "severity": 1,
-                "language": "json",
-            })
+            errors.append(
+                {
+                    "line": e.lineno,
+                    "message": e.msg,
+                    "severity": 1,
+                    "language": "json",
+                }
+            )
 
     # 其他语言：暂无错误（tree-sitter 扩展点）
     return errors
@@ -99,6 +120,7 @@ def syntax_check(
 # ---------------------------------------------------------------------------
 # validate_edit
 # ---------------------------------------------------------------------------
+
 
 def validate_edit(
     original: str,
@@ -138,8 +160,7 @@ def validate_edit(
         new_content = edit["full_content"]
     elif "blocks" in edit:
         blocks = [
-            EditBlock(b["search"], b["replace"])
-            if isinstance(b, dict) else b
+            EditBlock(b["search"], b["replace"]) if isinstance(b, dict) else b
             for b in edit["blocks"]
         ]
         result = apply_edit_block(original, blocks=blocks)
@@ -159,6 +180,7 @@ def validate_edit(
 # ---------------------------------------------------------------------------
 # chunk_code
 # ---------------------------------------------------------------------------
+
 
 def chunk_code(
     content: str,
@@ -195,7 +217,7 @@ def chunk_code(
         # 按顶级函数/类边界切分
         boundaries = [0]
         for i, line in enumerate(lines):
-            if re.match(r'^(def |class |async def )', line):
+            if re.match(r"^(def |class |async def )", line):
                 if i > 0:
                     boundaries.append(i)
         boundaries.append(len(lines))
@@ -208,38 +230,49 @@ def chunk_code(
             if count_tokens(chunk_text, model=model) > max_tokens:
                 step = max(1, max_tokens * 4 // 80)  # ~80 chars/line
                 for j in range(0, len(chunk_lines), step):
-                    sub = "".join(chunk_lines[j:j + step])
+                    sub = "".join(chunk_lines[j : j + step])
                     if sub.strip():
-                        chunks.append(Chunk(
-                            content=sub,
-                            start_line=start + j,
-                            end_line=min(start + j + step, end),
-                            token_count=count_tokens(sub, model=model),
-                            path=path, language=lang,
-                            chunk_id=f"{path}:{start + j}",
-                        ))
+                        chunks.append(
+                            Chunk(
+                                content=sub,
+                                start_line=start + j,
+                                end_line=min(start + j + step, end),
+                                token_count=count_tokens(sub, model=model),
+                                path=path,
+                                language=lang,
+                                chunk_id=f"{path}:{start + j}",
+                            )
+                        )
             else:
                 if chunk_text.strip():
-                    chunks.append(Chunk(
-                        content=chunk_text,
-                        start_line=start, end_line=end,
-                        token_count=count_tokens(chunk_text, model=model),
-                        path=path, language=lang,
-                        chunk_id=f"{path}:{start}",
-                    ))
+                    chunks.append(
+                        Chunk(
+                            content=chunk_text,
+                            start_line=start,
+                            end_line=end,
+                            token_count=count_tokens(chunk_text, model=model),
+                            path=path,
+                            language=lang,
+                            chunk_id=f"{path}:{start}",
+                        )
+                    )
     else:
         # 通用：按 max_tokens 行数切
         step = max(1, max_tokens * 4 // 80)
         for i in range(0, len(lines), step):
-            sub = "".join(lines[i:i + step])
+            sub = "".join(lines[i : i + step])
             if sub.strip():
-                chunks.append(Chunk(
-                    content=sub,
-                    start_line=i, end_line=min(i + step, len(lines)),
-                    token_count=count_tokens(sub, model=model),
-                    path=path, language=lang,
-                    chunk_id=f"{path}:{i}",
-                ))
+                chunks.append(
+                    Chunk(
+                        content=sub,
+                        start_line=i,
+                        end_line=min(i + step, len(lines)),
+                        token_count=count_tokens(sub, model=model),
+                        path=path,
+                        language=lang,
+                        chunk_id=f"{path}:{i}",
+                    )
+                )
 
     return chunks
 
@@ -248,10 +281,11 @@ def chunk_code(
 # extract_symbols
 # ---------------------------------------------------------------------------
 
+
 def extract_symbols(
     path: str,
     *,
-    server: Any = None,   # LspServerHandle（可选）
+    server: Any = None,  # LspServerHandle（可选）
     content: str | None = None,
 ) -> list[Symbol]:
     """从文件中提取代码符号列表（纯内存 + 可选 LSP）。
@@ -288,38 +322,55 @@ def extract_symbols(
                     kind = "function"
                     sig = f"def {node.name}({_args_str(node.args)})"
                     doc = ast.get_docstring(node) or ""
-                    symbols.append(Symbol(
-                        name=node.name, kind=kind,
-                        start_line=node.lineno, end_line=getattr(node, 'end_lineno', node.lineno),
-                        path=path, signature=sig, docstring=doc[:120],
-                    ))
+                    symbols.append(
+                        Symbol(
+                            name=node.name,
+                            kind=kind,
+                            start_line=node.lineno,
+                            end_line=getattr(node, "end_lineno", node.lineno),
+                            path=path,
+                            signature=sig,
+                            docstring=doc[:120],
+                        )
+                    )
                 elif isinstance(node, ast.ClassDef):
                     doc = ast.get_docstring(node) or ""
-                    symbols.append(Symbol(
-                        name=node.name, kind="class",
-                        start_line=node.lineno, end_line=getattr(node, 'end_lineno', node.lineno),
-                        path=path, signature=f"class {node.name}", docstring=doc[:120],
-                    ))
+                    symbols.append(
+                        Symbol(
+                            name=node.name,
+                            kind="class",
+                            start_line=node.lineno,
+                            end_line=getattr(node, "end_lineno", node.lineno),
+                            path=path,
+                            signature=f"class {node.name}",
+                            docstring=doc[:120],
+                        )
+                    )
         except SyntaxError:
             pass
     else:
         # 正则回退：匹配常见函数/类定义
         for pat, kind in [
-            (r'^(?:export\s+)?(?:async\s+)?function\s+(\w+)', "function"),
-            (r'^(?:export\s+)?class\s+(\w+)', "class"),
-            (r'^def\s+(\w+)', "function"),
-            (r'^class\s+(\w+)', "class"),
-            (r'^(?:pub\s+)?fn\s+(\w+)', "function"),  # Rust
-            (r'^func\s+(\w+)', "function"),             # Go
+            (r"^(?:export\s+)?(?:async\s+)?function\s+(\w+)", "function"),
+            (r"^(?:export\s+)?class\s+(\w+)", "class"),
+            (r"^def\s+(\w+)", "function"),
+            (r"^class\s+(\w+)", "class"),
+            (r"^(?:pub\s+)?fn\s+(\w+)", "function"),  # Rust
+            (r"^func\s+(\w+)", "function"),  # Go
         ]:
             for i, line in enumerate(content.splitlines(), 1):
                 m = re.match(pat, line.strip())
                 if m:
-                    symbols.append(Symbol(
-                        name=m.group(1), kind=kind,
-                        start_line=i, end_line=i,
-                        path=path, signature=line.strip()[:80],
-                    ))
+                    symbols.append(
+                        Symbol(
+                            name=m.group(1),
+                            kind=kind,
+                            start_line=i,
+                            end_line=i,
+                            path=path,
+                            signature=line.strip()[:80],
+                        )
+                    )
 
     return sorted(symbols, key=lambda s: s.start_line)
 
@@ -336,6 +387,7 @@ def _args_str(args: ast.arguments) -> str:
 # ---------------------------------------------------------------------------
 # repo_map_build
 # ---------------------------------------------------------------------------
+
 
 def repo_map_build(
     *,
@@ -363,10 +415,32 @@ def repo_map_build(
         >>> rmap.total_files > 0
         True
     """
-    _IGNORE = {".git", "__pycache__", "node_modules", ".venv", "venv",
-               "dist", "build", ".mypy_cache", ".ruff_cache"}
-    _EXTS = {".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs",
-             ".java", ".kt", ".c", ".cpp", ".cs", ".rb"}
+    _IGNORE = {
+        ".git",
+        "__pycache__",
+        "node_modules",
+        ".venv",
+        "venv",
+        "dist",
+        "build",
+        ".mypy_cache",
+        ".ruff_cache",
+    }
+    _EXTS = {
+        ".py",
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".go",
+        ".rs",
+        ".java",
+        ".kt",
+        ".c",
+        ".cpp",
+        ".cs",
+        ".rb",
+    }
 
     extra_ignore = set(ignore or [])
     files: list[RepoFile] = []
@@ -377,14 +451,14 @@ def repo_map_build(
     except Exception:
         return RepoMap(root=root, files=[], total_files=0, languages={})
 
-    for p in all_paths[:max_files * 2]:  # 多取再过滤
+    for p in all_paths[: max_files * 2]:  # 多取再过滤
         if len(files) >= max_files:
             break
 
         # 过滤目录和忽略项
         if not p.is_file():
             continue  # pragma: no cover
-        rel = str(p.relative_to(root) if hasattr(p, 'relative_to') else p)
+        rel = str(p.relative_to(root) if hasattr(p, "relative_to") else p)
         parts = Path(rel).parts
         if any(part in _IGNORE or part in extra_ignore for part in parts):
             continue  # pragma: no cover
@@ -404,18 +478,23 @@ def repo_map_build(
             syms = []  # pragma: no cover
             size = 0  # pragma: no cover
 
-        files.append(RepoFile(
-            path=str(p), language=lang,
-            size_bytes=size, symbols=syms, head_lines=head,
-        ))
+        files.append(
+            RepoFile(
+                path=str(p),
+                language=lang,
+                size_bytes=size,
+                symbols=syms,
+                head_lines=head,
+            )
+        )
 
-    return RepoMap(root=root, files=files,
-                   total_files=len(files), languages=languages)
+    return RepoMap(root=root, files=files, total_files=len(files), languages=languages)
 
 
 # ---------------------------------------------------------------------------
 # resolve_mentions
 # ---------------------------------------------------------------------------
+
 
 def resolve_mentions(
     text: str,
@@ -442,8 +521,8 @@ def resolve_mentions(
         >>> "src/main.py" in r["files"]
         True
     """
-    file_refs = re.findall(r'@([\w./\-]+\.\w+)', text)
-    symbol_refs = re.findall(r'@(\w+)(?!\.\w)', text)
+    file_refs = re.findall(r"@([\w./\-]+\.\w+)", text)
+    symbol_refs = re.findall(r"@(\w+)(?!\.\w)", text)
 
     resolved_files: list[str] = []
     expanded = text
@@ -476,14 +555,14 @@ def resolve_mentions(
     return {
         "expanded": expanded,
         "files": resolved_files,
-        "symbols": [s for s in symbol_refs if s not in
-                    {r.replace('.', '') for r in file_refs}],
+        "symbols": [s for s in symbol_refs if s not in {r.replace(".", "") for r in file_refs}],
     }
 
 
 # ---------------------------------------------------------------------------
 # select_skill
 # ---------------------------------------------------------------------------
+
 
 def select_skill(
     task: str,
@@ -509,13 +588,13 @@ def select_skill(
         >>> skills[0]["name"]
         'refactor_python'
     """
-    task_words = set(re.findall(r'\w+', task.lower()))
+    task_words = set(re.findall(r"\w+", task.lower()))
     scored: list[tuple[float, dict]] = []
 
     for meta in skill_index:
-        name_words = set(re.findall(r'\w+', meta.get("name", "").lower()))
-        desc_words = set(re.findall(r'\w+', meta.get("description", "").lower()))
-        tag_words = set(re.findall(r'\w+', " ".join(meta.get("tags", [])).lower()))
+        name_words = set(re.findall(r"\w+", meta.get("name", "").lower()))
+        desc_words = set(re.findall(r"\w+", meta.get("description", "").lower()))
+        tag_words = set(re.findall(r"\w+", " ".join(meta.get("tags", [])).lower()))
         all_words = name_words | desc_words | tag_words
         score = len(task_words & all_words) / max(len(task_words), 1)
         # 名称直接匹配加权
@@ -530,6 +609,7 @@ def select_skill(
 # ---------------------------------------------------------------------------
 # load_skill_progressive
 # ---------------------------------------------------------------------------
+
 
 def load_skill_progressive(
     skill_dir: str,
@@ -558,9 +638,10 @@ def load_skill_progressive(
         >>> "body" in ctx
         True
     """
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "oprim"))
     try:
         from oprim.hooks_image_skill import read_skill_frontmatter
+
         meta = read_skill_frontmatter(skill_dir)
         meta_dict = {
             "name": meta.name,
@@ -580,8 +661,8 @@ def load_skill_progressive(
         try:
             full = file_read(str(skill_md))
             # 去掉 frontmatter，取 body 部分
-            fm_end = full.find('\n---\n', full.find('---\n') + 4)
-            body = full[fm_end + 5:] if fm_end != -1 else full
+            fm_end = full.find("\n---\n", full.find("---\n") + 4)
+            body = full[fm_end + 5 :] if fm_end != -1 else full
         except Exception:  # pragma: no cover
             body = ""  # pragma: no cover
 
@@ -597,6 +678,7 @@ def load_skill_progressive(
 # ---------------------------------------------------------------------------
 # resolve_memory_hierarchy
 # ---------------------------------------------------------------------------
+
 
 def resolve_memory_hierarchy(
     *,
@@ -647,7 +729,7 @@ def resolve_memory_hierarchy(
         # 解析 @import 指令
         result_lines = []
         for line in content.splitlines():
-            m = re.match(r'^@import\s+(.+)', line.strip())
+            m = re.match(r"^@import\s+(.+)", line.strip())
             if m and import_count < max_imports:
                 import_path = m.group(1).strip()
                 if not Path(import_path).is_absolute():

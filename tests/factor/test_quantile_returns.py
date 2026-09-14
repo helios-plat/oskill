@@ -35,8 +35,11 @@ def test_factor_quantiles_returns_dict_with_five_keys(random_data):
     factor, returns = random_data
     result = factor_quantile_returns(factor, returns)
     assert set(result.keys()) == {
-        "quantile_returns", "mean_returns_by_quantile",
-        "long_short_returns", "monotonicity_score", "top_minus_bottom_sharpe"
+        "quantile_returns",
+        "mean_returns_by_quantile",
+        "long_short_returns",
+        "monotonicity_score",
+        "top_minus_bottom_sharpe",
     }
 
 
@@ -194,7 +197,8 @@ def test_factor_quantiles_fama_macbeth_structure(perfect_factor):
 
     # Perfect predictor → Q5 > Q1 (monotonic trend expected)
     assert mean_rets[4] > mean_rets[0], (
-        f"Fama-MacBeth: Q5 ({mean_rets[4]:.6f}) should exceed Q1 ({mean_rets[0]:.6f}) for perfect factor"
+        f"Fama-MacBeth: Q5 ({mean_rets[4]:.6f}) should exceed Q1 "
+        f"({mean_rets[0]:.6f}) for perfect factor"
     )
 
     # Long-short Sharpe should be positive

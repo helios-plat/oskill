@@ -77,8 +77,10 @@ def full_combinatorial_purged_cv(
     test_window_size = min(test_window_size, n_test_splits - 1)
 
     group_size = T // n_test_splits
-    group_boundaries = [(i * group_size, (i + 1) * group_size if i < n_test_splits - 1 else T)
-                        for i in range(n_test_splits)]
+    group_boundaries = [
+        (i * group_size, (i + 1) * group_size if i < n_test_splits - 1 else T)
+        for i in range(n_test_splits)
+    ]
 
     is_classification = len(np.unique(y_arr)) <= 10
 

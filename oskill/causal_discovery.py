@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
+import oprim
 import pandas as pd
 from scipy import stats
-import oprim
 
 
 def pcmci_causal_discovery(
@@ -79,8 +79,12 @@ def pcmci_causal_discovery(
 
     # Initialize potential parents: all (j, lag) pairs for each i
     parents: dict[int, list[tuple[int, int]]] = {
-        i: [(j, lag) for j in range(n_vars) for lag in range(1, max_lag + 1)
-            if not (j == i and lag == 0)]
+        i: [
+            (j, lag)
+            for j in range(n_vars)
+            for lag in range(1, max_lag + 1)
+            if not (j == i and lag == 0)
+        ]
         for i in range(n_vars)
     }
 
@@ -94,10 +98,8 @@ def pcmci_causal_discovery(
                 # Get conditioning set: all current parents except (j, lag)
                 cond = [(jj, ll) for jj, ll in parents[i] if (jj, ll) != (j, lag)]
                 # Limit conditioning set size for computational tractability
-                cond = cond[:min(len(cond), 5)]
-                p_val, corr_val = _test_independence(
-                    X, i, j, lag, cond, independence_test, T
-                )
+                cond = cond[: min(len(cond), 5)]
+                p_val, corr_val = _test_independence(X, i, j, lag, cond, independence_test, T)
                 if p_val > pc_alpha:
                     to_remove.append((j, lag))
                     changed = True
@@ -110,13 +112,12 @@ def pcmci_causal_discovery(
         for j, lag in parents[i]:
             # Conditioning set: parents(i) at lags + parents(j) at lags
             parents_i = [(jj, ll) for jj, ll in parents[i] if (jj, ll) != (j, lag)]
-            parents_j = [(jj, ll + lag) for jj, ll in parents[j]
-                         if ll + lag <= max_lag and ll + lag >= 1]
+            parents_j = [
+                (jj, ll + lag) for jj, ll in parents[j] if ll + lag <= max_lag and ll + lag >= 1
+            ]
             cond = (parents_i + parents_j)[:8]  # limit size
 
-            p_val, corr_val = _test_independence(
-                X, i, j, lag, cond, independence_test, T
-            )
+            p_val, corr_val = _test_independence(X, i, j, lag, cond, independence_test, T)
             p_matrix[i, j, lag] = p_val
             val_matrix[i, j, lag] = corr_val
 
@@ -138,13 +139,15 @@ def pcmci_causal_discovery(
                     links.append((j, i, lag))
 
     fingerprint = oprim.sha256_hash(
-        oprim.canonical_json({
-            "alpha": alpha,
-            "fdr_correction": fdr_correction,
-            "independence_test": independence_test,
-            "max_lag": max_lag,
-            "n_vars": n_vars,
-        })
+        oprim.canonical_json(
+            {
+                "alpha": alpha,
+                "fdr_correction": fdr_correction,
+                "independence_test": independence_test,
+                "max_lag": max_lag,
+                "n_vars": n_vars,
+            }
+        )
     )
 
     return {
@@ -160,7 +163,7 @@ def pcmci_causal_discovery(
 
 def _build_lagged_array(X: np.ndarray, j: int, lag: int, T: int) -> np.ndarray:
     """Extract variable j at given lag (shape: T - max_offset)."""
-    return X[:(T - lag), j] if lag > 0 else X[:, j]
+    return X[: (T - lag), j] if lag > 0 else X[:, j]
 
 
 def _residualize(y: np.ndarray, Z: np.ndarray) -> np.ndarray:
@@ -198,7 +201,7 @@ def _test_independence(
     # Target: X[i] at time t (offset from max_offset)
     y_i = X[max_offset:, i]
     # Source: X[j] at time t - lag
-    y_j = X[max_offset - lag: T - lag, j] if max_offset >= lag else X[:n_effective, j]
+    y_j = X[max_offset - lag : T - lag, j] if max_offset >= lag else X[:n_effective, j]
 
     # Trim to same length
     n = min(len(y_i), len(y_j))
@@ -211,7 +214,7 @@ def _test_independence(
         for jj, ll in conditioning:
             offset = max_offset - ll
             if offset >= 0 and offset + n <= T:
-                col = X[offset: offset + n, jj]
+                col = X[offset : offset + n, jj]
                 cond_cols.append(col)
 
         if cond_cols:

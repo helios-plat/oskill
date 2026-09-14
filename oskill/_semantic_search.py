@@ -1,13 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import count_tokens, embed_text
-import json
-import re
-import sys
-import os
+
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from oprim import count_tokens
+
+from ._types import Chunk, LLMOskillError
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -17,7 +17,9 @@ class VectorStoreHandle(Protocol):
     生产实现由 obase.persistence.VectorStore 提供。
     """
 
-    async def search(self, *, vector: list[float], top_k: int=5, filter: dict | None=None) -> list[dict[str, Any]]:
+    async def search(
+        self, *, vector: list[float], top_k: int = 5, filter: dict | None = None
+    ) -> list[dict[str, Any]]:
         """
         向量相似度搜索。
 
@@ -25,6 +27,7 @@ class VectorStoreHandle(Protocol):
             list of {"chunk_id": str, "content": str, "score": float, "path": str}
         """
         ...
+
 
 async def semantic_search(
     query: str,
@@ -73,17 +76,19 @@ async def semantic_search(
         raise LLMOskillError("semantic_search: vector store search failed", cause=e)
 
     chunks: list[Chunk] = []
-    for item in (raw or []):
+    for item in raw or []:
         if not isinstance(item, dict):
             continue
-        chunks.append(Chunk(
-            content=item.get("content", ""),
-            start_line=item.get("start_line", 0),
-            end_line=item.get("end_line", 0),
-            token_count=item.get("token_count", count_tokens(item.get("content", ""))),
-            path=item.get("path", ""),
-            language=item.get("language", ""),
-            chunk_id=item.get("chunk_id", ""),
-        ))
+        chunks.append(
+            Chunk(
+                content=item.get("content", ""),
+                start_line=item.get("start_line", 0),
+                end_line=item.get("end_line", 0),
+                token_count=item.get("token_count", count_tokens(item.get("content", ""))),
+                path=item.get("path", ""),
+                language=item.get("language", ""),
+                chunk_id=item.get("chunk_id", ""),
+            )
+        )
 
     return chunks

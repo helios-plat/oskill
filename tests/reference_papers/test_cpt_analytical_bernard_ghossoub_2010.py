@@ -10,6 +10,7 @@ Tests verify:
 - Tversky-Kahneman standard parameters (alpha=beta=0.88, lambda=2.25) are handled
 - Result structure and value validity
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -17,10 +18,10 @@ import pytest
 
 from oskill.behavioral.cpt_analytical import cpt_portfolio_analytical
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _simple_returns(n: int = 100, seed: int = 0) -> np.ndarray:
     """Single-asset returns (uniform-ish), n >= 30 required."""
@@ -40,6 +41,7 @@ def _two_asset_mixture(n: int = 120, seed: int = 1) -> np.ndarray:
 # Tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.academic_reference
 def test_result_keys_present():
     """Result dict must contain all documented keys."""
@@ -48,8 +50,12 @@ def test_result_keys_present():
         r, reference_return=0.0, alpha=1.0, beta=1.0, loss_aversion=2.25
     )
     for key in (
-        "weight_optimal", "cpt_value", "llad", "well_posed",
-        "comparative_statics", "closed_form_used",
+        "weight_optimal",
+        "cpt_value",
+        "llad",
+        "well_posed",
+        "comparative_statics",
+        "closed_form_used",
     ):
         assert key in result, f"Missing key: {key}"
 
@@ -59,7 +65,11 @@ def test_piecewise_linear_uses_closed_form():
     """With alpha=beta=1 the function must use the closed-form branch."""
     r = _simple_returns()
     result = cpt_portfolio_analytical(
-        r, reference_return=0.0, alpha=1.0, beta=1.0, loss_aversion=2.25,
+        r,
+        reference_return=0.0,
+        alpha=1.0,
+        beta=1.0,
+        loss_aversion=2.25,
         case="piecewise_linear",
     )
     assert result["closed_form_used"] is True, "Expected closed-form branch."
@@ -142,8 +152,7 @@ def test_raises_on_insufficient_samples():
     """Fewer than 30 samples must raise ValueError."""
     with pytest.raises(ValueError, match="30"):
         cpt_portfolio_analytical(
-            np.random.randn(20), reference_return=0.0, alpha=1.0, beta=1.0,
-            loss_aversion=2.25
+            np.random.randn(20), reference_return=0.0, alpha=1.0, beta=1.0, loss_aversion=2.25
         )
 
 
@@ -155,11 +164,19 @@ def test_high_loss_aversion_reduces_risky_weight():
     ref = 0.0
 
     r_low = cpt_portfolio_analytical(
-        r, reference_return=ref, alpha=1.0, beta=1.0, loss_aversion=1.5,
+        r,
+        reference_return=ref,
+        alpha=1.0,
+        beta=1.0,
+        loss_aversion=1.5,
         case="piecewise_linear",
     )
     r_high = cpt_portfolio_analytical(
-        r, reference_return=ref, alpha=1.0, beta=1.0, loss_aversion=4.0,
+        r,
+        reference_return=ref,
+        alpha=1.0,
+        beta=1.0,
+        loss_aversion=4.0,
         case="piecewise_linear",
     )
     # Both must be finite (not a strict monotonicity requirement since closed-form

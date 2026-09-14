@@ -288,8 +288,6 @@ def test_weighted_aggregation_carver_example():
     expected_carry_w = 0.3 * (1.0 / 3.0) + 0.7 * 0.5
     expected_combined = expected_momentum_w * 0.6 + expected_carry_w * 0.2
 
-    np.testing.assert_allclose(
-        result["combined"][0], expected_combined, rtol=1e-8
-    )
+    np.testing.assert_allclose(result["combined"][0], expected_combined, rtol=1e-8)
     assert result["shrunk_weights"]["momentum"] == pytest.approx(expected_momentum_w, rel=1e-8)
     assert result["shrunk_weights"]["carry"] == pytest.approx(expected_carry_w, rel=1e-8)

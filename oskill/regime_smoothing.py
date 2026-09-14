@@ -41,9 +41,7 @@ def regime_smoothing(
         return SmoothingResult(
             smoothed_state=current_smoothed_state,
             state_changed=False,
-            change_confirmed_at=_find_state_start_date(
-                raw_state_history, current_smoothed_state
-            ),
+            change_confirmed_at=_find_state_start_date(raw_state_history, current_smoothed_state),
             days_in_current_state=_count_consecutive_from_end(
                 raw_state_history, current_smoothed_state
             ),

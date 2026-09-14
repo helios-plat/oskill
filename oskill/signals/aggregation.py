@@ -154,9 +154,7 @@ def _get_correlation_matrix(
     if provided is not None:
         sigma = np.asarray(provided, dtype=float)
         if sigma.shape != (n, n):
-            raise ValueError(
-                f"correlation_matrix shape {sigma.shape} != ({n}, {n})"
-            )
+            raise ValueError(f"correlation_matrix shape {sigma.shape} != ({n}, {n})")
         if not np.allclose(sigma, sigma.T, atol=1e-8):
             raise ValueError("correlation_matrix must be symmetric")
         if not np.allclose(np.diag(sigma), 1.0, atol=1e-8):

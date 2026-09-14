@@ -5,9 +5,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 
 def factor_quantile_returns(
@@ -63,9 +62,7 @@ def factor_quantile_returns(
     if n_quantiles < 2:
         raise ValueError(f"n_quantiles must be >= 2, got {n_quantiles}")
     if fv.shape != fr.shape:
-        raise ValueError(
-            f"factor_values shape {fv.shape} != forward_returns shape {fr.shape}"
-        )
+        raise ValueError(f"factor_values shape {fv.shape} != forward_returns shape {fr.shape}")
     if fv.ndim == 1:
         fv = fv.reshape(1, -1)
         fr = fr.reshape(1, -1)
@@ -73,9 +70,7 @@ def factor_quantile_returns(
     T, N = fv.shape
 
     if N < n_quantiles:
-        raise ValueError(
-            f"Number of assets N={N} must be >= n_quantiles={n_quantiles}"
-        )
+        raise ValueError(f"Number of assets N={N} must be >= n_quantiles={n_quantiles}")
 
     # Compute quantile returns at each time step
     quantile_returns = np.full((T, n_quantiles), np.nan)
@@ -98,7 +93,9 @@ def factor_quantile_returns(
         except ValueError:
             # If qcut fails (e.g., too many ties), use simple rank-based assignment
             ranks = pd.Series(fv_valid).rank(method="first") - 1
-            quantile_labels = (ranks * n_quantiles / len(fv_valid)).astype(int).clip(0, n_quantiles - 1).values
+            quantile_labels = (
+                (ranks * n_quantiles / len(fv_valid)).astype(int).clip(0, n_quantiles - 1).values
+            )
 
         # Compute equal-weighted return per quantile
         for q in range(n_quantiles):
@@ -131,9 +128,7 @@ def factor_quantile_returns(
     # Top-minus-bottom Sharpe ratio using oprim.sharpe_ratio
     valid_ls_data = long_short_returns[valid_ls]
     if len(valid_ls_data) > 1:
-        top_minus_bottom_sharpe = float(
-            oprim.sharpe_ratio(pd.Series(valid_ls_data))
-        )
+        top_minus_bottom_sharpe = float(oprim.sharpe_ratio(pd.Series(valid_ls_data)))
     else:
         top_minus_bottom_sharpe = 0.0
 

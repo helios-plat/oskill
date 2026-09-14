@@ -1,4 +1,5 @@
 """OKX Demo API response types (light dataclasses, no Pydantic)."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

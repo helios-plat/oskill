@@ -143,9 +143,7 @@ def isolation_policy(purpose: str, profile: str = "local") -> dict[str, Any]:
         if spec.get("isolation") == "process":
             return {
                 "ok": False,
-                "error": (
-                    f"hosted profile forbids process isolation for purpose {purpose!r}"
-                ),
+                "error": (f"hosted profile forbids process isolation for purpose {purpose!r}"),
                 "purpose": purpose,
                 "profile": "hosted",
             }

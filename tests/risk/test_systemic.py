@@ -1,4 +1,5 @@
 """Tests for systemic risk metrics (CoVaR, MES, SRISK)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -59,7 +60,8 @@ def test_srisk_with_leverage_market_cap(base_data):
     leverage = np.array([10.0, 15.0, 8.0, 12.0])
     market_cap = np.array([100.0, 50.0, 200.0, 75.0])
     result = systemic_risk_metrics(
-        inst, mkt,
+        inst,
+        mkt,
         metrics=["srisk"],
         leverage=leverage,
         market_cap=market_cap,

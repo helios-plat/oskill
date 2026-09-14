@@ -1,13 +1,6 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import fnmatch
-import json
-import re
-import uuid
-from dataclasses import dataclass
-from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall, HookCmd
 
 
 def escalate_thinking_budget(prompt: str) -> int | None:
@@ -32,6 +25,7 @@ def escalate_thinking_budget(prompt: str) -> int | None:
         if any(kw in lower for kw in keywords):
             return budget
     return None
+
 
 _THINKING_KEYWORDS = [
     (["ultrathink", "think very hard", "think extremely hard"], 31_000),

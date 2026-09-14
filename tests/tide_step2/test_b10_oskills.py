@@ -2,18 +2,34 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
-from oprim.policy_event_extraction import PolicyNews
+from obase.audit import AuditEntry, format_audit_entry
 from oprim._macro_types import MacroDataPoint
 from oprim.apply_screen_filter import ScreenRule
-from obase.audit import AuditEntry, format_audit_entry
+from oprim.policy_event_extraction import PolicyNews
 
-from oskill.macro_surprise_compute import MacroSurpriseReport, macro_surprise_compute
+from oskill._exceptions import OskillError
+from oskill.candidate_universe_builder_v3 import (
+    CandidateUniverseResult,
+    candidate_universe_builder_v3,
+)
+from oskill.discipline_vs_violation_winrate_compute import (
+    DisciplineComparisonResult,
+    TradeRecord,
+    _compute_group_stats,
+    discipline_vs_violation_winrate_compute,
+)
+from oskill.equity_curve_3seg_compute import EquityCurve3SegResult, equity_curve_3seg_compute
+from oskill.industry_valuation_percentile import (
+    IndustryValuationRow,
+    ValuationCandidateInput,
+    industry_valuation_percentile,
+)
 from oskill.macro_cycle_engine_v2 import MacroCycleResult, macro_cycle_engine_v2
+from oskill.macro_surprise_compute import MacroSurpriseReport, macro_surprise_compute
 from oskill.policy_sector_attribution import (
     PolicySectorAttributionResult,
     policy_sector_attribution,
@@ -23,28 +39,10 @@ from oskill.seat_winrate_aggregator import (
     SeatWinrateReport,
     seat_winrate_aggregator,
 )
-from oskill.unknown_seats_audit_loop import UnknownSeatAuditResult, unknown_seats_audit_loop
 from oskill.sector_strength_aggregator import SectorStrengthReport, sector_strength_aggregator
-from oskill.candidate_universe_builder_v3 import (
-    CandidateUniverseResult,
-    candidate_universe_builder_v3,
-)
 from oskill.similar_context_injector import SimilarContextResult, similar_context_injector
-from oskill.industry_valuation_percentile import (
-    IndustryValuationRow,
-    ValuationCandidateInput,
-    industry_valuation_percentile,
-)
-from oskill.discipline_vs_violation_winrate_compute import (
-    DisciplineComparisonResult,
-    TradeRecord,
-    _compute_group_stats,
-    discipline_vs_violation_winrate_compute,
-)
 from oskill.system_history_aggregator import SystemHistoryReport, system_history_aggregator
-from oskill.equity_curve_3seg_compute import EquityCurve3SegResult, equity_curve_3seg_compute
-from oskill._exceptions import OskillError
-
+from oskill.unknown_seats_audit_loop import unknown_seats_audit_loop
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -377,7 +375,7 @@ class TestPolicySectorAttribution:
             r = await policy_sector_attribution(
                 news=news, industry_keyword_map={"新能源": "电力设备"}
             )
-        matched = [row for row in r.rows if row.actual_change_pct is not None]
+        _matched = [row for row in r.rows if row.actual_change_pct is not None]
         # matched_count can be 0 or 1 depending on extracted events; just verify type
         assert r.matched_count >= 0
 

@@ -8,11 +8,12 @@ Composition (docstring):
 
 Pure computation, no LLM. Weights injectable.
 """
+
 from __future__ import annotations
 
+from oprim._adamic_adar_score import adamic_adar_score
 from oprim._direct_link_score import direct_link_score
 from oprim._source_overlap_score import source_overlap_score
-from oprim._adamic_adar_score import adamic_adar_score
 from oprim._type_affinity_score import type_affinity_score
 
 _DEFAULT_WEIGHTS: dict[str, float] = {
@@ -51,14 +52,10 @@ def relevance_compute(
     direct = direct_link_score(ku_id_a=ku_id_a, ku_id_b=ku_id_b, edges=edges)
     source = source_overlap_score(sources_a=sources_a, sources_b=sources_b)
     adamic = adamic_adar_score(
-        neighbors_a=neighbors_a, neighbors_b=neighbors_b,
+        neighbors_a=neighbors_a,
+        neighbors_b=neighbors_b,
         neighbor_degree=neighbor_degree,
     )
     type_ = type_affinity_score(type_a=type_a, type_b=type_b)
 
-    return (
-        w["direct"] * direct
-        + w["source"] * source
-        + w["adamic"] * adamic
-        + w["type"] * type_
-    )
+    return w["direct"] * direct + w["source"] * source + w["adamic"] * adamic + w["type"] * type_

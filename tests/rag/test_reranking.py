@@ -6,10 +6,10 @@ import pytest
 
 from oskill.rag.reranking import reranker_score
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_candidates(n: int) -> list[dict]:
     return [
@@ -25,14 +25,17 @@ def simple_reranker(query: str, texts: list[str]) -> list[float]:
 
 def fixed_reranker(scores: list[float]):
     """Return a reranker that always gives the provided scores."""
+
     def _fn(query: str, texts: list[str]) -> list[float]:
         return list(scores)
+
     return _fn
 
 
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_reranker_score_basic_reordering():
     """Candidates should be sorted by descending reranker_score."""
@@ -59,9 +62,7 @@ def test_reranker_score_threshold_filter():
         {"content": "This is a longer document C"},
     ]
     scores = [0.9, 0.3, 0.8]
-    result = reranker_score(
-        "query", candidates, fixed_reranker(scores), score_threshold=0.5
-    )
+    result = reranker_score("query", candidates, fixed_reranker(scores), score_threshold=0.5)
     assert all(r["reranker_score"] >= 0.5 for r in result)
     assert len(result) == 2
 
@@ -118,6 +119,7 @@ def test_reranker_score_mismatched_scores_length_raises():
 # ---------------------------------------------------------------------------
 # Academic reference test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.academic_reference
 def test_reranker_score_nogueira_cho_pattern():

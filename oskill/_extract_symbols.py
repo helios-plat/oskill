@@ -1,21 +1,20 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import detect_language, file_read
+
 import ast
-import json
 import re
-import sys
-import os
-from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import detect_language, file_read
+
+from ._types import Symbol
+
 
 def extract_symbols(
     path: str,
     *,
-    server: Any = None,   # LspServerHandle（可选）
+    server: Any = None,  # LspServerHandle（可选）
     content: str | None = None,
 ) -> list[Symbol]:
     """从文件中提取代码符号列表（纯内存 + 可选 LSP）。
@@ -52,43 +51,63 @@ def extract_symbols(
                     kind = "function"
                     sig = f"def {node.name}({_args_str(node.args)})"
                     doc = ast.get_docstring(node) or ""
-                    symbols.append(Symbol(
-                        name=node.name, kind=kind,
-                        start_line=node.lineno, end_line=getattr(node, 'end_lineno', node.lineno),
-                        path=path, signature=sig, docstring=doc[:120],
-                    ))
+                    symbols.append(
+                        Symbol(
+                            name=node.name,
+                            kind=kind,
+                            start_line=node.lineno,
+                            end_line=getattr(node, "end_lineno", node.lineno),
+                            path=path,
+                            signature=sig,
+                            docstring=doc[:120],
+                        )
+                    )
                 elif isinstance(node, ast.ClassDef):
                     doc = ast.get_docstring(node) or ""
-                    symbols.append(Symbol(
-                        name=node.name, kind="class",
-                        start_line=node.lineno, end_line=getattr(node, 'end_lineno', node.lineno),
-                        path=path, signature=f"class {node.name}", docstring=doc[:120],
-                    ))
+                    symbols.append(
+                        Symbol(
+                            name=node.name,
+                            kind="class",
+                            start_line=node.lineno,
+                            end_line=getattr(node, "end_lineno", node.lineno),
+                            path=path,
+                            signature=f"class {node.name}",
+                            docstring=doc[:120],
+                        )
+                    )
         except SyntaxError:
             pass
     else:
         # 正则回退：匹配常见函数/类定义
         for pat, kind in [
-            (r'^(?:export\s+)?(?:async\s+)?function\s+(\w+)', "function"),
-            (r'^(?:export\s+)?class\s+(\w+)', "class"),
-            (r'^def\s+(\w+)', "function"),
-            (r'^class\s+(\w+)', "class"),
-            (r'^(?:pub\s+)?fn\s+(\w+)', "function"),  # Rust
-            (r'^func\s+(\w+)', "function"),             # Go
+            (r"^(?:export\s+)?(?:async\s+)?function\s+(\w+)", "function"),
+            (r"^(?:export\s+)?class\s+(\w+)", "class"),
+            (r"^def\s+(\w+)", "function"),
+            (r"^class\s+(\w+)", "class"),
+            (r"^(?:pub\s+)?fn\s+(\w+)", "function"),  # Rust
+            (r"^func\s+(\w+)", "function"),  # Go
         ]:
             for i, line in enumerate(content.splitlines(), 1):
                 m = re.match(pat, line.strip())
                 if m:
-                    symbols.append(Symbol(
-                        name=m.group(1), kind=kind,
-                        start_line=i, end_line=i,
-                        path=path, signature=line.strip()[:80],
-                    ))
+                    symbols.append(
+                        Symbol(
+                            name=m.group(1),
+                            kind=kind,
+                            start_line=i,
+                            end_line=i,
+                            path=path,
+                            signature=line.strip()[:80],
+                        )
+                    )
 
     return sorted(symbols, key=lambda s: s.start_line)
-import ast
+
+
 def _args_str(args: ast.arguments) -> str:
     parts = [a.arg for a in args.args]
-    if args.vararg: parts.append(f"*{args.vararg.arg}")
-    if args.kwarg: parts.append(f"**{args.kwarg.arg}")
+    if args.vararg:
+        parts.append(f"*{args.vararg.arg}")
+    if args.kwarg:
+        parts.append(f"**{args.kwarg.arg}")
     return ", ".join(parts)

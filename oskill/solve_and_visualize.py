@@ -13,8 +13,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 ProblemType = Literal[
-    "function", "conic", "derivative", "trig", "sequence",
-    "probability", "geometry3d", "auto"
+    "function", "conic", "derivative", "trig", "sequence", "probability", "geometry3d", "auto"
 ]
 
 
@@ -102,12 +101,12 @@ def solve_and_visualize(inp: SolveAndVisualizeInput) -> SolveAndVisualizeResult:
     -------
     SolveAndVisualizeResult
     """
-    from oprim.solve_function import solve_function, FunctionSolveInput
-    from oprim.solve_conic import solve_conic
-    from oprim.solve_derivative import solve_derivative, DerivativeSolveInput
-    from oprim.solve_trig import solve_trig, TrigSolveInput
-    from oprim.kernel_to_plot2d import kernel_to_plot2d, Plot2DRequest
     from oprim.generate_svg_diagram import generate_svg_diagram
+    from oprim.kernel_to_plot2d import Plot2DRequest, kernel_to_plot2d
+    from oprim.solve_conic import solve_conic
+    from oprim.solve_derivative import DerivativeSolveInput, solve_derivative
+    from oprim.solve_function import FunctionSolveInput, solve_function
+    from oprim.solve_trig import TrigSolveInput, solve_trig
 
     problem_type = inp.problem_type
     if problem_type == "auto":

@@ -1,4 +1,5 @@
 """Tests for signature_kernel."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -93,6 +94,7 @@ def test_sk_fallback_truncated(mocker):
 def test_compute_sig_helper():
     """_compute_sig produces a vector of expected length."""
     from oskill.signature.kernel import _compute_sig
+
     path = np.cumsum(np.random.default_rng(0).normal(0, 0.1, (8, 2)), axis=0)
     sig = _compute_sig(path, depth=2)
     assert sig.ndim == 1
@@ -102,6 +104,7 @@ def test_compute_sig_helper():
 def test_fallback_sig_kernel_symmetric():
     """_fallback_sig_kernel is symmetric."""
     from oskill.signature.kernel import _fallback_sig_kernel
+
     rng = np.random.default_rng(1)
     pa = np.cumsum(rng.normal(0, 0.1, (8, 2)), axis=0)
     pb = np.cumsum(rng.normal(0, 0.1, (8, 2)), axis=0)

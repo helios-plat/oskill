@@ -1,10 +1,11 @@
 """Batch 5 tests: canvas_workflow_executor."""
+
 from __future__ import annotations
 
 import pytest
-
 from oprim._hevi_types import CanvasEdge, CanvasNode
 from oprim.canvas_node_execute import CanvasNodeResult
+
 from oskill.canvas_workflow_executor import (
     CanvasWorkflowError,
     canvas_workflow_executor,
@@ -35,9 +36,7 @@ class TestCanvasWorkflowExecutorBasic:
     @pytest.mark.asyncio
     async def test_single_node_no_edges(self):
         nodes = [_node("A")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=[], executor=_ok_executor
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=[], executor=_ok_executor)
         assert "A" in results
         assert results["A"].success is True
         assert results["A"].output == "output:A"
@@ -46,9 +45,7 @@ class TestCanvasWorkflowExecutorBasic:
     async def test_linear_chain(self):
         nodes = [_node("A"), _node("B"), _node("C")]
         edges = [_edge("A", "B"), _edge("B", "C")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=edges, executor=_ok_executor
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=edges, executor=_ok_executor)
         for nid in ("A", "B", "C"):
             assert results[nid].success is True
 
@@ -56,9 +53,7 @@ class TestCanvasWorkflowExecutorBasic:
     async def test_parallel_nodes(self):
         nodes = [_node("root"), _node("left"), _node("right")]
         edges = [_edge("root", "left"), _edge("root", "right")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=edges, executor=_ok_executor
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=edges, executor=_ok_executor)
         assert results["root"].success is True
         assert results["left"].success is True
         assert results["right"].success is True
@@ -66,18 +61,14 @@ class TestCanvasWorkflowExecutorBasic:
     @pytest.mark.asyncio
     async def test_no_executor_returns_failure(self):
         nodes = [_node("A")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=[], executor=None
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=[], executor=None)
         assert results["A"].success is False
         assert "no executor" in results["A"].error
 
     @pytest.mark.asyncio
     async def test_returns_canvas_node_result_instances(self):
         nodes = [_node("X")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=[], executor=_ok_executor
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=[], executor=_ok_executor)
         assert isinstance(results["X"], CanvasNodeResult)
 
 
@@ -114,9 +105,7 @@ class TestCanvasWorkflowExecutorErrorHandling:
         nodes = [_node("A"), _node("B")]
         edges = [_edge("A", "B"), _edge("B", "A")]
         with pytest.raises(CycleError):
-            await canvas_workflow_executor(
-                nodes=nodes, edges=edges, executor=_ok_executor
-            )
+            await canvas_workflow_executor(nodes=nodes, edges=edges, executor=_ok_executor)
 
 
 class TestCanvasWorkflowExecutorUpstream:
@@ -130,24 +119,18 @@ class TestCanvasWorkflowExecutorUpstream:
 
         nodes = [_node("src"), _node("dst")]
         edges = [_edge("src", "dst")]
-        await canvas_workflow_executor(
-            nodes=nodes, edges=edges, executor=capturing_executor
-        )
+        await canvas_workflow_executor(nodes=nodes, edges=edges, executor=capturing_executor)
         assert "src" in received["dst"]
 
     @pytest.mark.asyncio
     async def test_node_ids_in_results(self):
         nodes = [_node("p"), _node("q")]
         edges = [_edge("p", "q")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=edges, executor=_ok_executor
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=edges, executor=_ok_executor)
         assert set(results.keys()) == {"p", "q"}
 
     @pytest.mark.asyncio
     async def test_node_type_preserved_in_result(self):
         nodes = [CanvasNode(node_id="vid", node_type="video", label="vid")]
-        results = await canvas_workflow_executor(
-            nodes=nodes, edges=[], executor=_ok_executor
-        )
+        results = await canvas_workflow_executor(nodes=nodes, edges=[], executor=_ok_executor)
         assert results["vid"].node_type == "video"

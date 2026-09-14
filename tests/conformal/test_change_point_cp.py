@@ -17,11 +17,19 @@ def _make_data(n=200, seed=42):
 
 # ─── API / return keys ────────────────────────────────────────────────────────
 
+
 def test_returns_expected_keys():
     preds, acts = _make_data()
     result = conformal_with_change_points(preds, acts, detection_method="external")
-    expected = {"lower", "upper", "change_points", "segments",
-                "per_segment_quantiles", "segment_assignments", "fingerprint"}
+    expected = {
+        "lower",
+        "upper",
+        "change_points",
+        "segments",
+        "per_segment_quantiles",
+        "segment_assignments",
+        "fingerprint",
+    }
     assert expected == set(result.keys())
 
 
@@ -90,7 +98,8 @@ def test_short_segments_use_global_quantile():
     # Create a very short segment [190, 200] = 10 points
     cps = [190]
     result = conformal_with_change_points(
-        preds, acts,
+        preds,
+        acts,
         detection_method="external",
         change_points=cps,
         min_segment_length=20,

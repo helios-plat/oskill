@@ -6,15 +6,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.colors import LinearSegmentedColormap, Normalize
-from matplotlib.patches import Patch
-
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
+    from matplotlib.patches import Patch
 
 FEATURES = ["Mn", "Co", "Ge", "Fe", "Cd", "Sn", "In", "Pb", "Ga", "Sb", "Ag", "Cu"]
 CLASSES = ["MVT", "SEDEX", "VMS", "epithermal", "skarn"]

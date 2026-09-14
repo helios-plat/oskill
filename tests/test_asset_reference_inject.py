@@ -1,7 +1,6 @@
 """Tests for asset_reference_inject."""
-from __future__ import annotations
 
-import pytest
+from __future__ import annotations
 
 from oskill._asset_reference_inject import asset_reference_inject
 
@@ -16,7 +15,6 @@ def _loader(asset_type: str, asset_id: str) -> dict:
 
 
 class TestAssetReferenceInject:
-
     def test_returns_enhanced_shot_spec(self):
         spec = {"duration_s": 5.0}
         result = asset_reference_inject(

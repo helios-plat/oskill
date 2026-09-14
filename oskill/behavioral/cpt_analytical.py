@@ -1,4 +1,5 @@
 """CPT portfolio analytical solution (Bernard-Ghossoub 2010)."""
+
 from __future__ import annotations
 
 from typing import Any, Literal
@@ -84,9 +85,7 @@ def _cpt_portfolio_value(
     if np.any(loss_mask):
         # Probability weighting for losses (cumulative)
         w_loss = _fallback_pwf(cum_probs[loss_mask], gamma=gamma_loss)
-        w_loss_prev = _fallback_pwf(
-            cum_probs[loss_mask] - probs[loss_mask], gamma=gamma_loss
-        )
+        w_loss_prev = _fallback_pwf(cum_probs[loss_mask] - probs[loss_mask], gamma=gamma_loss)
         w_loss_prev = np.clip(w_loss_prev, 0.0, None)
         pi_loss = w_loss - w_loss_prev
         cpt_val += float(np.sum(pi_loss * values[loss_mask]))
@@ -185,9 +184,7 @@ def cpt_portfolio_analytical(
                 gamma_loss,
             )
 
-        result = scipy.optimize.minimize_scalar(
-            objective, bounds=(-3.0, 3.0), method="bounded"
-        )
+        result = scipy.optimize.minimize_scalar(objective, bounds=(-3.0, 3.0), method="bounded")
         w_star = float(result.x)
 
     # --- CPT value at optimal weight ---
@@ -239,9 +236,7 @@ def cpt_portfolio_analytical(
                     gamma_loss,
                 )
 
-            res_cs = scipy.optimize.minimize_scalar(
-                _obj_cs, bounds=(-3.0, 3.0), method="bounded"
-            )
+            res_cs = scipy.optimize.minimize_scalar(_obj_cs, bounds=(-3.0, 3.0), method="bounded")
             statics[param_name][direction] = float(res_cs.x)
 
     return {

@@ -1,6 +1,8 @@
 """Verify HMAC-SHA256 signing matches OKX docs reference format."""
+
 import base64
 import re
+from datetime import UTC
 
 from oskill.exchange.okx_demo._signing import make_timestamp, sign_request
 
@@ -47,10 +49,11 @@ def test_timestamp_format():
 
 
 def test_timestamp_is_utc():
-    from datetime import datetime, timezone
+    from datetime import datetime
+
     ts = make_timestamp()
     assert ts.endswith("Z")
-    parsed = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
-    now = datetime.now(timezone.utc)
+    parsed = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=UTC)
+    now = datetime.now(UTC)
     delta = abs((now - parsed).total_seconds())
     assert delta < 5, f"Timestamp is more than 5s from now: {delta}s"

@@ -2,11 +2,10 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.sample_weights import (
-    sample_uniqueness_weights,
     return_attribution_weights,
+    sample_uniqueness_weights,
 )
 
 
@@ -90,7 +89,7 @@ class TestReturnAttributionWeights:
         """Event with higher absolute return should receive higher weight."""
         events = _make_events([0, 10], [4, 14])
         returns = np.zeros(20)
-        returns[0:5] = 0.01   # small returns in event 1
+        returns[0:5] = 0.01  # small returns in event 1
         returns[10:15] = 0.10  # large returns in event 2
         weights = return_attribution_weights(events, returns)
         assert weights[1] > weights[0]
@@ -121,7 +120,7 @@ class TestReturnAttributionWeights:
         """average_uniqueness=False should not divide by concurrency."""
         events = _make_events([0, 0], [5, 5])  # perfectly overlapping
         returns = np.ones(6) * 0.01
-        w_unique = return_attribution_weights(events, returns, average_uniqueness=True)
+        _w_unique = return_attribution_weights(events, returns, average_uniqueness=True)
         w_raw = return_attribution_weights(events, returns, average_uniqueness=False)
         # With average_uniqueness=False, weights are equal (both events identical)
         assert abs(w_raw[0] - w_raw[1]) < 1e-9

@@ -136,7 +136,8 @@ def _apply_concept_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     db.execute("DELETE FROM concepts WHERE id = ?", [p.get("id")])
     db.execute(
         "INSERT INTO concepts "
-        "(id, user_id, name, type, aliases, wikilink, substrate_refs, related_concept_ids, created_at) "
+        "(id, user_id, name, type, aliases, wikilink, substrate_refs, "
+        "related_concept_ids, created_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             p.get("id"),

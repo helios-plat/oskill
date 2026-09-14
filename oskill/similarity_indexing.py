@@ -47,13 +47,19 @@ def batch_similarity_indexing(
 
     elif method == "ivf":
         from sklearn.cluster import KMeans
+
         km = KMeans(n_clusters=min(n_clusters, n), random_state=42, n_init=1)
         labels = km.fit_predict(vectors)
         centroids = km.cluster_centers_
         clusters: dict[int, list[int]] = {}
         for i, lbl in enumerate(labels):
             clusters.setdefault(int(lbl), []).append(i)
-        index_data = {"vectors": vectors, "metadata": meta, "centroids": centroids, "clusters": clusters}
+        index_data = {
+            "vectors": vectors,
+            "metadata": meta,
+            "centroids": centroids,
+            "clusters": clusters,
+        }
 
         def query_fn(q: np.ndarray, k: int = 10) -> list[dict[str, Any]]:
             # Find nearest centroid, search that cluster
@@ -67,12 +73,21 @@ def batch_similarity_indexing(
     else:
         raise ValueError(f"Unknown method: {method}")
 
-    result = {"index": index_data, "method": method, "n_vectors": n, "dimension": d, "query_fn": query_fn}
+    result = {
+        "index": index_data,
+        "method": method,
+        "n_vectors": n,
+        "dimension": d,
+        "query_fn": query_fn,
+    }
 
     if persist_path:
         p = Path(persist_path)
         p.parent.mkdir(parents=True, exist_ok=True)
         with open(p, "wb") as f:
-            pickle.dump({"vectors": vectors, "metadata": meta, "method": method, "n_clusters": n_clusters}, f)
+            pickle.dump(
+                {"vectors": vectors, "metadata": meta, "method": method, "n_clusters": n_clusters},
+                f,
+            )
 
     return result

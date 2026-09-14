@@ -50,13 +50,17 @@ def test_as_higher_vol_wider_spread():
 
 
 def test_as_inventory_limit_pause():
-    r = avellaneda_stoikov_quotes(100.0, 10, volatility=0.01, time_to_horizon=1.0, inventory_limit=5)
-    assert r["should_pause_quoting"] == True
+    r = avellaneda_stoikov_quotes(
+        100.0, 10, volatility=0.01, time_to_horizon=1.0, inventory_limit=5
+    )
+    assert r["should_pause_quoting"]
 
 
 def test_as_no_inventory_limit_no_pause():
-    r = avellaneda_stoikov_quotes(100.0, 10, volatility=0.01, time_to_horizon=1.0, inventory_limit=None)
-    assert r["should_pause_quoting"] == False
+    r = avellaneda_stoikov_quotes(
+        100.0, 10, volatility=0.01, time_to_horizon=1.0, inventory_limit=None
+    )
+    assert not r["should_pause_quoting"]
 
 
 def test_as_invalid_mid_raises():
@@ -70,6 +74,8 @@ def test_as_formula_exact():
     mid, q, gamma, sigma, T, k = 100.0, 5, 0.1, 0.01, 1.0, 1.5
     expected_r = mid - q * gamma * sigma**2 * T
     expected_delta = gamma * sigma**2 * T + (2 / gamma) * math.log(1 + gamma / k)
-    r = avellaneda_stoikov_quotes(mid, q, volatility=sigma, time_to_horizon=T, risk_aversion=gamma, intensity_k=k)
+    r = avellaneda_stoikov_quotes(
+        mid, q, volatility=sigma, time_to_horizon=T, risk_aversion=gamma, intensity_k=k
+    )
     np.testing.assert_allclose(r["reservation_price"], expected_r, rtol=1e-10)
     np.testing.assert_allclose(r["optimal_spread"], expected_delta, rtol=1e-10)

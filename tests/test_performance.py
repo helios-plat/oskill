@@ -1,5 +1,7 @@
 """Tests for Group 1: Performance Evaluation skills."""
 
+from datetime import date as _date
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,14 +10,16 @@ from scipy import stats as scipy_stats
 from oskill.performance import (
     bootstrap_sharpe,
     factor_attribution,
+    portfolio_metrics_summary,
     psr_dsr,
     regime_aware_performance,
+    trade_pnl_statistics,
 )
-
 
 # ============================================================
 # bootstrap_sharpe tests
 # ============================================================
+
 
 class TestBootstrapSharpe:
     """Tests for bootstrap_sharpe."""
@@ -96,10 +100,17 @@ class TestBootstrapSharpe:
 
     def test_integration_mock_bootstrap_ci(self, mocker):
         """Integration: oprim.bootstrap_ci is called correctly."""
-        mock_ci = mocker.patch("oskill.performance.oprim.bootstrap_ci", return_value={
-            "point_estimate": 1.0, "ci_lower": 0.5, "ci_upper": 1.5,
-            "se": 0.25, "n_bootstrap": 100, "method": "percentile",
-        })
+        mock_ci = mocker.patch(
+            "oskill.performance.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 1.0,
+                "ci_lower": 0.5,
+                "ci_upper": 1.5,
+                "se": 0.25,
+                "n_bootstrap": 100,
+                "method": "percentile",
+            },
+        )
         returns = np.random.default_rng(42).normal(0.001, 0.01, 100)
         bootstrap_sharpe(returns, n_bootstrap=100, random_state=42)
         mock_ci.assert_called_once()
@@ -110,10 +121,17 @@ class TestBootstrapSharpe:
     def test_integration_mock_sharpe_ratio(self, mocker):
         """Integration: oprim.sharpe_ratio is called for point estimate."""
         mock_sr = mocker.patch("oskill.performance.oprim.sharpe_ratio", return_value=1.5)
-        mocker.patch("oskill.performance.oprim.bootstrap_ci", return_value={
-            "point_estimate": 1.5, "ci_lower": 1.0, "ci_upper": 2.0,
-            "se": 0.25, "n_bootstrap": 100, "method": "percentile",
-        })
+        mocker.patch(
+            "oskill.performance.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 1.5,
+                "ci_lower": 1.0,
+                "ci_upper": 2.0,
+                "se": 0.25,
+                "n_bootstrap": 100,
+                "method": "percentile",
+            },
+        )
         returns = np.random.default_rng(42).normal(0.001, 0.01, 100)
         result = bootstrap_sharpe(returns, n_bootstrap=100, random_state=42)
         assert mock_sr.called
@@ -133,6 +151,7 @@ class TestBootstrapSharpe:
 # ============================================================
 # psr_dsr tests
 # ============================================================
+
 
 class TestPsrDsr:
     """Tests for psr_dsr."""
@@ -218,8 +237,10 @@ class TestPsrDsr:
 
     def test_integration_mock_skew_kurt(self, mocker):
         """Integration: oprim.skew_kurt_robust called with bias=False."""
-        mock_sk = mocker.patch("oskill.performance.oprim.skew_kurt_robust",
-                               return_value={"skewness": 0.0, "kurtosis_excess": 0.0})
+        mock_sk = mocker.patch(
+            "oskill.performance.oprim.skew_kurt_robust",
+            return_value={"skewness": 0.0, "kurtosis_excess": 0.0},
+        )
         mocker.patch("oskill.performance.oprim.sharpe_ratio", return_value=1.0)
         returns = np.random.default_rng(42).normal(0, 0.01, 100)
         psr_dsr(returns)
@@ -229,8 +250,10 @@ class TestPsrDsr:
     def test_integration_mock_sharpe_ratio(self, mocker):
         """Integration: oprim.sharpe_ratio is called."""
         mock_sr = mocker.patch("oskill.performance.oprim.sharpe_ratio", return_value=1.0)
-        mocker.patch("oskill.performance.oprim.skew_kurt_robust",
-                     return_value={"skewness": 0.0, "kurtosis_excess": 0.0})
+        mocker.patch(
+            "oskill.performance.oprim.skew_kurt_robust",
+            return_value={"skewness": 0.0, "kurtosis_excess": 0.0},
+        )
         returns = np.random.default_rng(42).normal(0, 0.01, 100)
         psr_dsr(returns)
         mock_sr.assert_called_once()
@@ -259,9 +282,12 @@ class TestPsrDsr:
         rng = np.random.default_rng(42)
         # Use mock to force the condition
         import unittest.mock as mock
+
         returns = rng.normal(0.01, 0.01, 100)
-        with mock.patch("oskill.performance.oprim.skew_kurt_robust",
-                        return_value={"skewness": 100.0, "kurtosis_excess": 0.0}):
+        with mock.patch(
+            "oskill.performance.oprim.skew_kurt_robust",
+            return_value={"skewness": 100.0, "kurtosis_excess": 0.0},
+        ):
             with mock.patch("oskill.performance.oprim.sharpe_ratio", return_value=100.0):
                 result = psr_dsr(returns)
         assert np.isnan(result["psr"])
@@ -271,6 +297,7 @@ class TestPsrDsr:
 # ============================================================
 # factor_attribution tests
 # ============================================================
+
 
 class TestFactorAttribution:
     """Tests for factor_attribution."""
@@ -311,8 +338,9 @@ class TestFactorAttribution:
         rng = np.random.default_rng(42)
         asset = rng.normal(0, 0.02, 100)
         factors_df = pd.DataFrame({"MKT": rng.normal(0, 0.01, 100)})
-        result = factor_attribution(asset, factors_df, bootstrap_ci_enabled=True,
-                                    n_bootstrap=50, random_state=42)
+        result = factor_attribution(
+            asset, factors_df, bootstrap_ci_enabled=True, n_bootstrap=50, random_state=42
+        )
         assert result["alpha_ci"] is not None
         assert result["betas_ci"] is not None
         assert "MKT" in result["betas_ci"]
@@ -332,8 +360,9 @@ class TestFactorAttribution:
         asset = rng.normal(0, 0.02, 100)
         asset[5] = np.nan
         factors_df = pd.DataFrame({"MKT": rng.normal(0, 0.01, 100)})
-        result = factor_attribution(asset, factors_df, handle_nan="drop",
-                                    bootstrap_ci_enabled=False)
+        result = factor_attribution(
+            asset, factors_df, handle_nan="drop", bootstrap_ci_enabled=False
+        )
         assert result["n_obs"] == 99
 
     def test_handle_nan_raise(self):
@@ -341,8 +370,7 @@ class TestFactorAttribution:
         asset = np.array([0.01, np.nan, 0.02] + [0.01] * 97)
         factors_df = pd.DataFrame({"MKT": np.random.default_rng(42).normal(0, 0.01, 100)})
         with pytest.raises(ValueError, match="NaN"):
-            factor_attribution(asset, factors_df, handle_nan="raise",
-                               bootstrap_ci_enabled=False)
+            factor_attribution(asset, factors_df, handle_nan="raise", bootstrap_ci_enabled=False)
 
     def test_single_factor(self):
         """Single factor works."""
@@ -356,9 +384,7 @@ class TestFactorAttribution:
         """Five factors work."""
         rng = np.random.default_rng(42)
         asset = rng.normal(0, 0.02, 200)
-        factors_df = pd.DataFrame({
-            f"F{i}": rng.normal(0, 0.01, 200) for i in range(5)
-        })
+        factors_df = pd.DataFrame({f"F{i}": rng.normal(0, 0.01, 200) for i in range(5)})
         result = factor_attribution(asset, factors_df, bootstrap_ci_enabled=False)
         assert len(result["factor_names"]) == 5
         assert len(result["betas"]) == 5
@@ -378,11 +404,19 @@ class TestFactorAttribution:
 
     def test_integration_mock_beta_alpha_ols(self, mocker):
         """Integration: oprim.beta_alpha_ols is called."""
-        mock_ols = mocker.patch("oskill.performance.oprim.beta_alpha_ols", return_value={
-            "alpha": 0.001, "beta": {"MKT": 1.0}, "alpha_se": 0.0005,
-            "beta_se": {"MKT": 0.1}, "r_squared": 0.5, "adj_r_squared": 0.49,
-            "n_samples": 100, "p_values": {"alpha": 0.05, "MKT": 0.01},
-        })
+        mock_ols = mocker.patch(
+            "oskill.performance.oprim.beta_alpha_ols",
+            return_value={
+                "alpha": 0.001,
+                "beta": {"MKT": 1.0},
+                "alpha_se": 0.0005,
+                "beta_se": {"MKT": 0.1},
+                "r_squared": 0.5,
+                "adj_r_squared": 0.49,
+                "n_samples": 100,
+                "p_values": {"alpha": 0.05, "MKT": 0.01},
+            },
+        )
         asset = np.random.default_rng(42).normal(0, 0.02, 100)
         factors_df = pd.DataFrame({"MKT": np.random.default_rng(43).normal(0, 0.01, 100)})
         factor_attribution(asset, factors_df, bootstrap_ci_enabled=False)
@@ -401,6 +435,7 @@ class TestFactorAttribution:
 # ============================================================
 # regime_aware_performance tests
 # ============================================================
+
 
 class TestRegimeAwarePerformance:
     """Tests for regime_aware_performance."""
@@ -473,8 +508,7 @@ class TestRegimeAwarePerformance:
         rng = np.random.default_rng(42)
         returns = pd.Series(rng.normal(0, 0.01, 200))
         labels = pd.Series(["A"] * 100 + ["B"] * 100, index=returns.index)
-        df = regime_aware_performance(returns, labels, var_method="parametric",
-                                      metrics=["var_95"])
+        df = regime_aware_performance(returns, labels, var_method="parametric", metrics=["var_95"])
         assert not np.isnan(df.loc["A", "var_95"])
 
     def test_index_mismatch_raises(self):
@@ -500,7 +534,7 @@ class TestRegimeAwarePerformance:
 
         original_filter = mocker.patch(
             "oskill.performance.oprim.regime_filter_data",
-            wraps=lambda data, regime_labels, target_regime: data[regime_labels == target_regime]
+            wraps=lambda data, regime_labels, target_regime: data[regime_labels == target_regime],
         )
         regime_aware_performance(returns, labels, metrics=["cumulative_return"])
         assert original_filter.call_count == 2  # A and B
@@ -512,8 +546,10 @@ class TestRegimeAwarePerformance:
         labels = pd.Series(["A"] * 100 + ["B"] * 100, index=returns.index)
 
         mock_sr = mocker.patch("oskill.performance.oprim.sharpe_ratio", return_value=1.0)
-        mocker.patch("oskill.performance.oprim.regime_filter_data",
-                     side_effect=lambda data, rl, tr: data[rl == tr])
+        mocker.patch(
+            "oskill.performance.oprim.regime_filter_data",
+            side_effect=lambda data, rl, tr: data[rl == tr],
+        )
         regime_aware_performance(returns, labels, metrics=["sharpe"], include_overall=False)
         assert mock_sr.call_count == 2
 
@@ -524,6 +560,7 @@ class TestRegimeAwarePerformance:
         labels = pd.Series(["A"] * 100 + ["B"] * 100, index=returns.index)
         df = regime_aware_performance(returns, labels, metrics=["sharpe"])
         import oprim
+
         direct_sharpe = oprim.sharpe_ratio(returns)
         assert abs(df.loc["OVERALL", "sharpe"] - direct_sharpe) < 1e-10
 
@@ -532,15 +569,22 @@ class TestRegimeAwarePerformance:
 # Sprint 0: portfolio_metrics_summary + trade_pnl_statistics
 # ============================================================
 
-from datetime import date as _date
-from oskill.performance import portfolio_metrics_summary, trade_pnl_statistics
-
 
 class TestPortfolioMetricsSummary:
     def _make_trades(self):
         return [
-            {"entry_date": _date(2024, 1, 2), "exit_date": _date(2024, 1, 10), "pnl": 500.0, "pnl_pct": 0.05},
-            {"entry_date": _date(2024, 2, 1), "exit_date": _date(2024, 2, 5), "pnl": -200.0, "pnl_pct": -0.02},
+            {
+                "entry_date": _date(2024, 1, 2),
+                "exit_date": _date(2024, 1, 10),
+                "pnl": 500.0,
+                "pnl_pct": 0.05,
+            },
+            {
+                "entry_date": _date(2024, 2, 1),
+                "exit_date": _date(2024, 2, 5),
+                "pnl": -200.0,
+                "pnl_pct": -0.02,
+            },
         ]
 
     def _make_equity_curve(self):
@@ -556,8 +600,16 @@ class TestPortfolioMetricsSummary:
 
     def test_required_keys_present(self):
         result = portfolio_metrics_summary(self._make_trades(), self._make_equity_curve(), 100_000)
-        for key in ["total_return_pct", "cagr", "sharpe_ratio", "max_drawdown_pct", "win_rate",
-                    "profit_loss_ratio", "n_trades", "avg_holding_days"]:
+        for key in [
+            "total_return_pct",
+            "cagr",
+            "sharpe_ratio",
+            "max_drawdown_pct",
+            "win_rate",
+            "profit_loss_ratio",
+            "n_trades",
+            "avg_holding_days",
+        ]:
             assert key in result
 
     def test_n_trades_correct(self):
@@ -590,9 +642,24 @@ class TestPortfolioMetricsSummary:
         and n_trades must match the input. Verifies metric bundle consistency.
         """
         trades = [
-            {"entry_date": _date(2024, 1, 1), "exit_date": _date(2024, 1, 30), "pnl": 1000.0, "pnl_pct": 0.01},
-            {"entry_date": _date(2024, 2, 1), "exit_date": _date(2024, 2, 28), "pnl": 2000.0, "pnl_pct": 0.02},
-            {"entry_date": _date(2024, 3, 1), "exit_date": _date(2024, 3, 31), "pnl": -500.0, "pnl_pct": -0.005},
+            {
+                "entry_date": _date(2024, 1, 1),
+                "exit_date": _date(2024, 1, 30),
+                "pnl": 1000.0,
+                "pnl_pct": 0.01,
+            },
+            {
+                "entry_date": _date(2024, 2, 1),
+                "exit_date": _date(2024, 2, 28),
+                "pnl": 2000.0,
+                "pnl_pct": 0.02,
+            },
+            {
+                "entry_date": _date(2024, 3, 1),
+                "exit_date": _date(2024, 3, 31),
+                "pnl": -500.0,
+                "pnl_pct": -0.005,
+            },
         ]
         equity = [
             (_date(2024, 1, 30), 101_000.0),

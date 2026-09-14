@@ -1,10 +1,9 @@
 import time
-from typing import Literal, Any, cast
-
-from pydantic import BaseModel
+from typing import Any, cast
 
 from obase.docker import docker_container_inspect, docker_container_restart
 from oprim import http_health_probe
+from pydantic import BaseModel
 
 
 class RestartAndVerifyOutcome(BaseModel):

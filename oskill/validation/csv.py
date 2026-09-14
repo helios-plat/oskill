@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import itertools
 import random
-from math import comb
 from typing import Any
 
 import numpy as np

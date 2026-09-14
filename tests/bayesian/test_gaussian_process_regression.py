@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.bayesian.gp_regression import gaussian_process_regression
 
@@ -65,14 +64,15 @@ def test_gpr_rational_quadratic_basic():
 
 
 def test_gpr_posterior_mean_close_to_truth():
-    rng = np.random.default_rng(42)
     # Very low noise so GP should interpolate well
     X_tr = np.linspace(0, 2 * np.pi, 15).reshape(-1, 1)
     y_tr = np.sin(X_tr[:, 0])
     X_te = np.linspace(0.3, 5.9, 20).reshape(-1, 1)
     y_true = np.sin(X_te[:, 0])
     result = gaussian_process_regression(
-        X_tr, y_tr, X_te,
+        X_tr,
+        y_tr,
+        X_te,
         kernel="rbf",
         noise_variance=1e-4,
         optimize_hyperparameters=False,
@@ -98,7 +98,9 @@ def test_gpr_optimize_hyperparameters_runs():
     rng = np.random.default_rng(42)
     X_tr, y_tr, X_te = _make_sin_data(rng)
     result = gaussian_process_regression(
-        X_tr, y_tr, X_te,
+        X_tr,
+        y_tr,
+        X_te,
         kernel="rbf",
         optimize_hyperparameters=True,
         n_restarts=2,
@@ -120,9 +122,7 @@ def test_gpr_no_test_data_predicts_on_train():
 def test_gpr_log_marginal_likelihood_is_float():
     rng = np.random.default_rng(42)
     X_tr, y_tr, _ = _make_sin_data(rng)
-    result = gaussian_process_regression(
-        X_tr, y_tr, kernel="rbf", optimize_hyperparameters=False
-    )
+    result = gaussian_process_regression(X_tr, y_tr, kernel="rbf", optimize_hyperparameters=False)
     assert isinstance(result["log_marginal_likelihood"], float)
     assert np.isfinite(result["log_marginal_likelihood"])
 

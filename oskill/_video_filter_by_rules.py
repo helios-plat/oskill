@@ -6,6 +6,7 @@ Composes:
 
 title_exclude from FilterRules runs in P-4 before any LLM step.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -64,6 +65,7 @@ async def video_filter_by_rules(
 # ---------------------------------------------------------------------------
 # LLM filtering helpers
 # ---------------------------------------------------------------------------
+
 
 async def _llm_filter(
     videos: list[VideoMeta],

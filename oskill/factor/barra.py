@@ -56,9 +56,7 @@ def barra_style_decomposition(
     T2, K = style_factors.shape
 
     if T != T2:
-        raise ValueError(
-            f"asset_returns has {T} rows but style_factors has {T2} rows"
-        )
+        raise ValueError(f"asset_returns has {T} rows but style_factors has {T2} rows")
 
     if factor_names is None:
         factor_names = list(style_factors.columns)
@@ -114,16 +112,12 @@ def barra_style_decomposition(
         # R-squared
         y_mean = float(np.mean(r_t))
         ss_tot = float(np.sum((r_t - y_mean) ** 2))
-        ss_res = float(np.sum(e_t ** 2))
+        ss_res = float(np.sum(e_t**2))
         r_sq = 1.0 - ss_res / ss_tot if ss_tot > 1e-12 else 0.0
         r_squared_arr[t] = r_sq
 
-    factor_returns_df = pd.DataFrame(
-        factor_returns_arr, index=time_index, columns=factor_names
-    )
-    specific_returns_df = pd.DataFrame(
-        specific_returns_arr, index=time_index, columns=asset_cols
-    )
+    factor_returns_df = pd.DataFrame(factor_returns_arr, index=time_index, columns=factor_names)
+    specific_returns_df = pd.DataFrame(specific_returns_arr, index=time_index, columns=asset_cols)
     mean_r_squared = float(np.mean(r_squared_arr))
 
     return {

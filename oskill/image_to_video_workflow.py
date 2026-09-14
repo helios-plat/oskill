@@ -98,16 +98,21 @@ async def image_to_video_workflow(
             from oprim.motion_prompt_translate import motion_prompt_translate
 
             prompt = await motion_prompt_translate(
-                natural_language_motion=prompt, llm=llm, target_provider=primary_provider,
+                natural_language_motion=prompt,
+                llm=llm,
+                target_provider=primary_provider,
             )
 
         async with sem:
             # Try primary
             try:
                 await image_to_video(
-                    provider=primary_provider, reference_image=img,
-                    motion_prompt=prompt, duration_s=dur,
-                    output_path=out, timeout_s=timeout_s,
+                    provider=primary_provider,
+                    reference_image=img,
+                    motion_prompt=prompt,
+                    duration_s=dur,
+                    output_path=out,
+                    timeout_s=timeout_s,
                 )
                 return out
             except ImageToVideoError:
@@ -117,9 +122,12 @@ async def image_to_video_workflow(
             # Try fallback
             try:
                 await image_to_video(
-                    provider=fallback_provider, reference_image=img,
-                    motion_prompt=prompt, duration_s=dur,
-                    output_path=out, timeout_s=timeout_s,
+                    provider=fallback_provider,
+                    reference_image=img,
+                    motion_prompt=prompt,
+                    duration_s=dur,
+                    output_path=out,
+                    timeout_s=timeout_s,
                 )
                 return out
             except ImageToVideoError as exc:

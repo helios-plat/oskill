@@ -1,4 +1,5 @@
 """Salience-based asset pricing (Bordalo-Gennaioli-Shleifer 2013 AER)."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -81,18 +82,14 @@ def salience_asset_pricing(
     N, S = asset_payoffs.shape
 
     if market_payoffs.shape != (S,):
-        raise ValueError(
-            f"market_payoffs must have shape ({S},), got {market_payoffs.shape}"
-        )
+        raise ValueError(f"market_payoffs must have shape ({S},), got {market_payoffs.shape}")
 
     if payoff_probabilities is None:
         probs = np.full(S, 1.0 / S)
     else:
         probs = np.asarray(payoff_probabilities, dtype=float)
         if probs.shape != (S,):
-            raise ValueError(
-                f"payoff_probabilities must have shape ({S},), got {probs.shape}"
-            )
+            raise ValueError(f"payoff_probabilities must have shape ({S},), got {probs.shape}")
         probs = probs / probs.sum()  # normalise
 
     salient_prices = np.empty(N)

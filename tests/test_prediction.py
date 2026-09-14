@@ -111,14 +111,26 @@ class TestCalibrationAnalysis:
 
     def test_integration_mock_brier(self, mocker):
         """Integration: oprim.brier_score_decomposed called."""
-        mock_brier = mocker.patch("oskill.prediction.oprim.brier_score_decomposed", return_value={
-            "brier_score": 0.2, "reliability": 0.01, "resolution": 0.05,
-            "uncertainty": 0.25, "skill": 0.2,
-        })
-        mocker.patch("oskill.prediction.oprim.bayes_beta_update", return_value={
-            "posterior_alpha": 2, "posterior_beta": 2, "posterior_mean": 0.5,
-            "q_0.025": 0.1, "q_0.975": 0.9,
-        })
+        mock_brier = mocker.patch(
+            "oskill.prediction.oprim.brier_score_decomposed",
+            return_value={
+                "brier_score": 0.2,
+                "reliability": 0.01,
+                "resolution": 0.05,
+                "uncertainty": 0.25,
+                "skill": 0.2,
+            },
+        )
+        mocker.patch(
+            "oskill.prediction.oprim.bayes_beta_update",
+            return_value={
+                "posterior_alpha": 2,
+                "posterior_beta": 2,
+                "posterior_mean": 0.5,
+                "q_0.025": 0.1,
+                "q_0.975": 0.9,
+            },
+        )
         rng = np.random.default_rng(42)
         predictions = rng.uniform(0, 1, 100)
         outcomes = (rng.uniform(0, 1, 100) < predictions).astype(float)
@@ -127,14 +139,26 @@ class TestCalibrationAnalysis:
 
     def test_integration_mock_bayes_beta(self, mocker):
         """Integration: oprim.bayes_beta_update called n_bins times."""
-        mocker.patch("oskill.prediction.oprim.brier_score_decomposed", return_value={
-            "brier_score": 0.2, "reliability": 0.01, "resolution": 0.05,
-            "uncertainty": 0.25, "skill": 0.2,
-        })
-        mock_bb = mocker.patch("oskill.prediction.oprim.bayes_beta_update", return_value={
-            "posterior_alpha": 2, "posterior_beta": 2, "posterior_mean": 0.5,
-            "q_0.025": 0.1, "q_0.975": 0.9,
-        })
+        mocker.patch(
+            "oskill.prediction.oprim.brier_score_decomposed",
+            return_value={
+                "brier_score": 0.2,
+                "reliability": 0.01,
+                "resolution": 0.05,
+                "uncertainty": 0.25,
+                "skill": 0.2,
+            },
+        )
+        mock_bb = mocker.patch(
+            "oskill.prediction.oprim.bayes_beta_update",
+            return_value={
+                "posterior_alpha": 2,
+                "posterior_beta": 2,
+                "posterior_mean": 0.5,
+                "q_0.025": 0.1,
+                "q_0.975": 0.9,
+            },
+        )
         rng = np.random.default_rng(42)
         predictions = rng.uniform(0, 1, 200)
         outcomes = (rng.uniform(0, 1, 200) < predictions).astype(float)
@@ -144,16 +168,30 @@ class TestCalibrationAnalysis:
 
     def test_integration_mock_percentile_rank(self, mocker):
         """Integration: oprim.percentile_rank called for equal_freq binning."""
-        mocker.patch("oskill.prediction.oprim.brier_score_decomposed", return_value={
-            "brier_score": 0.2, "reliability": 0.01, "resolution": 0.05,
-            "uncertainty": 0.25, "skill": 0.2,
-        })
-        mocker.patch("oskill.prediction.oprim.bayes_beta_update", return_value={
-            "posterior_alpha": 2, "posterior_beta": 2, "posterior_mean": 0.5,
-            "q_0.025": 0.1, "q_0.975": 0.9,
-        })
-        mock_pr = mocker.patch("oskill.prediction.oprim.percentile_rank",
-                               return_value=pd.Series(np.linspace(0, 1, 100)))
+        mocker.patch(
+            "oskill.prediction.oprim.brier_score_decomposed",
+            return_value={
+                "brier_score": 0.2,
+                "reliability": 0.01,
+                "resolution": 0.05,
+                "uncertainty": 0.25,
+                "skill": 0.2,
+            },
+        )
+        mocker.patch(
+            "oskill.prediction.oprim.bayes_beta_update",
+            return_value={
+                "posterior_alpha": 2,
+                "posterior_beta": 2,
+                "posterior_mean": 0.5,
+                "q_0.025": 0.1,
+                "q_0.975": 0.9,
+            },
+        )
+        mock_pr = mocker.patch(
+            "oskill.prediction.oprim.percentile_rank",
+            return_value=pd.Series(np.linspace(0, 1, 100)),
+        )
         rng = np.random.default_rng(42)
         predictions = rng.uniform(0, 1, 100)
         outcomes = (rng.uniform(0, 1, 100) < predictions).astype(float)

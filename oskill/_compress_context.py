@@ -1,13 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import count_tokens
-import json
-import re
-import sys
-import os
+
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from oprim import count_tokens
+
+from ._types import LLMOskillError
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -17,7 +17,9 @@ class VectorStoreHandle(Protocol):
     生产实现由 obase.persistence.VectorStore 提供。
     """
 
-    async def search(self, *, vector: list[float], top_k: int=5, filter: dict | None=None) -> list[dict[str, Any]]:
+    async def search(
+        self, *, vector: list[float], top_k: int = 5, filter: dict | None = None
+    ) -> list[dict[str, Any]]:
         """
         向量相似度搜索。
 
@@ -25,6 +27,7 @@ class VectorStoreHandle(Protocol):
             list of {"chunk_id": str, "content": str, "score": float, "path": str}
         """
         ...
+
 
 async def compress_context(
     messages: list[dict],
@@ -65,15 +68,13 @@ async def compress_context(
     # 保留首 1 条（system/user）和末 2 条（最近上下文）
     keep_first = messages[:1]
     keep_last = messages[-2:] if len(messages) > 3 else []
-    middle = messages[1:len(messages) - len(keep_last)] if keep_last else messages[1:]
+    middle = messages[1 : len(messages) - len(keep_last)] if keep_last else messages[1:]
 
     if not middle:
         return list(messages)  # pragma: no cover
 
     # 用 LLM 压缩 middle 部分
-    history_text = "\n".join(
-        f"[{m.get('role','?')}]: {_msg_text(m)[:500]}" for m in middle
-    )
+    history_text = "\n".join(f"[{m.get('role', '?')}]: {_msg_text(m)[:500]}" for m in middle)
     compress_prompt = (
         f"Summarize this conversation history in 3-5 sentences, "
         f"preserving key decisions, code changes, and findings:\n\n{history_text}"
@@ -96,9 +97,13 @@ async def compress_context(
     summary_msg = {"role": "user", "content": f"[Conversation summary]: {summary_text}"}
     return keep_first + [summary_msg] + keep_last
 
+
 def _msg_text(msg: dict) -> str:
     content = msg.get("content", "")
-    if isinstance(content, str): return content
+    if isinstance(content, str):
+        return content
     if isinstance(content, list):
-        return " ".join(b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text")
+        return " ".join(
+            b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"
+        )
     return str(content)

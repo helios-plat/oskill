@@ -1,4 +1,5 @@
 """Max-min expected utility portfolio optimization under model uncertainty."""
+
 from __future__ import annotations
 
 from typing import Literal

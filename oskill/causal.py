@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-from oprim import ordinal_pattern, phase_randomize, shannon_entropy
+from oprim import ordinal_pattern, phase_randomize
 
 
 def symbolic_transfer_entropy(
@@ -75,9 +75,9 @@ def _compute_ste(sx: np.ndarray, sy: np.ndarray, d: int, lag: int) -> float:
     if n <= 0:
         return 0.0
 
-    y_fut = sy[d: d + n]
-    y_past = sy[d - 1: d - 1 + n]
-    x_past = sx[d - 1: d - 1 + n]
+    y_fut = sy[d : d + n]
+    y_past = sy[d - 1 : d - 1 + n]
+    x_past = sx[d - 1 : d - 1 + n]
 
     min_len = min(len(y_fut), len(y_past), len(x_past))
     y_fut = y_fut[:min_len]

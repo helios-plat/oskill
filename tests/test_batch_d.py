@@ -4,14 +4,13 @@ oskill 批次 D 测试套件
 34 个 oskill，每个 ≥8 个测试用例。
 LLM/Embed/VectorStore 全部使用 mock Protocol 实例。
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import sys
-import tempfile
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -19,39 +18,78 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from oskill import (
-    ApplyResult, Chunk, EditBlock, OskillError, EditOskillError,
-    LLMOskillError, ConfigOskillError, ParseOskillError,
-    PluginManifest, RepoMap, SubTask, Symbol, TodoItem, ToolCall, UndoPlan,
-    apply_edit_block, apply_unified_diff, apply_todo_update,
-    build_repo_context, build_subagent_prompt, build_undo_plan,
-    chunk_code, compose_plugin_manifest, compress_context,
-    dedup_edits, escalate_thinking_budget, evaluate_hooks,
-    extract_symbols, format_diagnostics, generate_patch_preview,
-    load_skill_progressive, match_permission_rule, merge_config,
-    merge_subagent_result, parse_llm_tool_calls, plan_decompose,
-    plan_to_todos, rank_relevant_files, repo_map_build,
-    resolve_memory_hierarchy, resolve_mentions, select_skill,
-    select_tools, semantic_search, summarize_file, syntax_check,
-    three_way_merge, validate_edit,
+    ApplyResult,
+    Chunk,
+    ConfigOskillError,
+    EditBlock,
+    EditOskillError,
+    LLMOskillError,
+    OskillError,
+    ParseOskillError,
+    PluginManifest,
+    RepoMap,
+    SubTask,
+    Symbol,
+    TodoItem,
+    ToolCall,
+    UndoPlan,
+    apply_edit_block,
+    apply_todo_update,
+    apply_unified_diff,
+    build_repo_context,
+    build_subagent_prompt,
+    build_undo_plan,
+    chunk_code,
+    compose_plugin_manifest,
+    compress_context,
+    dedup_edits,
+    escalate_thinking_budget,
+    evaluate_hooks,
+    extract_symbols,
+    format_diagnostics,
+    generate_patch_preview,
+    load_skill_progressive,
+    match_permission_rule,
+    merge_config,
+    merge_subagent_result,
+    parse_llm_tool_calls,
+    plan_decompose,
+    plan_to_todos,
+    rank_relevant_files,
+    repo_map_build,
+    resolve_memory_hierarchy,
+    resolve_mentions,
+    select_skill,
+    select_tools,
+    semantic_search,
+    summarize_file,
+    syntax_check,
+    three_way_merge,
+    validate_edit,
 )
 from oskill.tooling import HookCmd
-
 
 # ===========================================================================
 # helpers
 # ===========================================================================
 
+
 def make_llm_caller(text="ok", items=None):
     async def caller(**kwargs):
         content = items or [{"type": "text", "text": text}]
-        return {"content": content, "stop_reason": "end_turn",
-                "usage": {"input_tokens": 10, "output_tokens": 5}}
+        return {
+            "content": content,
+            "stop_reason": "end_turn",
+            "usage": {"input_tokens": 10, "output_tokens": 5},
+        }
+
     return caller
 
 
 def make_embed_caller(vector=None):
     async def caller(*, text, model):
         return vector or [0.1, 0.2, 0.3]
+
     return caller
 
 
@@ -74,6 +112,7 @@ def skill_dir(tmp_path, name="test_skill", extra=""):
 # ===========================================================================
 # GROUP 1: 编辑算法
 # ===========================================================================
+
 
 class TestApplyEditBlock:
     def test_exact_match(self):
@@ -125,10 +164,7 @@ class TestApplyUnifiedDiff:
         assert len(r.rejects) == 1
 
     def test_multi_hunk(self):
-        diff = (
-            "@@ -1,1 +1,1 @@\n-a\n+A\n"
-            "@@ -3,1 +3,1 @@\n-c\n+C\n"
-        )
+        diff = "@@ -1,1 +1,1 @@\n-a\n+A\n@@ -3,1 +3,1 @@\n-c\n+C\n"
         r = apply_unified_diff("a\nb\nc\n", diff=diff)
         assert r.applied == 2 and "A" in r.content and "C" in r.content
 
@@ -146,10 +182,7 @@ class TestApplyUnifiedDiff:
         assert "ctx1" in r.content and "ctx2" in r.content and "new" in r.content
 
     def test_partial_reject_still_applies_others(self):
-        diff = (
-            "@@ -1,1 +1,1 @@\n-a\n+A\n"
-            "@@ -5,1 +5,1 @@\n-WRONG\n+X\n"
-        )
+        diff = "@@ -1,1 +1,1 @@\n-a\n+A\n@@ -5,1 +5,1 @@\n-WRONG\n+X\n"
         r = apply_unified_diff("a\nb\nc\n", diff=diff)
         assert r.applied >= 1
 
@@ -226,14 +259,12 @@ class TestGeneratePatchPreview:
 
 class TestDedupEdits:
     def test_removes_duplicate_path(self):
-        edits = [{"path": "f.py", "full_content": "a"},
-                 {"path": "f.py", "full_content": "b"}]
+        edits = [{"path": "f.py", "full_content": "a"}, {"path": "f.py", "full_content": "b"}]
         result = dedup_edits(edits)
         assert len(result) == 1 and result[0]["full_content"] == "b"
 
     def test_different_paths_kept(self):
-        edits = [{"path": "a.py", "full_content": "x"},
-                 {"path": "b.py", "full_content": "y"}]
+        edits = [{"path": "a.py", "full_content": "x"}, {"path": "b.py", "full_content": "y"}]
         assert len(dedup_edits(edits)) == 2
 
     def test_empty_returns_empty(self):
@@ -260,8 +291,10 @@ class TestDedupEdits:
         assert result[0].get("full_content") == "final"
 
     def test_preserves_order_last_wins(self):
-        edits = [{"path": "f.py", "full_content": "first"},
-                 {"path": "f.py", "full_content": "last"}]
+        edits = [
+            {"path": "f.py", "full_content": "first"},
+            {"path": "f.py", "full_content": "last"},
+        ]
         assert dedup_edits(edits)[0]["full_content"] == "last"
 
     def test_returns_list(self):
@@ -308,10 +341,17 @@ class TestBuildUndoPlan:
 # GROUP 2: 工具/配置/hook
 # ===========================================================================
 
+
 class TestFormatDiagnostics:
     def _diag(self, path="f.py", line=0, char=0, sev=1, msg="err", src="pylsp"):
-        return {"path": path, "line": line, "character": char,
-                "severity": sev, "message": msg, "source": src}
+        return {
+            "path": path,
+            "line": line,
+            "character": char,
+            "severity": sev,
+            "message": msg,
+            "source": src,
+        }
 
     def test_no_diags(self):
         assert format_diagnostics([]) == "No diagnostics."
@@ -344,17 +384,21 @@ class TestFormatDiagnostics:
 
 class TestParseLLMToolCalls:
     def test_parses_tool_use(self):
-        response = {"content": [
-            {"type": "tool_use", "id": "t1", "name": "bash_exec", "input": {"cmd": "ls"}}
-        ]}
+        response = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "bash_exec", "input": {"cmd": "ls"}}
+            ]
+        }
         calls = parse_llm_tool_calls(response)
         assert len(calls) == 1 and calls[0].name == "bash_exec"
 
     def test_ignores_text_blocks(self):
-        response = {"content": [
-            {"type": "text", "text": "hello"},
-            {"type": "tool_use", "id": "t1", "name": "file_read", "input": {}},
-        ]}
+        response = {
+            "content": [
+                {"type": "text", "text": "hello"},
+                {"type": "tool_use", "id": "t1", "name": "file_read", "input": {}},
+            ]
+        }
         calls = parse_llm_tool_calls(response)
         assert len(calls) == 1
 
@@ -371,10 +415,12 @@ class TestParseLLMToolCalls:
         assert calls[0].id
 
     def test_multiple_calls(self):
-        response = {"content": [
-            {"type": "tool_use", "id": "t1", "name": "a", "input": {}},
-            {"type": "tool_use", "id": "t2", "name": "b", "input": {}},
-        ]}
+        response = {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "a", "input": {}},
+                {"type": "tool_use", "id": "t2", "name": "b", "input": {}},
+            ]
+        }
         assert len(parse_llm_tool_calls(response)) == 2
 
     def test_returns_tool_call_objects(self):
@@ -663,8 +709,9 @@ class TestComposePluginManifest:
         assert "skill_a" in m.skills
 
     def test_commands_list(self):
-        m = compose_plugin_manifest({"name": "p",
-                                     "commands": [{"name": "init", "description": "init cmd"}]})
+        m = compose_plugin_manifest(
+            {"name": "p", "commands": [{"name": "init", "description": "init cmd"}]}
+        )
         assert m.commands[0]["name"] == "init"
 
     def test_hooks_list(self):
@@ -731,8 +778,15 @@ class TestBuildSubagentPrompt:
 
 class TestMergeSubagentResult:
     def test_basic_merge(self):
-        summaries = [{"subagent_name": "tester", "summary": "Tests written.",
-                      "status": "completed", "cost_usd": 0.01, "iterations": 3}]
+        summaries = [
+            {
+                "subagent_name": "tester",
+                "summary": "Tests written.",
+                "status": "completed",
+                "cost_usd": 0.01,
+                "iterations": 3,
+            }
+        ]
         ctx = merge_subagent_result(summaries)
         assert "tester" in ctx and "Tests written" in ctx
 
@@ -740,8 +794,9 @@ class TestMergeSubagentResult:
         assert merge_subagent_result([]) == ""
 
     def test_task_in_header(self):
-        ctx = merge_subagent_result([{"subagent_name": "a", "summary": "x",
-                                       "status": "ok"}], task="Fix auth")
+        ctx = merge_subagent_result(
+            [{"subagent_name": "a", "summary": "x", "status": "ok"}], task="Fix auth"
+        )
         assert "Fix auth" in ctx
 
     def test_multiple_summaries(self):
@@ -758,13 +813,13 @@ class TestMergeSubagentResult:
         assert len(ctx) <= 100 + 20  # 允许截断标记
 
     def test_status_in_output(self):
-        ctx = merge_subagent_result([{"subagent_name": "a", "summary": "",
-                                       "status": "failed"}])
+        ctx = merge_subagent_result([{"subagent_name": "a", "summary": "", "status": "failed"}])
         assert "failed" in ctx
 
     def test_cost_shown(self):
-        ctx = merge_subagent_result([{"subagent_name": "a", "summary": "",
-                                       "status": "ok", "cost_usd": 1.23}])
+        ctx = merge_subagent_result(
+            [{"subagent_name": "a", "summary": "", "status": "ok", "cost_usd": 1.23}]
+        )
         assert "1.2300" in ctx or "1.23" in ctx
 
     def test_returns_string(self):
@@ -774,6 +829,7 @@ class TestMergeSubagentResult:
 # ===========================================================================
 # GROUP 3: 代码分析
 # ===========================================================================
+
 
 class TestSyntaxCheck:
     def test_valid_python(self):
@@ -815,17 +871,23 @@ class TestValidateEdit:
         assert not result["ok"] and len(result["errors"]) > 0
 
     def test_block_edit_applied(self):
-        result = validate_edit("x = 1\n", {
-            "path": "f.py",
-            "blocks": [{"search": "x = 1", "replace": "x = 99"}],
-        })
+        result = validate_edit(
+            "x = 1\n",
+            {
+                "path": "f.py",
+                "blocks": [{"search": "x = 1", "replace": "x = 99"}],
+            },
+        )
         assert "99" in result["content"]
 
     def test_block_conflict_not_ok(self):
-        result = validate_edit("abc\n", {
-            "path": "f.py",
-            "blocks": [{"search": "NOTFOUND", "replace": "x"}],
-        })
+        result = validate_edit(
+            "abc\n",
+            {
+                "path": "f.py",
+                "blocks": [{"search": "NOTFOUND", "replace": "x"}],
+            },
+        )
         assert not result["ok"] and len(result["conflicts"]) > 0
 
     def test_json_validated(self):
@@ -1020,7 +1082,7 @@ class TestResolveMentions:
     def test_resolves_file_ref(self, tmp_path):
         f = tmp_path / "main.py"
         f.write_text("x = 1\n")
-        result = resolve_mentions(f"Look at @main.py", root=str(tmp_path))
+        result = resolve_mentions("Look at @main.py", root=str(tmp_path))
         assert str(f) in result["files"]
 
     def test_no_mentions_unchanged(self, tmp_path):
@@ -1059,7 +1121,11 @@ class TestResolveMentions:
 
 class TestSelectSkill:
     INDEX = [
-        {"name": "refactor_python", "description": "refactors python code", "tags": ["python", "refactor"]},
+        {
+            "name": "refactor_python",
+            "description": "refactors python code",
+            "tags": ["python", "refactor"],
+        },
         {"name": "write_tests", "description": "generates unit tests", "tags": ["test", "pytest"]},
         {"name": "security_audit", "description": "audits security", "tags": ["security"]},
     ]
@@ -1142,6 +1208,7 @@ class TestLoadSkillProgressive:
 # GROUP 4: LLM 依赖算法
 # ===========================================================================
 
+
 class TestSummarizeFile:
     def test_returns_summary(self, tmp_path):
         f = tmp_path / "main.py"
@@ -1158,7 +1225,10 @@ class TestSummarizeFile:
     def test_caller_error_raises(self, tmp_path):
         f = tmp_path / "f.py"
         f.write_text("x=1")
-        async def bad(**kw): raise RuntimeError("fail")
+
+        async def bad(**kw):
+            raise RuntimeError("fail")
+
         with pytest.raises(LLMOskillError, match="LLM call failed"):
             asyncio.run(summarize_file(str(f), caller=bad))
 
@@ -1166,18 +1236,24 @@ class TestSummarizeFile:
         f = tmp_path / "big.py"
         f.write_text("x = 1\n" * 10000)
         calls = []
+
         async def capturing(**kw):
             calls.append(kw["messages"][0]["content"])
-            return {"content": [{"type": "text", "text": "summary"}],
-                    "usage": {"input_tokens": 10, "output_tokens": 5}}
+            return {
+                "content": [{"type": "text", "text": "summary"}],
+                "usage": {"input_tokens": 10, "output_tokens": 5},
+            }
+
         asyncio.run(summarize_file(str(f), caller=capturing, max_content_tokens=100))
         assert len(calls[0]) < len("x = 1\n" * 10000)
 
     def test_no_text_block_returns_placeholder(self, tmp_path):
         f = tmp_path / "f.py"
         f.write_text("x=1")
+
         async def empty_caller(**kw):
             return {"content": [], "usage": {}}
+
         result = asyncio.run(summarize_file(str(f), caller=empty_caller))
         assert result == "(no summary)"
 
@@ -1185,9 +1261,11 @@ class TestSummarizeFile:
         f = tmp_path / "special.py"
         f.write_text("x=1")
         prompts = []
+
         async def cap(**kw):
             prompts.append(kw["messages"][0]["content"])
             return {"content": [{"type": "text", "text": "ok"}], "usage": {}}
+
         asyncio.run(summarize_file(str(f), caller=cap))
         assert "special.py" in prompts[0]
 
@@ -1200,11 +1278,16 @@ class TestSummarizeFile:
     def test_multiblock_text_concatenated(self, tmp_path):
         f = tmp_path / "f.py"
         f.write_text("x=1")
+
         async def multi(**kw):
-            return {"content": [
-                {"type": "text", "text": "Part 1. "},
-                {"type": "text", "text": "Part 2."},
-            ], "usage": {}}
+            return {
+                "content": [
+                    {"type": "text", "text": "Part 1. "},
+                    {"type": "text", "text": "Part 2."},
+                ],
+                "usage": {},
+            }
+
         result = asyncio.run(summarize_file(str(f), caller=multi))
         assert "Part 1" in result and "Part 2" in result
 
@@ -1233,7 +1316,9 @@ class TestCompressContext:
         assert result == []
 
     def test_caller_error_raises(self):
-        async def bad(**kw): raise RuntimeError("fail")
+        async def bad(**kw):
+            raise RuntimeError("fail")
+
         with pytest.raises(LLMOskillError):
             asyncio.run(compress_context(self.MSGS, caller=bad, budget=10))
 
@@ -1255,14 +1340,23 @@ class TestCompressContext:
 
 class TestPlanDecompose:
     def test_returns_subtasks(self):
-        items = [{"id": "1", "title": "Write tests", "description": "...",
-                  "dependencies": [], "estimated_complexity": "low"}]
+        items = [
+            {
+                "id": "1",
+                "title": "Write tests",
+                "description": "...",
+                "dependencies": [],
+                "estimated_complexity": "low",
+            }
+        ]
         caller = make_llm_caller(text=json.dumps(items))
         tasks = asyncio.run(plan_decompose("Add auth", caller=caller))
         assert len(tasks) > 0 and isinstance(tasks[0], SubTask)
 
     def test_caller_error_raises(self):
-        async def bad(**kw): raise RuntimeError("fail")
+        async def bad(**kw):
+            raise RuntimeError("fail")
+
         with pytest.raises(LLMOskillError):
             asyncio.run(plan_decompose("task", caller=bad))
 
@@ -1279,8 +1373,10 @@ class TestPlanDecompose:
         assert len(tasks) >= 1
 
     def test_max_subtasks_respected(self):
-        items = [{"id": str(i), "title": f"Task {i}", "description": "",
-                  "dependencies": []} for i in range(20)]
+        items = [
+            {"id": str(i), "title": f"Task {i}", "description": "", "dependencies": []}
+            for i in range(20)
+        ]
         caller = make_llm_caller(text=json.dumps(items))
         tasks = asyncio.run(plan_decompose("goal", caller=caller, max_subtasks=5))
         assert len(tasks) <= 5
@@ -1293,9 +1389,11 @@ class TestPlanDecompose:
 
     def test_context_passed(self):
         prompts = []
+
         async def cap(**kw):
             prompts.append(kw["messages"][0]["content"])
             return {"content": [{"type": "text", "text": "[]"}], "usage": {}}
+
         asyncio.run(plan_decompose("goal", caller=cap, context="extra context"))
         assert "extra context" in prompts[0]
 
@@ -1307,32 +1405,57 @@ class TestPlanDecompose:
 class TestRankRelevantFiles:
     def _make_repo_map(self, files):
         from oskill._types import RepoFile
+
         return RepoMap(
             root="/project",
-            files=[RepoFile(path=p, language="python", size_bytes=100,
-                            symbols=[], head_lines=h)
-                   for p, h in files],
+            files=[
+                RepoFile(path=p, language="python", size_bytes=100, symbols=[], head_lines=h)
+                for p, h in files
+            ],
             total_files=len(files),
         )
 
     def test_relevant_file_ranked_first(self):
         from oskill._types import RepoFile
+
         rmap = RepoMap(
-            root="/project", total_files=2,
+            root="/project",
+            total_files=2,
             files=[
-                RepoFile(path="/project/auth.py", language="python", size_bytes=100,
-                         symbols=[Symbol(name="authenticate", kind="function",
-                                         start_line=1, end_line=5,
-                                         path="/project/auth.py",
-                                         signature="def authenticate()")],
-                         head_lines="def authenticate(): pass"),
-                RepoFile(path="/project/utils.py", language="python", size_bytes=100,
-                         symbols=[Symbol(name="helper", kind="function",
-                                         start_line=1, end_line=3,
-                                         path="/project/utils.py",
-                                         signature="def helper()")],
-                         head_lines="def helper(): pass"),
-            ])
+                RepoFile(
+                    path="/project/auth.py",
+                    language="python",
+                    size_bytes=100,
+                    symbols=[
+                        Symbol(
+                            name="authenticate",
+                            kind="function",
+                            start_line=1,
+                            end_line=5,
+                            path="/project/auth.py",
+                            signature="def authenticate()",
+                        )
+                    ],
+                    head_lines="def authenticate(): pass",
+                ),
+                RepoFile(
+                    path="/project/utils.py",
+                    language="python",
+                    size_bytes=100,
+                    symbols=[
+                        Symbol(
+                            name="helper",
+                            kind="function",
+                            start_line=1,
+                            end_line=3,
+                            path="/project/utils.py",
+                            signature="def helper()",
+                        )
+                    ],
+                    head_lines="def helper(): pass",
+                ),
+            ],
+        )
         ranked = asyncio.run(rank_relevant_files("authenticate", repo_map=rmap))
         assert ranked and "auth.py" in ranked[0][0]
 
@@ -1343,48 +1466,89 @@ class TestRankRelevantFiles:
 
     def test_top_k_respected(self):
         from oskill._types import RepoFile
-        rmap = RepoMap(root="/p", total_files=10, files=[
-            RepoFile(path=f"/p/f{i}.py", language="python", size_bytes=10,
-                     head_lines=f"content {i}") for i in range(10)
-        ])
+
+        rmap = RepoMap(
+            root="/p",
+            total_files=10,
+            files=[
+                RepoFile(
+                    path=f"/p/f{i}.py", language="python", size_bytes=10, head_lines=f"content {i}"
+                )
+                for i in range(10)
+            ],
+        )
         result = asyncio.run(rank_relevant_files("content", repo_map=rmap, top_k=3))
         assert len(result) <= 3
 
     def test_returns_tuple_list(self):
         from oskill._types import RepoFile
-        rmap = RepoMap(root="/p", total_files=1, files=[
-            RepoFile(path="/p/f.py", language="python", size_bytes=10, head_lines="x")
-        ])
+
+        rmap = RepoMap(
+            root="/p",
+            total_files=1,
+            files=[RepoFile(path="/p/f.py", language="python", size_bytes=10, head_lines="x")],
+        )
         result = asyncio.run(rank_relevant_files("x", repo_map=rmap))
         assert all(isinstance(r, tuple) and len(r) == 2 for r in result)
 
     def test_score_between_0_and_1(self):
         from oskill._types import RepoFile
-        rmap = RepoMap(root="/p", total_files=1, files=[
-            RepoFile(path="/p/auth.py", language="python", size_bytes=10, head_lines="auth")
-        ])
+
+        rmap = RepoMap(
+            root="/p",
+            total_files=1,
+            files=[
+                RepoFile(path="/p/auth.py", language="python", size_bytes=10, head_lines="auth")
+            ],
+        )
         result = asyncio.run(rank_relevant_files("auth", repo_map=rmap))
         if result:
             assert 0 <= result[0][1] <= 5  # 允许加权后超过1
 
     def test_no_match_returns_empty(self):
         from oskill._types import RepoFile
-        rmap = RepoMap(root="/p", total_files=1, files=[
-            RepoFile(path="/p/xyz.py", language="python", size_bytes=10, head_lines="nothing")
-        ])
+
+        rmap = RepoMap(
+            root="/p",
+            total_files=1,
+            files=[
+                RepoFile(path="/p/xyz.py", language="python", size_bytes=10, head_lines="nothing")
+            ],
+        )
         result = asyncio.run(rank_relevant_files("auth_login_system", repo_map=rmap))
         assert isinstance(result, list)
 
     def test_symbol_names_boost_score(self):
         from oskill._types import RepoFile
-        rmap = RepoMap(root="/p", total_files=2, files=[
-            RepoFile(path="/p/a.py", language="python", size_bytes=10,
-                     symbols=[Symbol(name="authenticate", kind="function",
-                                     start_line=1, end_line=5, path="/p/a.py")],
-                     head_lines=""),
-            RepoFile(path="/p/b.py", language="python", size_bytes=10,
-                     symbols=[], head_lines="unrelated stuff"),
-        ])
+
+        rmap = RepoMap(
+            root="/p",
+            total_files=2,
+            files=[
+                RepoFile(
+                    path="/p/a.py",
+                    language="python",
+                    size_bytes=10,
+                    symbols=[
+                        Symbol(
+                            name="authenticate",
+                            kind="function",
+                            start_line=1,
+                            end_line=5,
+                            path="/p/a.py",
+                        )
+                    ],
+                    head_lines="",
+                ),
+                RepoFile(
+                    path="/p/b.py",
+                    language="python",
+                    size_bytes=10,
+                    symbols=[],
+                    head_lines="unrelated stuff",
+                ),
+            ],
+        )
         result = asyncio.run(rank_relevant_files("authenticate", repo_map=rmap))
         assert result[0][0].endswith("a.py")
 
@@ -1413,7 +1577,7 @@ class TestBuildRepoContext:
         for i in range(20):
             (tmp_path / f"f{i}.py").write_text("x = " + "y" * 500 + "\n")
         result = asyncio.run(build_repo_context("task", root=str(tmp_path), budget=200))
-        from oskill._types import OskillError
+
         assert isinstance(result, str)
 
     def test_nonexistent_root(self):
@@ -1439,10 +1603,17 @@ class TestBuildRepoContext:
 
 class TestSemanticSearch:
     def test_returns_chunks(self):
-        store = make_vector_store([
-            {"content": "def auth(): pass", "path": "auth.py",
-             "start_line": 1, "end_line": 3, "chunk_id": "c1"}
-        ])
+        store = make_vector_store(
+            [
+                {
+                    "content": "def auth(): pass",
+                    "path": "auth.py",
+                    "start_line": 1,
+                    "end_line": 3,
+                    "chunk_id": "c1",
+                }
+            ]
+        )
         embed = make_embed_caller()
         result = asyncio.run(semantic_search("auth", store=store, embed_caller=embed))
         assert len(result) == 1 and isinstance(result[0], Chunk)
@@ -1455,7 +1626,10 @@ class TestSemanticSearch:
 
     def test_embed_error_raises(self):
         store = make_vector_store()
-        async def bad(*, text, model): raise RuntimeError("embed fail")
+
+        async def bad(*, text, model):
+            raise RuntimeError("embed fail")
+
         with pytest.raises(LLMOskillError, match="embedding"):
             asyncio.run(semantic_search("q", store=store, embed_caller=bad))
 
@@ -1486,8 +1660,9 @@ class TestSemanticSearch:
         assert result == []
 
     def test_non_dict_items_filtered(self):
-        store = make_vector_store(["bad_item", {"content": "good", "path": "f.py",
-                                                 "start_line": 0, "end_line": 1}])
+        store = make_vector_store(
+            ["bad_item", {"content": "good", "path": "f.py", "start_line": 0, "end_line": 1}]
+        )
         embed = make_embed_caller()
         result = asyncio.run(semantic_search("q", store=store, embed_caller=embed))
         assert len(result) == 1 and result[0].content == "good"

@@ -9,6 +9,7 @@ db_conn expected interface:
   get_dangling_deps_count(ku_id: str) -> int             (async or sync)
   clear_dangling_deps(ku_id: str) -> None                (async or sync)
 """
+
 from __future__ import annotations
 
 import inspect

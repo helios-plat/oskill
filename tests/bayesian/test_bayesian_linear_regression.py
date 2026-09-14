@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.bayesian.linear_regression import bayesian_linear_regression
 
@@ -40,9 +39,7 @@ def test_blr_conjugate_posterior_mean_close_to_ols():
     rng = np.random.default_rng(42)
     X, y = _make_linear_data(rng, n=200)
     # Weak prior: small precision => posterior ~ OLS
-    result = bayesian_linear_regression(
-        X, y, prior_precision=1e-6 * np.eye(2), method="conjugate"
-    )
+    result = bayesian_linear_regression(X, y, prior_precision=1e-6 * np.eye(2), method="conjugate")
     n = len(y)
     ones = np.ones(n)
     X_full = np.column_stack([ones, X[:, 0]])
@@ -68,7 +65,8 @@ def test_blr_conjugate_prior_dominates_with_strong_prior():
     prior_mean = np.array([0.0, 0.0])
     # Very strong prior: precision = 1e6 * I => posterior pulled hard toward 0
     result = bayesian_linear_regression(
-        X, y,
+        X,
+        y,
         prior_mean=prior_mean,
         prior_precision=1e6 * np.eye(2),
         method="conjugate",

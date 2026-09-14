@@ -1,21 +1,19 @@
 """Tests for K-AII-3: relation_extract_llm and K-AII-4: community_cluster."""
+
 from __future__ import annotations
 
-import asyncio
 import json
-from dataclasses import dataclass
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from oprim._aii_graph_types import Community, RelationResult
 
-from oskill._relation_extract_llm import relation_extract_llm
 from oskill._community_cluster import community_cluster
-from oprim._aii_graph_types import RelationResult, Community
-
+from oskill._relation_extract_llm import relation_extract_llm
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_llm(response_json):
     """Return a mock LLM caller that replies with the given JSON value."""
@@ -30,19 +28,23 @@ def _make_llm(response_json):
 def _vecs_group(center, n, noise=0.05):
     """Generate n similar vectors near center."""
     rng = __import__("random").Random(42)
-    return [
-        [x + rng.uniform(-noise, noise) for x in center]
-        for _ in range(n)
-    ]
+    return [[x + rng.uniform(-noise, noise) for x in center] for _ in range(n)]
 
 
 # ---------------------------------------------------------------------------
 # K-AII-3: relation_extract_llm
 # ---------------------------------------------------------------------------
 
+
 class TestRelationExtractLlm:
     async def test_returns_relation_result_when_related(self):
-        llm = _make_llm({"relation_type": "prerequisite_of", "direction": "a_to_b", "rationale": "A is needed for B"})
+        llm = _make_llm(
+            {
+                "relation_type": "prerequisite_of",
+                "direction": "a_to_b",
+                "rationale": "A is needed for B",
+            }
+        )
         result = await relation_extract_llm(
             ku_a={"id": "ku1", "text": "Linear algebra basics"},
             ku_b={"id": "ku2", "text": "Machine learning fundamentals"},
@@ -61,7 +63,9 @@ class TestRelationExtractLlm:
         assert result is None
 
     async def test_grade_always_unverified(self):
-        llm = _make_llm({"relation_type": "references", "direction": "a_to_b", "rationale": "cites"})
+        llm = _make_llm(
+            {"relation_type": "references", "direction": "a_to_b", "rationale": "cites"}
+        )
         result = await relation_extract_llm(
             ku_a={"id": "ku1", "text": "Topic A"},
             ku_b={"id": "ku2", "text": "Topic B"},
@@ -75,6 +79,7 @@ class TestRelationExtractLlm:
         assert r.grade == "unverified"
         # Confirm grade is not an __init__ parameter
         import inspect
+
         sig = inspect.signature(RelationResult.__init__)
         assert "grade" not in sig.parameters
 
@@ -90,7 +95,9 @@ class TestRelationExtractLlm:
         assert result is None
 
     async def test_direction_field_preserved(self):
-        llm = _make_llm({"relation_type": "basis_of", "direction": "bidirectional", "rationale": "mutual"})
+        llm = _make_llm(
+            {"relation_type": "basis_of", "direction": "bidirectional", "rationale": "mutual"}
+        )
         result = await relation_extract_llm(
             ku_a={"id": "ku1", "text": "A"},
             ku_b={"id": "ku2", "text": "B"},
@@ -100,7 +107,9 @@ class TestRelationExtractLlm:
         assert result.direction == "bidirectional"
 
     async def test_rationale_non_empty_when_related(self):
-        llm = _make_llm({"relation_type": "contradicts", "direction": "b_to_a", "rationale": "B refutes A"})
+        llm = _make_llm(
+            {"relation_type": "contradicts", "direction": "b_to_a", "rationale": "B refutes A"}
+        )
         result = await relation_extract_llm(
             ku_a={"id": "ku1", "text": "A"},
             ku_b={"id": "ku2", "text": "B"},
@@ -148,6 +157,7 @@ class TestRelationExtractLlm:
 # K-AII-4: community_cluster
 # ---------------------------------------------------------------------------
 
+
 class TestCommunityCluster:
     def _make_ids_vecs(self, groups):
         ids, vecs = [], []
@@ -170,9 +180,11 @@ class TestCommunityCluster:
 
     def test_specified_n_clusters_respected(self):
         ids = [f"k{i}" for i in range(9)]
-        vecs = _vecs_group([1.0, 0.0, 0.0], 3) + \
-               _vecs_group([0.0, 1.0, 0.0], 3) + \
-               _vecs_group([0.0, 0.0, 1.0], 3)
+        vecs = (
+            _vecs_group([1.0, 0.0, 0.0], 3)
+            + _vecs_group([0.0, 1.0, 0.0], 3)
+            + _vecs_group([0.0, 0.0, 1.0], 3)
+        )
         result = community_cluster(ku_ids=ids, embeddings=vecs, n_clusters=3, min_community_size=1)
         assert len(result) == 3
 
@@ -206,8 +218,9 @@ class TestCommunityCluster:
     def test_similar_vectors_cluster_together(self):
         # Two tight groups; should cluster into same community
         ids = ["a0", "a1", "a2", "b0", "b1", "b2"]
-        vecs = _vecs_group([1.0, 0.0, 0.0], 3, noise=0.01) + \
-               _vecs_group([0.0, 1.0, 0.0], 3, noise=0.01)
+        vecs = _vecs_group([1.0, 0.0, 0.0], 3, noise=0.01) + _vecs_group(
+            [0.0, 1.0, 0.0], 3, noise=0.01
+        )
         result = community_cluster(ku_ids=ids, embeddings=vecs, n_clusters=2, min_community_size=1)
         labels_a = {c.label for c in result if any(m.startswith("a") for m in c.ku_ids)}
         labels_b = {c.label for c in result if any(m.startswith("b") for m in c.ku_ids)}

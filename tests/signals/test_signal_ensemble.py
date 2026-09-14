@@ -6,14 +6,13 @@ import pytest
 
 from oskill.signals.ensemble import signal_ensemble
 
-
 # ── Happy path ──────────────────────────────────────────────────────────────
 
 
 def test_signal_ensemble_linear_basic():
     """2 signals equal weights → weighted mean."""
     s1 = np.array([0.4, 0.6, -0.2])
-    s2 = np.array([0.2, 0.4,  0.8])
+    s2 = np.array([0.2, 0.4, 0.8])
     result = signal_ensemble({"a": s1, "b": s2}, {"a": 1.0, "b": 1.0})
     expected = np.array([0.3, 0.5, 0.3])
     np.testing.assert_allclose(result, expected, atol=1e-12)
@@ -31,8 +30,7 @@ def test_signal_ensemble_linear_unequal_weights():
 def test_signal_ensemble_geometric_basic():
     """Geometric aggregation of equal signals returns same signal."""
     vals = np.array([0.5, -0.3, 0.1])
-    result = signal_ensemble({"a": vals, "b": vals}, {"a": 1.0, "b": 1.0},
-                             aggregation="geometric")
+    result = signal_ensemble({"a": vals, "b": vals}, {"a": 1.0, "b": 1.0}, aggregation="geometric")
     np.testing.assert_allclose(result, vals, atol=1e-10)
 
 
@@ -40,8 +38,7 @@ def test_signal_ensemble_geometric_two_signals():
     """Geometric mean of [0, 0] is 0; of [0.5, 0.5] is 0.5."""
     s1 = np.array([0.0, 0.5])
     s2 = np.array([0.0, 0.5])
-    result = signal_ensemble({"a": s1, "b": s2}, {"a": 1.0, "b": 1.0},
-                             aggregation="geometric")
+    result = signal_ensemble({"a": s1, "b": s2}, {"a": 1.0, "b": 1.0}, aggregation="geometric")
     # prod((s+1)^0.5)^(1/1) - 1
     # [0]: (1^0.5 * 1^0.5)^1 - 1 = 1 - 1 = 0
     # [1]: (1.5^0.5 * 1.5^0.5)^1 - 1 = 1.5 - 1 = 0.5
@@ -51,8 +48,7 @@ def test_signal_ensemble_geometric_two_signals():
 def test_signal_ensemble_harmonic_basic():
     """Harmonic mean of equal signals returns same signal."""
     vals = np.array([0.5, 0.8, -0.4])
-    result = signal_ensemble({"a": vals, "b": vals}, {"a": 1.0, "b": 1.0},
-                             aggregation="harmonic")
+    result = signal_ensemble({"a": vals, "b": vals}, {"a": 1.0, "b": 1.0}, aggregation="harmonic")
     np.testing.assert_allclose(result, vals, atol=1e-10)
 
 
@@ -61,7 +57,10 @@ def test_signal_ensemble_with_decay_fn():
     # decay_fn: most recent (lag=0) → 1.0, oldest (lag=n-1) → near 0
     n = 5
     vals = np.ones(n) * 0.5
-    decay = lambda lag: 1.0 - lag / (n - 1)
+
+    def decay(lag):
+        return 1.0 - lag / (n - 1)
+
     result = signal_ensemble({"a": vals}, {"a": 1.0}, decay_fn=decay)
     # t=0 is oldest (lag=4), t=4 is most recent (lag=0)
     expected_factors = [1.0 - (n - 1 - t) / (n - 1) for t in range(n)]
@@ -119,8 +118,7 @@ def test_signal_ensemble_harmonic_all_zeros_gives_zero():
     """All-zero signals in harmonic mean produce 0 (no divide-by-zero error)."""
     s1 = np.array([0.0, 0.5])
     s2 = np.array([0.0, 0.5])
-    result = signal_ensemble({"a": s1, "b": s2}, {"a": 1.0, "b": 1.0},
-                             aggregation="harmonic")
+    result = signal_ensemble({"a": s1, "b": s2}, {"a": 1.0, "b": 1.0}, aggregation="harmonic")
     assert result[0] == pytest.approx(0.0)
     assert result[1] == pytest.approx(0.5)
 

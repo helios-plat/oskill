@@ -8,6 +8,7 @@ build_subagent_prompt / merge_subagent_result
 
 全部 stateless 纯算法，不持久化。
 """
+
 from __future__ import annotations
 
 import fnmatch
@@ -18,14 +19,19 @@ from dataclasses import dataclass
 from typing import Any
 
 from ._types import (
-    ConfigOskillError, OskillError, ParseOskillError,
-    PluginManifest, TodoItem, ToolCall,
+    ConfigOskillError,
+    HookCmd,
+    OskillError,
+    ParseOskillError,
+    PluginManifest,
+    TodoItem,
+    ToolCall,
 )
-
 
 # ---------------------------------------------------------------------------
 # format_diagnostics
 # ---------------------------------------------------------------------------
+
 
 def format_diagnostics(
     diagnostics: list[Any],
@@ -65,7 +71,9 @@ def format_diagnostics(
                 line, char = item.line + 1, item.character  # pragma: no cover
                 sev = _SEV.get(item.severity, "?    ")  # pragma: no cover
                 msg = item.message  # pragma: no cover
-                src = f" [{item.source}]" if include_source and item.source else ""  # pragma: no cover
+                src = (
+                    f" [{item.source}]" if include_source and item.source else ""
+                )  # pragma: no cover
             else:
                 line = item.get("line", 0) + 1
                 char = item.get("character", 0)
@@ -82,6 +90,7 @@ def format_diagnostics(
 # ---------------------------------------------------------------------------
 # parse_llm_tool_calls
 # ---------------------------------------------------------------------------
+
 
 def parse_llm_tool_calls(
     response: dict[str, Any],
@@ -135,6 +144,7 @@ def parse_llm_tool_calls(
 # select_tools
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ToolScore:
     name: str
@@ -167,10 +177,17 @@ def select_tools(
         >>> all(t["name"] != "file_write" for t in tools)
         True  # plan 模式排除写操作
     """
-    WRITE_TOOLS = {"file_write", "file_append", "file_delete", "bash_exec",
-                   "git_add", "git_commit", "git_stash"}
+    WRITE_TOOLS = {
+        "file_write",
+        "file_append",
+        "file_delete",
+        "bash_exec",
+        "git_add",
+        "git_commit",
+        "git_stash",
+    }
     task_lower = task.lower()
-    task_words = set(re.findall(r'\w+', task_lower))
+    task_words = set(re.findall(r"\w+", task_lower))
 
     scored: list[ToolScore] = []
     for tool in available:
@@ -182,7 +199,7 @@ def select_tools(
             continue
 
         # 关键词匹配评分
-        tool_words = set(re.findall(r'\w+', name.lower() + " " + desc))
+        tool_words = set(re.findall(r"\w+", name.lower() + " " + desc))
         overlap = task_words & tool_words
         score = len(overlap) / max(len(task_words), 1)
 
@@ -200,6 +217,7 @@ def select_tools(
 # ---------------------------------------------------------------------------
 # merge_config
 # ---------------------------------------------------------------------------
+
 
 def merge_config(
     global_: dict[str, Any],
@@ -237,7 +255,7 @@ def merge_config(
 # evaluate_hooks
 # ---------------------------------------------------------------------------
 
-from ._types import HookCmd
+
 @dataclass
 class _OldHookCmd:
     event: str
@@ -289,6 +307,7 @@ def evaluate_hooks(
 # match_permission_rule
 # ---------------------------------------------------------------------------
 
+
 def match_permission_rule(
     tool_call: dict[str, Any],
     *,
@@ -316,11 +335,24 @@ def match_permission_rule(
         'deny'
     """
     name = tool_call.get("name", "")
-    READ_ONLY = {"file_read", "dir_list", "glob_match", "git_status", "git_diff",
-                 "git_log", "git_show", "git_blame", "lsp_diagnostics",
-                 "lsp_hover", "lsp_definition", "lsp_references",
-                 "lsp_document_symbols", "lsp_workspace_symbols",
-                 "lsp_completion", "ripgrep_search"}
+    READ_ONLY = {
+        "file_read",
+        "dir_list",
+        "glob_match",
+        "git_status",
+        "git_diff",
+        "git_log",
+        "git_show",
+        "git_blame",
+        "lsp_diagnostics",
+        "lsp_hover",
+        "lsp_definition",
+        "lsp_references",
+        "lsp_document_symbols",
+        "lsp_workspace_symbols",
+        "lsp_completion",
+        "ripgrep_search",
+    }
 
     if mode == "bypass":
         return "allow"
@@ -329,12 +361,12 @@ def match_permission_rule(
         return "allow" if name in READ_ONLY else "deny"
 
     # denied 列表
-    for pattern in (denied_tools or []):
+    for pattern in denied_tools or []:
         if fnmatch.fnmatch(name, pattern):
             return "deny"
 
     # allowed 列表
-    for pattern in (allowed_tools or []):
+    for pattern in allowed_tools or []:
         if fnmatch.fnmatch(name, pattern):
             return "allow"
 
@@ -384,6 +416,7 @@ def escalate_thinking_budget(prompt: str) -> int | None:
 # plan_to_todos
 # ---------------------------------------------------------------------------
 
+
 def plan_to_todos(
     plan: list[dict[str, Any]] | str,
     *,
@@ -414,28 +447,35 @@ def plan_to_todos(
             if not line:
                 continue
             tid = f"todo_{uuid.uuid4().hex[:8]}"
-            todos.append(TodoItem(
-                id=tid, content=line, status="pending",
-                priority=pm.get(line, "medium"),
-            ))
+            todos.append(
+                TodoItem(
+                    id=tid,
+                    content=line,
+                    status="pending",
+                    priority=pm.get(line, "medium"),
+                )
+            )
         return todos
 
     for item in plan:
         if isinstance(item, dict):
             title = item.get("title") or item.get("content", "")
             tid = item.get("id") or f"todo_{uuid.uuid4().hex[:8]}"
-            todos.append(TodoItem(
-                id=tid,
-                content=title,
-                status=item.get("status", "pending"),
-                priority=pm.get(title, item.get("priority", "medium")),
-            ))
+            todos.append(
+                TodoItem(
+                    id=tid,
+                    content=title,
+                    status=item.get("status", "pending"),
+                    priority=pm.get(title, item.get("priority", "medium")),
+                )
+            )
     return todos
 
 
 # ---------------------------------------------------------------------------
 # apply_todo_update
 # ---------------------------------------------------------------------------
+
 
 def apply_todo_update(
     todos: list[TodoItem],
@@ -478,12 +518,14 @@ def apply_todo_update(
     for todo in todos:
         if todo.id == todo_id:
             found = True
-            updated.append(TodoItem(
-                id=todo.id,
-                content=content if content is not None else todo.content,
-                status=status if status is not None else todo.status,
-                priority=priority if priority is not None else todo.priority,
-            ))
+            updated.append(
+                TodoItem(
+                    id=todo.id,
+                    content=content if content is not None else todo.content,
+                    status=status if status is not None else todo.status,
+                    priority=priority if priority is not None else todo.priority,
+                )
+            )
         else:
             updated.append(todo)
 
@@ -495,6 +537,7 @@ def apply_todo_update(
 # ---------------------------------------------------------------------------
 # compose_plugin_manifest
 # ---------------------------------------------------------------------------
+
 
 def compose_plugin_manifest(
     bundle: dict[str, Any],
@@ -549,6 +592,7 @@ def _to_dict_list(v: Any) -> list[dict]:
 # build_subagent_prompt
 # ---------------------------------------------------------------------------
 
+
 def build_subagent_prompt(
     subagent_def: dict[str, Any],
     task: str,
@@ -592,8 +636,16 @@ def build_subagent_prompt(
     all_tools = subagent_def.get("tools", [])
 
     # 按 permissions.mode 过滤工具
-    READ_ONLY_NAMES = {"file_read", "dir_list", "glob_match", "git_status",
-                       "git_diff", "git_log", "lsp_diagnostics", "lsp_hover"}
+    READ_ONLY_NAMES = {
+        "file_read",
+        "dir_list",
+        "glob_match",
+        "git_status",
+        "git_diff",
+        "git_log",
+        "lsp_diagnostics",
+        "lsp_hover",
+    }
     if mode == "plan":
         scoped = [t for t in all_tools if t.get("name") in READ_ONLY_NAMES]
     elif mode == "bypass":
@@ -615,6 +667,7 @@ def build_subagent_prompt(
 # ---------------------------------------------------------------------------
 # merge_subagent_result
 # ---------------------------------------------------------------------------
+
 
 def merge_subagent_result(
     summaries: list[dict[str, Any]],

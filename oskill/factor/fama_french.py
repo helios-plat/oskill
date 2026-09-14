@@ -7,7 +7,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-
 _FF5_FACTORS = ["MKT", "SMB", "HML", "RMW", "CMA"]
 
 
@@ -56,7 +55,9 @@ def fama_french_5_factor_model(
     X_cols = []
     for f in factors:
         if f not in factor_returns.columns:
-            raise ValueError(f"Factor '{f}' not found in factor_returns columns: {list(factor_returns.columns)}")
+            raise ValueError(
+                f"Factor '{f}' not found in factor_returns columns: {list(factor_returns.columns)}"
+            )
         X_cols.append(factor_returns[f].values.astype(np.float64))
 
     T = len(y)
@@ -80,7 +81,7 @@ def fama_french_5_factor_model(
     # Residual variance
     dof = T - n_params
     if dof > 0:
-        sigma2 = float(np.sum(residuals ** 2) / dof)
+        sigma2 = float(np.sum(residuals**2) / dof)
     else:
         sigma2 = float(np.var(residuals)) if len(residuals) > 0 else 0.0
 
@@ -97,20 +98,15 @@ def fama_french_5_factor_model(
 
     alpha_t_stat = float(coeffs[0] / se[0]) if se[0] > 0 else 0.0
     beta_t_stats = {
-        f: float(coeffs[i + 1] / se[i + 1]) if se[i + 1] > 0 else 0.0
-        for i, f in enumerate(factors)
+        f: float(coeffs[i + 1] / se[i + 1]) if se[i + 1] > 0 else 0.0 for i, f in enumerate(factors)
     }
 
     # R-squared
     y_mean = float(np.mean(y))
     ss_tot = float(np.sum((y - y_mean) ** 2))
-    ss_res = float(np.sum(residuals ** 2))
+    ss_res = float(np.sum(residuals**2))
     r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
-    adjusted_r_squared = (
-        1.0 - (1.0 - r_squared) * (T - 1) / (T - n_params)
-        if T > n_params
-        else 0.0
-    )
+    adjusted_r_squared = 1.0 - (1.0 - r_squared) * (T - 1) / (T - n_params) if T > n_params else 0.0
 
     return {
         "alpha": alpha,

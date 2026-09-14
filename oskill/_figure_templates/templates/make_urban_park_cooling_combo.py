@@ -7,14 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.lines import Line2D
-from matplotlib.patches import Patch, Rectangle
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.patches import Patch, Rectangle
 
 
 @dataclass(frozen=True)
@@ -181,7 +181,15 @@ def draw_panel_a(ax: plt.Axes) -> None:
     y = np.arange(len(cities))
 
     ax.barh(y, effect, color=effect_color, edgecolor="white", linewidth=0.45, height=0.74)
-    ax.barh(y, no_effect, left=effect, color=no_effect_color, edgecolor="white", linewidth=0.45, height=0.74)
+    ax.barh(
+        y,
+        no_effect,
+        left=effect,
+        color=no_effect_color,
+        edgecolor="white",
+        linewidth=0.45,
+        height=0.74,
+    )
     for yi, e, n in zip(y, effect, no_effect, strict=True):
         if e > 12:
             ax.text(e - 7, yi, f"{e}", ha="right", va="center", color="white", fontsize=8)
@@ -200,7 +208,15 @@ def draw_panel_a(ax: plt.Axes) -> None:
     for spine in ax.spines.values():
         spine.set_linewidth(0.65)
 
-    header = Rectangle((0, -1.48), 375, 0.94, facecolor="#b9b9b9", edgecolor="#444444", linewidth=0.7, clip_on=False)
+    header = Rectangle(
+        (0, -1.48),
+        375,
+        0.94,
+        facecolor="#b9b9b9",
+        edgecolor="#444444",
+        linewidth=0.7,
+        clip_on=False,
+    )
     ax.add_patch(header)
     ax.text(187.5, -1.02, "Number of Urban Parks", ha="center", va="center", fontsize=10)
 
@@ -208,7 +224,14 @@ def draw_panel_a(ax: plt.Axes) -> None:
         Patch(facecolor=effect_color, edgecolor="white", label="Show a cooling effect"),
         Patch(facecolor=no_effect_color, edgecolor="white", label="No significant cooling effect"),
     ]
-    ax.legend(handles=handles, title="Legend", loc="lower right", bbox_to_anchor=(0.98, 0.01), fontsize=8, title_fontsize=9)
+    ax.legend(
+        handles=handles,
+        title="Legend",
+        loc="lower right",
+        bbox_to_anchor=(0.98, 0.01),
+        fontsize=8,
+        title_fontsize=9,
+    )
     ax.text(-0.052, 1.02, "a", transform=ax.transAxes, fontsize=11)
 
 
@@ -222,12 +245,22 @@ def draw_horizontal_box(ax: plt.Axes, values: np.ndarray, y: float, color: str) 
     ax.plot([lo, lo], [y - box_h / 2, y + box_h / 2], color="#3f3f3f", lw=0.6, zorder=3)
     ax.plot([hi, hi], [y - box_h / 2, y + box_h / 2], color="#3f3f3f", lw=0.6, zorder=3)
     ax.add_patch(
-        Rectangle((q1, y - box_h / 2), q3 - q1, box_h, facecolor=color, edgecolor="#3f3f3f", linewidth=0.55, zorder=4)
+        Rectangle(
+            (q1, y - box_h / 2),
+            q3 - q1,
+            box_h,
+            facecolor=color,
+            edgecolor="#3f3f3f",
+            linewidth=0.55,
+            zorder=4,
+        )
     )
     ax.plot([med, med], [y - box_h / 2, y + box_h / 2], color="white", lw=0.8, zorder=5)
 
 
-def draw_raincloud(ax: plt.Axes, grouped_values: dict[str, np.ndarray], metric: str, show_ylabels: bool) -> None:
+def draw_raincloud(
+    ax: plt.Axes, grouped_values: dict[str, np.ndarray], metric: str, show_ylabels: bool
+) -> None:
     cfg = METRICS[metric]
     x_min, x_max = cfg["xlim"]
     grid = np.linspace(x_min, x_max, 320)
@@ -246,7 +279,14 @@ def draw_raincloud(ax: plt.Axes, grouped_values: dict[str, np.ndarray], metric: 
         jitter = rng.uniform(-0.24, -0.08, size=sample.size)
         ax.scatter(sample, y + jitter, s=2.0, color="#333333", alpha=0.46, linewidths=0, zorder=2)
         draw_horizontal_box(ax, values, y + 0.08, color)
-        ax.axvline(np.mean(values), ymin=(y + 0.03) / 5, ymax=(y + 0.52) / 5, color="white", lw=0.6, ls=(0, (2, 2)))
+        ax.axvline(
+            np.mean(values),
+            ymin=(y + 0.03) / 5,
+            ymax=(y + 0.52) / 5,
+            color="white",
+            lw=0.6,
+            ls=(0, (2, 2)),
+        )
 
     ax.set_xlim(x_min, x_max)
     ax.set_ylim(-0.55, 4.78)
@@ -295,9 +335,20 @@ def draw_vertical_boxplot_panel(ax: plt.Axes, metric: str, metric_data: list[np.
             )
         )
         ax.plot([idx - 0.30, idx + 0.30], [med, med], color="#315f5e", lw=1.0, zorder=3)
-        ax.scatter(idx, means[-1], marker="^", s=14, color="#d44d5d", edgecolor="white", linewidth=0.25, zorder=4)
+        ax.scatter(
+            idx,
+            means[-1],
+            marker="^",
+            s=14,
+            color="#d44d5d",
+            edgecolor="white",
+            linewidth=0.25,
+            zorder=4,
+        )
 
-    ax.plot(np.arange(1, len(CITY_SPECS) + 1), means, color="#2f6791", lw=0.75, alpha=0.72, zorder=3)
+    ax.plot(
+        np.arange(1, len(CITY_SPECS) + 1), means, color="#2f6791", lw=0.75, alpha=0.72, zorder=3
+    )
     ax.set_xlim(0.3, len(CITY_SPECS) + 0.7)
     ax.set_ylim(*METRICS[metric]["ylim"])
     ax.set_ylabel(METRICS[metric]["ylabel"], fontsize=9)
@@ -322,14 +373,25 @@ def add_city_and_legend_panel(ax: plt.Axes) -> None:
     for col, (start_idx, cities) in enumerate(columns):
         for row, city in enumerate(cities):
             original_idx = start_idx + row
-            ax.text(x_positions[col], 0.96 - row * 0.050, f"{original_idx:02d}.{city.name}", ha="left", va="top", fontsize=8)
+            ax.text(
+                x_positions[col],
+                0.96 - row * 0.050,
+                f"{original_idx:02d}.{city.name}",
+                ha="left",
+                va="top",
+                fontsize=8,
+            )
 
     y0 = 0.31
-    ax.add_patch(Rectangle((0.00, y0), 0.09, 0.035, facecolor="white", edgecolor="#333333", linewidth=0.7))
+    ax.add_patch(
+        Rectangle((0.00, y0), 0.09, 0.035, facecolor="white", edgecolor="#333333", linewidth=0.7)
+    )
     ax.text(0.12, y0 + 0.017, "25%-75%", va="center", fontsize=8)
     ax.plot([0.00, 0.09], [y0 - 0.050, y0 - 0.050], color="#315f5e", lw=2.0)
     ax.text(0.12, y0 - 0.050, "Median Line", va="center", fontsize=8)
-    ax.scatter(0.045, y0 - 0.105, marker="^", s=16, color="#d44d5d", edgecolor="white", linewidth=0.3)
+    ax.scatter(
+        0.045, y0 - 0.105, marker="^", s=16, color="#d44d5d", edgecolor="white", linewidth=0.3
+    )
     ax.text(0.12, y0 - 0.105, "Mean", va="center", fontsize=8)
     ax.plot([0.00, 0.09], [y0 - 0.160, y0 - 0.160], color="#777777", lw=0.8)
     ax.plot([0.00, 0.00], [y0 - 0.177, y0 - 0.143], color="#777777", lw=0.8)
@@ -340,7 +402,16 @@ def add_city_and_legend_panel(ax: plt.Axes) -> None:
 
     for idx, group in enumerate(GROUP_ORDER):
         y = y0 - idx * 0.054
-        ax.add_patch(Rectangle((0.57, y), 0.09, 0.035, facecolor=GROUP_COLORS[group], edgecolor="white", linewidth=0.5))
+        ax.add_patch(
+            Rectangle(
+                (0.57, y),
+                0.09,
+                0.035,
+                facecolor=GROUP_COLORS[group],
+                edgecolor="white",
+                linewidth=0.5,
+            )
+        )
         ax.text(0.69, y + 0.017, group, va="center", fontsize=8)
 
 
@@ -349,7 +420,13 @@ def make_figure(output_stem: Path) -> None:
     city_metric_data = simulate_city_metric_data()
     grouped_values = {
         metric: {
-            group: np.concatenate([values for values, city in zip(metric_values, CITY_SPECS, strict=True) if city.group == group])
+            group: np.concatenate(
+                [
+                    values
+                    for values, city in zip(metric_values, CITY_SPECS, strict=True)
+                    if city.group == group
+                ]
+            )
             for group in GROUP_ORDER
         }
         for metric, metric_values in city_metric_data.items()

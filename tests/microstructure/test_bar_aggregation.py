@@ -20,6 +20,7 @@ def make_ticks(n: int = 200, seed: int = 42) -> pd.DataFrame:
 
 # ---- dollar_bar_aggregation ----
 
+
 class TestDollarBarAggregation:
     def test_returns_dataframe(self):
         ticks = make_ticks(200)
@@ -29,12 +30,21 @@ class TestDollarBarAggregation:
     def test_columns_present(self):
         ticks = make_ticks(200)
         bars = dollar_bar_aggregation(ticks, dollar_threshold=5000.0)
-        expected = {"open", "high", "low", "close", "volume", "dollar_volume",
-                    "tick_count", "timestamp_start", "timestamp_end"}
+        expected = {
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+            "dollar_volume",
+            "tick_count",
+            "timestamp_start",
+            "timestamp_end",
+        }
         assert expected.issubset(set(bars.columns))
 
     def test_dollar_threshold_respected(self):
-        """Each bar's dollar_volume should be >= threshold (last bar may be partial if no open bar)."""
+        """Each bar's dollar_volume should meet the threshold."""
         ticks = make_ticks(500)
         threshold = 8000.0
         bars = dollar_bar_aggregation(ticks, dollar_threshold=threshold)
@@ -74,19 +84,23 @@ class TestDollarBarAggregation:
     def test_custom_column_mapping(self):
         """Custom column names via columns dict."""
         rng = np.random.default_rng(5)
-        ticks = pd.DataFrame({
-            "ts": np.arange(100),
-            "px": 100 + np.cumsum(rng.normal(0, 0.1, 100)),
-            "qty": rng.integers(10, 100, 100).astype(float),
-        })
+        ticks = pd.DataFrame(
+            {
+                "ts": np.arange(100),
+                "px": 100 + np.cumsum(rng.normal(0, 0.1, 100)),
+                "qty": rng.integers(10, 100, 100).astype(float),
+            }
+        )
         bars = dollar_bar_aggregation(
-            ticks, dollar_threshold=2000.0,
-            columns={"price": "px", "volume": "qty", "timestamp": "ts"}
+            ticks,
+            dollar_threshold=2000.0,
+            columns={"price": "px", "volume": "qty", "timestamp": "ts"},
         )
         assert isinstance(bars, pd.DataFrame)
 
 
 # ---- volume_imbalance_bar ----
+
 
 class TestVolumeImbalanceBar:
     def test_returns_dataframe(self):
@@ -140,6 +154,7 @@ class TestVolumeImbalanceBar:
 
 
 # ---- tick_imbalance_bar ----
+
 
 class TestTickImbalanceBar:
     def test_returns_dataframe(self):

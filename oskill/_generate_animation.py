@@ -1,4 +1,5 @@
 """K-generate_animation: LLM animation HTML generator (stateless)."""
+
 from __future__ import annotations
 
 from oprim._animation_types import AnimationResult

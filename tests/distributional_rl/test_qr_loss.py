@@ -7,8 +7,8 @@ import pytest
 
 from oskill.distributional_rl.quantile_regression import quantile_regression_loss
 
-
 # ─── API / basic properties ──────────────────────────────────────────────────
+
 
 def test_returns_scalar_for_mean_reduction():
     rng = np.random.default_rng(0)

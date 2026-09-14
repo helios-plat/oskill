@@ -6,7 +6,6 @@ from typing import Any
 
 from oprim import canonical_json
 
-
 _TYPE_MAP: dict[str, type | tuple[type, ...]] = {
     "string": str,
     "number": (int, float),
@@ -119,6 +118,7 @@ def tool_call_validator(
     # Handle JSON string arguments (OpenAI format)
     if isinstance(raw_arguments, str):
         import json
+
         try:
             raw_arguments = json.loads(raw_arguments)
         except (json.JSONDecodeError, TypeError):
@@ -130,12 +130,14 @@ def tool_call_validator(
     # 2. Check name matches schema
     schema_name = tool_schema.get("name", "")
     if tool_name != schema_name:
-        errors.append({
-            "path": "name",
-            "message": f"Tool name mismatch: got '{tool_name}', expected '{schema_name}'",
-            "expected": schema_name,
-            "actual": tool_name,
-        })
+        errors.append(
+            {
+                "path": "name",
+                "message": f"Tool name mismatch: got '{tool_name}', expected '{schema_name}'",
+                "expected": schema_name,
+                "actual": tool_name,
+            }
+        )
 
     parameters = tool_schema.get("parameters", {})
     properties = parameters.get("properties", {})
@@ -147,12 +149,14 @@ def tool_call_validator(
     # 3. Validate required fields
     for field in required:
         if field not in normalized:
-            errors.append({
-                "path": f"arguments.{field}",
-                "message": f"Required field missing: '{field}'",
-                "expected": "present",
-                "actual": "missing",
-            })
+            errors.append(
+                {
+                    "path": f"arguments.{field}",
+                    "message": f"Required field missing: '{field}'",
+                    "expected": "present",
+                    "actual": "missing",
+                }
+            )
 
     # 4. Validate types + optional coercion
     for field, value in list(normalized.items()):
@@ -160,12 +164,14 @@ def tool_call_validator(
             # Extra field handling
             msg = f"Unexpected argument key: '{field}'"
             if strict:
-                errors.append({
-                    "path": f"arguments.{field}",
-                    "message": msg,
-                    "expected": "not present",
-                    "actual": type(value).__name__,
-                })
+                errors.append(
+                    {
+                        "path": f"arguments.{field}",
+                        "message": msg,
+                        "expected": "not present",
+                        "actual": type(value).__name__,
+                    }
+                )
             else:
                 warnings.append(msg)
             continue
@@ -181,30 +187,35 @@ def tool_call_validator(
             if success:
                 normalized[field] = coerced
             else:
-                errors.append({
-                    "path": f"arguments.{field}",
-                    "message": (
-                        f"Type error for '{field}': cannot coerce "
-                        f"{type(value).__name__!r} to {expected_type!r}"
-                    ),
-                    "expected": expected_type,
-                    "actual": type(value).__name__,
-                })
+                errors.append(
+                    {
+                        "path": f"arguments.{field}",
+                        "message": (
+                            f"Type error for '{field}': cannot coerce "
+                            f"{type(value).__name__!r} to {expected_type!r}"
+                        ),
+                        "expected": expected_type,
+                        "actual": type(value).__name__,
+                    }
+                )
         else:
             if not _check_type(value, expected_type):
-                errors.append({
-                    "path": f"arguments.{field}",
-                    "message": (
-                        f"Type error for '{field}': expected {expected_type!r}, "
-                        f"got {type(value).__name__!r}"
-                    ),
-                    "expected": expected_type,
-                    "actual": type(value).__name__,
-                })
+                errors.append(
+                    {
+                        "path": f"arguments.{field}",
+                        "message": (
+                            f"Type error for '{field}': expected {expected_type!r}, "
+                            f"got {type(value).__name__!r}"
+                        ),
+                        "expected": expected_type,
+                        "actual": type(value).__name__,
+                    }
+                )
 
     # Normalize via oprim.canonical_json for consistent key ordering
     # (parse back to dict since canonical_json returns a string)
     import json as _json
+
     try:
         normalized_arguments = _json.loads(canonical_json(normalized))
     except Exception:

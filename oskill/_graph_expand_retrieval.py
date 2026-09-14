@@ -12,11 +12,13 @@ db_conn expected interface:
   get_ku_data(ku_id: str) -> dict                  (async or sync)
     → {sources, type, neighbors, edges}
 """
+
 from __future__ import annotations
 
 import inspect
 from collections import deque
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from oprim._aii_graph_types import GraphRetrievalResult
 
@@ -62,12 +64,14 @@ async def graph_expand_retrieval(
                 db_conn=db_conn,
                 relevance_fn=relevance_fn,
             )
-            results.append(GraphRetrievalResult(
-                ku_id=ku_id,
-                score=score,
-                hop_distance=hop,
-                retrieval_path=list(path),
-            ))
+            results.append(
+                GraphRetrievalResult(
+                    ku_id=ku_id,
+                    score=score,
+                    hop_distance=hop,
+                    retrieval_path=list(path),
+                )
+            )
 
         if hop < max_hops:
             neighbors = await _get_neighbors(db_conn, ku_id)

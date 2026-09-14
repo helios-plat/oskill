@@ -15,32 +15,41 @@ generate_patch_preview / dedup_edits / build_undo_plan
 from __future__ import annotations
 
 import difflib
+import os
 import re
-from typing import Any
-
-from ._types import (
-    ApplyResult, EditBlock, EditOskillError, UndoPlan,
-)
 
 # oprim 函数直接 import（复用已有计算，不是 oprim 间裸调）
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
+from typing import Any
+
+from ._types import (
+    ApplyResult,
+    EditBlock,
+    EditOskillError,
+    UndoPlan,
+)
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "oprim"))
 try:
     from oprim.text import compute_diff
 except ImportError:  # pragma: no cover
     # 测试环境回退  # pragma: no cover
     def compute_diff(old, new, *, path="", context_lines=3):  # type: ignore  # pragma: no cover
-        return "".join(difflib.unified_diff(  # pragma: no cover
-            old.splitlines(keepends=True),
-            new.splitlines(keepends=True),
-            fromfile=f"a/{path}", tofile=f"b/{path}", n=context_lines,
-        ))
+        return "".join(
+            difflib.unified_diff(  # pragma: no cover
+                old.splitlines(keepends=True),
+                new.splitlines(keepends=True),
+                fromfile=f"a/{path}",
+                tofile=f"b/{path}",
+                n=context_lines,
+            )
+        )
 
 
 # ---------------------------------------------------------------------------
 # apply_edit_block
 # ---------------------------------------------------------------------------
+
 
 def apply_edit_block(
     original: str,
@@ -93,7 +102,7 @@ def apply_edit_block(
 
         matched = None
         for i in range(len(lines) - len(search_lines) + 1):
-            window = [ln.rstrip('\n').strip() for ln in lines[i:i + len(search_lines)]]
+            window = [ln.rstrip("\n").strip() for ln in lines[i : i + len(search_lines)]]
             if window == [ln.strip() for ln in search_lines]:
                 matched = i  # pragma: no cover
                 break  # pragma: no cover
@@ -101,8 +110,8 @@ def apply_edit_block(
         if matched is not None:
             new_lines = (  # pragma: no cover
                 lines[:matched]  # pragma: no cover
-                + [replace if replace.endswith('\n') else replace + '\n']  # pragma: no cover
-                + lines[matched + len(search_lines):]  # pragma: no cover
+                + [replace if replace.endswith("\n") else replace + "\n"]  # pragma: no cover
+                + lines[matched + len(search_lines) :]  # pragma: no cover
             )  # pragma: no cover
             content = "".join(new_lines)  # pragma: no cover
             applied += 1  # pragma: no cover
@@ -115,6 +124,7 @@ def apply_edit_block(
 # ---------------------------------------------------------------------------
 # apply_unified_diff
 # ---------------------------------------------------------------------------
+
 
 def apply_unified_diff(
     original: str,
@@ -148,12 +158,14 @@ def apply_unified_diff(
     applied = 0
     offset = 0
 
-    hunk_re = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
+    hunk_re = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
 
     try:
         diff_lines = diff.splitlines(keepends=True)
     except Exception as e:  # pragma: no cover
-        raise EditOskillError("apply_unified_diff: failed to parse diff", cause=e)  # pragma: no cover
+        raise EditOskillError(
+            "apply_unified_diff: failed to parse diff", cause=e
+        )  # pragma: no cover
 
     i = 0
     result_lines = list(lines)
@@ -170,12 +182,12 @@ def apply_unified_diff(
 
         while i < len(diff_lines) and not hunk_re.match(diff_lines[i]):
             line = diff_lines[i]
-            raw = line[1:] if line and line[0] in ('+', '-', ' ') else line
-            if line.startswith('-'):
+            raw = line[1:] if line and line[0] in ("+", "-", " ") else line
+            if line.startswith("-"):
                 hunk_old.append(raw)
-            elif line.startswith('+'):
+            elif line.startswith("+"):
                 hunk_new.append(raw)
-            elif line.startswith(' '):
+            elif line.startswith(" "):
                 hunk_old.append(raw)
                 hunk_new.append(raw)
             i += 1
@@ -184,7 +196,7 @@ def apply_unified_diff(
         target_end = target_start + len(hunk_old)
         actual = result_lines[target_start:target_end]
 
-        if [ln.rstrip('\n') for ln in actual] == [ln.rstrip('\n') for ln in hunk_old]:
+        if [ln.rstrip("\n") for ln in actual] == [ln.rstrip("\n") for ln in hunk_old]:
             result_lines[target_start:target_end] = hunk_new
             offset += len(hunk_new) - len(hunk_old)
             applied += 1
@@ -201,6 +213,7 @@ def apply_unified_diff(
 # ---------------------------------------------------------------------------
 # three_way_merge
 # ---------------------------------------------------------------------------
+
 
 def three_way_merge(
     base: str,
@@ -252,8 +265,10 @@ def three_way_merge(
     sm_theirs = difflib.SequenceMatcher(None, base_lines, theirs_lines)
 
     # 构建变更区间
-    ours_ops = {(t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_ours.get_opcodes() if t != 'equal'}
-    theirs_ops = {(t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_theirs.get_opcodes() if t != 'equal'}
+    ours_ops = {(t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_ours.get_opcodes() if t != "equal"}
+    theirs_ops = {
+        (t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_theirs.get_opcodes() if t != "equal"
+    }
 
     # 简化：找出 base 中双方都修改了的行范围
     ours_changed: set[int] = set()
@@ -269,7 +284,9 @@ def three_way_merge(
         # 无冲突：顺序应用两方变更
         # 先 apply ours diff，再 apply theirs diff
         r1 = apply_unified_diff(base, diff=compute_diff(base, ours, path=path))  # pragma: no cover
-        r2 = apply_unified_diff(r1.content, diff=compute_diff(base, theirs, path=path))  # pragma: no cover
+        r2 = apply_unified_diff(
+            r1.content, diff=compute_diff(base, theirs, path=path)
+        )  # pragma: no cover
         return {"merged": r2.content, "conflicts": 0, "ok": True}  # pragma: no cover
 
     # 有冲突：插入冲突标记
@@ -298,10 +315,10 @@ def three_way_merge(
     return {"merged": "".join(merged), "conflicts": conflicts, "ok": conflicts == 0}
 
 
-
 # ---------------------------------------------------------------------------
 # generate_patch_preview
 # ---------------------------------------------------------------------------
+
 
 def generate_patch_preview(
     old: str,
@@ -336,11 +353,11 @@ def generate_patch_preview(
 
     lines = []
     for line in raw.splitlines(keepends=True):
-        if line.startswith('+') and not line.startswith('+++'):
+        if line.startswith("+") and not line.startswith("+++"):
             lines.append(f"\033[32m{line}\033[0m")
-        elif line.startswith('-') and not line.startswith('---'):
+        elif line.startswith("-") and not line.startswith("---"):
             lines.append(f"\033[31m{line}\033[0m")
-        elif line.startswith('@@'):
+        elif line.startswith("@@"):
             lines.append(f"\033[36m{line}\033[0m")
         else:
             lines.append(line)
@@ -350,6 +367,7 @@ def generate_patch_preview(
 # ---------------------------------------------------------------------------
 # dedup_edits
 # ---------------------------------------------------------------------------
+
 
 def dedup_edits(
     edits: list[dict[str, Any]],
@@ -398,6 +416,7 @@ def dedup_edits(
 # ---------------------------------------------------------------------------
 # build_undo_plan
 # ---------------------------------------------------------------------------
+
 
 def build_undo_plan(
     changeset: dict[str, Any],

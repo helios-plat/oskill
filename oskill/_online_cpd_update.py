@@ -24,7 +24,7 @@ CPD 数据模型 (JSON 可持久化):
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def config_key(*parent_values: Any) -> str:
@@ -34,7 +34,7 @@ def config_key(*parent_values: Any) -> str:
     return "|".join(str(v) for v in parent_values)
 
 
-def split_config(key: str) -> List[str]:
+def split_config(key: str) -> list[str]:
     return key.split("|")
 
 
@@ -45,19 +45,19 @@ class CategoricalCPD:
     version: 结构/参数版本号 —— 每次更新自增, 供审计记录 "当时用的是哪版 CPD"。
     """
 
-    child_states: List[str]
-    counts: Dict[str, List[float]] = field(default_factory=dict)
-    parents: List[str] = field(default_factory=list)
+    child_states: list[str]
+    counts: dict[str, list[float]] = field(default_factory=dict)
+    parents: list[str] = field(default_factory=list)
     version: int = 1
 
     # ── 构造 ────────────────────────────────────────────────────────
     @classmethod
-    def uniform(cls, child_states: List[str], parents: List[str] | None = None) -> "CategoricalCPD":
+    def uniform(cls, child_states: list[str], parents: list[str] | None = None) -> CategoricalCPD:
         """空 CPD: 没有任何配置行, 首次观测时按均匀伪计数先验 (1.0/状态) 初始化 (见 _row)。"""
         return cls(child_states=list(child_states), counts={}, parents=list(parents or []))
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "CategoricalCPD":
+    def from_dict(cls, data: dict[str, Any]) -> CategoricalCPD:
         if not data:
             raise ValueError("CPD 数据为空")
         return cls(
@@ -69,11 +69,11 @@ class CategoricalCPD:
             version=int(data.get("version", 1)),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     # ── 查询 ────────────────────────────────────────────────────────
-    def _row(self, parent_config: str, *, create: bool = False) -> List[float]:
+    def _row(self, parent_config: str, *, create: bool = False) -> list[float]:
         row = self.counts.get(parent_config)
         if row is not None:
             return row
@@ -83,7 +83,7 @@ class CategoricalCPD:
             return prior
         raise KeyError(f"父配置 {parent_config!r} 无观测, 无法预测")
 
-    def probs(self, parent_config: str) -> Dict[str, float]:
+    def probs(self, parent_config: str) -> dict[str, float]:
         """P(child_state | parent_config)。"""
         row = self._row(parent_config)
         total = sum(row)
@@ -91,7 +91,7 @@ class CategoricalCPD:
             raise ValueError("伪计数总和为 0")
         return {s: row[i] / total for i, s in enumerate(self.child_states)}
 
-    def p_fault(self, parent_config: str, fault_state: Optional[str] = None) -> float:
+    def p_fault(self, parent_config: str, fault_state: str | None = None) -> float:
         """P(fault | parent_config)。fault_state 缺省取最后一个子状态(约定)。"""
         fault = fault_state or self.child_states[-1]
         return self.probs(parent_config)[fault]

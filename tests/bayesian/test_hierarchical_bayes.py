@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from oskill.bayesian.hierarchical import hierarchical_bayes_normal
 
@@ -69,7 +68,6 @@ def test_hbn_partial_pooling():
     # Small group should be pulled toward population mean (shrinkage)
     # Its posterior mean should be less than raw empirical mean of 10
     small_post_mean = ci["small"]["mean"]
-    large_post_mean = ci["large"]["mean"]
     # Partial pooling: small group mean should be pulled toward large group
     assert small_post_mean < 10.0 + 3.0  # bounded from above
 
@@ -103,17 +101,14 @@ def test_hbn_seed_reproducible():
     groups = _two_groups(rng)
     r1 = hierarchical_bayes_normal(groups, n_mcmc_samples=300, n_warmup=100, seed=99)
     r2 = hierarchical_bayes_normal(groups, n_mcmc_samples=300, n_warmup=100, seed=99)
-    np.testing.assert_array_equal(
-        r1["population_mean_samples"], r2["population_mean_samples"]
-    )
+    np.testing.assert_array_equal(r1["population_mean_samples"], r2["population_mean_samples"])
 
 
 def test_hbn_many_groups():
     rng = np.random.default_rng(42)
     true_means = [1.0, 2.0, 3.0, 4.0, 5.0]
     groups = {
-        f"group_{i}": rng.normal(loc=mu, scale=0.5, size=20)
-        for i, mu in enumerate(true_means)
+        f"group_{i}": rng.normal(loc=mu, scale=0.5, size=20) for i, mu in enumerate(true_means)
     }
     result = hierarchical_bayes_normal(groups, n_mcmc_samples=500, n_warmup=200, seed=42)
     assert len(result["group_means_credible_intervals"]) == 5

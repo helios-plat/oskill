@@ -438,8 +438,8 @@ def upload_image(
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="media"; filename="img{ext}"\r\n'
             f"Content-Type: {ctype}\r\n\r\n"
-        ).encode("utf-8")
-        tail = f"\r\n--{boundary}--\r\n".encode("utf-8")
+        ).encode()
+        tail = f"\r\n--{boundary}--\r\n".encode()
         req = urllib.request.Request(
             f"https://api.weixin.qq.com/cgi-bin/material/add_material"
             f"?access_token={access_token}&type=image",
@@ -509,8 +509,7 @@ def create_image_post(
                 continue
             up = upload_image(img, access_token=access_token, client=client)
             if not up.get("ok"):
-                return {"ok": False, "media_ids": media_ids,
-                        "draft": None, "upload_error": up}
+                return {"ok": False, "media_ids": media_ids, "draft": None, "upload_error": up}
             media_ids.append(up["media_id"])
     else:
         media_ids = list(images)
@@ -544,8 +543,12 @@ class WechatAccount:
     url: str = ""  # 服务器配置 URL (消息接收回调)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"name": self.name, "app_id": self.app_id,
-                "secret_hint": self.secret_hint, "url": self.url}
+        return {
+            "name": self.name,
+            "app_id": self.app_id,
+            "secret_hint": self.secret_hint,
+            "url": self.url,
+        }
 
 
 class WechatAccountRegistry:
@@ -565,8 +568,9 @@ class WechatAccountRegistry:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
             for item in data.get("accounts", []):
-                acc = WechatAccount(**{k: v for k, v in item.items()
-                                       if k in WechatAccount.__dataclass_fields__})
+                acc = WechatAccount(
+                    **{k: v for k, v in item.items() if k in WechatAccount.__dataclass_fields__}
+                )
                 self._accounts[acc.name] = acc
         except (json.JSONDecodeError, OSError, TypeError):
             pass
@@ -580,14 +584,16 @@ class WechatAccountRegistry:
         url: str = "",
     ) -> WechatAccount:
         """登记一个账号 (幂等覆盖)。不接收/不存储 app_secret 本体。"""
-        acc = WechatAccount(name=name, app_id=app_id,
-                            secret_hint=secret_hint, url=url)
+        acc = WechatAccount(name=name, app_id=app_id, secret_hint=secret_hint, url=url)
         self._accounts[name] = acc
         if self.path:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.path.write_text(
-                json.dumps({"accounts": [a.to_dict() for a in self._accounts.values()]},
-                           ensure_ascii=False, indent=2),
+                json.dumps(
+                    {"accounts": [a.to_dict() for a in self._accounts.values()]},
+                    ensure_ascii=False,
+                    indent=2,
+                ),
                 encoding="utf-8",
             )
         return acc

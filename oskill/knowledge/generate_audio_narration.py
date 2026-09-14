@@ -12,7 +12,6 @@ from oprim.tts_synthesize import tts_synthesize
 
 from oskill.knowledge._context import meta_db_path, stratum_home
 
-
 _CHUNK_WORDS = 120
 
 

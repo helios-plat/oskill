@@ -5,13 +5,11 @@ All tests are pure-compute; no LLM, no network, no mocks needed.
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
-
 from oprim._aii_types import ClusterResult, GapReport
-from oskill._query_cluster import query_cluster
-from oskill._capability_gap_analyze import capability_gap_analyze
 
+from oskill._capability_gap_analyze import capability_gap_analyze
+from oskill._query_cluster import query_cluster
 
 # ===========================================================================
 # K-AII-1: query_cluster
@@ -58,8 +56,8 @@ class TestQueryClusterKeywordOnly:
     def test_min_cluster_size_filters_small_clusters(self):
         texts = [
             "alpha strategy backtest",  # pair
-            "backtest alpha factor",    # pair → merged with above
-            "ocean wave surfing",       # singleton
+            "backtest alpha factor",  # pair → merged with above
+            "ocean wave surfing",  # singleton
         ]
         result = query_cluster(texts=texts, min_cluster_size=2)
         # The merged cluster of 2 passes; singleton is filtered
@@ -265,8 +263,6 @@ class TestCapabilityGapAnalyzeMissTopics:
             graph_stats={},
         )
         # The momentum-related topics should cluster; ocean stays separate
-        topics = [t["topic"] for t in result.high_miss_topics]
-        counts = {t["topic"]: t["miss_count"] for t in result.high_miss_topics}
         # merged momentum cluster has total 7
         momentum_cluster = [t for t in result.high_miss_topics if t["miss_count"] == 7]
         assert len(momentum_cluster) == 1
@@ -286,9 +282,7 @@ class TestCapabilityGapAnalyzeMissTopics:
             grade_distribution={"math": {"A": 10, "B": 10, "C": 10}},
             failure_stats={},
             graph_stats={"k1": {"degree": 2}, "k2": {"degree": 1}},
-            stale_candidates=[
-                {"ku_id": "k1", "days_unverified": 1, "verified": True}
-            ],
+            stale_candidates=[{"ku_id": "k1", "days_unverified": 1, "verified": True}],
         )
         assert result.high_miss_topics == []
         assert result.stale_unverified == []

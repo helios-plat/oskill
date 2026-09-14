@@ -26,8 +26,7 @@ class TestHawkesBranchingRatio:
     def test_stable_status(self):
         """n < 0.8 should be stable."""
         result = hawkes_branching_ratio(
-            make_hawkes_times(20),
-            hawkes_params={"mu": 0.5, "alpha": 0.3, "beta": 1.0}
+            make_hawkes_times(20), hawkes_params={"mu": 0.5, "alpha": 0.3, "beta": 1.0}
         )
         assert result["branching_ratio"] == pytest.approx(0.3)
         assert result["stability_status"] == "stable"
@@ -35,16 +34,14 @@ class TestHawkesBranchingRatio:
     def test_near_critical_status(self):
         """0.8 <= n < 1.0 → near_critical."""
         result = hawkes_branching_ratio(
-            make_hawkes_times(20),
-            hawkes_params={"mu": 0.5, "alpha": 0.85, "beta": 1.0}
+            make_hawkes_times(20), hawkes_params={"mu": 0.5, "alpha": 0.85, "beta": 1.0}
         )
         assert result["stability_status"] == "near_critical"
 
     def test_unstable_status(self):
         """n >= 1.0 → unstable."""
         result = hawkes_branching_ratio(
-            make_hawkes_times(20),
-            hawkes_params={"mu": 0.5, "alpha": 1.5, "beta": 1.0}
+            make_hawkes_times(20), hawkes_params={"mu": 0.5, "alpha": 1.5, "beta": 1.0}
         )
         assert result["stability_status"] == "unstable"
 
@@ -52,18 +49,17 @@ class TestHawkesBranchingRatio:
         """n = alpha / beta."""
         alpha, beta = 0.6, 2.0
         result = hawkes_branching_ratio(
-            make_hawkes_times(20),
-            hawkes_params={"mu": 0.3, "alpha": alpha, "beta": beta}
+            make_hawkes_times(20), hawkes_params={"mu": 0.3, "alpha": alpha, "beta": beta}
         )
         assert result["branching_ratio"] == pytest.approx(alpha / beta)
 
     def test_half_life_formula(self):
         """half_life = ln(2) / beta."""
         import math
+
         beta = 2.5
         result = hawkes_branching_ratio(
-            make_hawkes_times(20),
-            hawkes_params={"mu": 0.3, "alpha": 0.5, "beta": beta}
+            make_hawkes_times(20), hawkes_params={"mu": 0.3, "alpha": 0.5, "beta": beta}
         )
         assert result["half_life"] == pytest.approx(math.log(2) / beta)
 

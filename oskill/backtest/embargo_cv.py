@@ -100,10 +100,12 @@ def embargo_purged_cv(
             test_idx = np.arange(fold_start, fold_end)
             excl_start = max(0, fold_start - purge_periods)
             excl_end = min(T, fold_end + embargo_periods)
-            train_idx = np.concatenate([
-                np.arange(0, excl_start),
-                np.arange(excl_end, T),
-            ]).astype(np.intp)
+            train_idx = np.concatenate(
+                [
+                    np.arange(0, excl_start),
+                    np.arange(excl_end, T),
+                ]
+            ).astype(np.intp)
             splits.append((train_idx, test_idx))
 
     return splits

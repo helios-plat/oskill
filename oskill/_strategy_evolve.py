@@ -24,8 +24,8 @@ Strategies
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -91,23 +91,23 @@ class StrategyEvolver:
 
     def __init__(
         self,
-        strategies: Optional[List[str]] = None,
+        strategies: list[str] | None = None,
         initial_value: float = 0.0,
         alpha: float = 0.3,
         epsilon: float = 0.1,
         threat_cap: float = THREAT_CAP_DEFAULT,
     ) -> None:
         names = list(strategies) if strategies is not None else list(STRATEGY_NAMES)
-        self.records: Dict[str, StrategyRecord] = {
+        self.records: dict[str, StrategyRecord] = {
             s: StrategyRecord(value=float(initial_value)) for s in names
         }
         self.alpha = float(alpha)
         self.epsilon = float(epsilon)
         self.threat_cap = float(threat_cap)
-        self.history: List[Dict[str, Any]] = []
+        self.history: list[dict[str, Any]] = []
 
     # ── 选择 ─────────────────────────────────────────────────────────
-    def select(self, threat_level: float = 0.0, rng: Optional[np.random.Generator] = None) -> str:
+    def select(self, threat_level: float = 0.0, rng: np.random.Generator | None = None) -> str:
         """ε-greedy strategy choice; threat override forces quarantine."""
         if threat_level >= self.threat_cap:
             return "quarantine"
@@ -136,14 +136,14 @@ class StrategyEvolver:
         return rec.value
 
     # ── 参数映射 ─────────────────────────────────────────────────────
-    def parameters_for(self, strategy: str) -> Dict[str, Any]:
+    def parameters_for(self, strategy: str) -> dict[str, Any]:
         """Planner parameters for a strategy (horizon / cost sensitivity / ...)."""
         if strategy not in STRATEGY_PARAMS:
             raise KeyError(f"未知策略: {strategy!r}; 可选 {list(STRATEGY_PARAMS)}")
         return dict(STRATEGY_PARAMS[strategy])
 
     # ── 序列化 ───────────────────────────────────────────────────────
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "alpha": self.alpha,
             "epsilon": self.epsilon,
@@ -155,7 +155,7 @@ class StrategyEvolver:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "StrategyEvolver":
+    def from_dict(cls, data: dict[str, Any]) -> StrategyEvolver:
         ev = cls(
             strategies=list(data["records"]),
             alpha=data.get("alpha", 0.3),

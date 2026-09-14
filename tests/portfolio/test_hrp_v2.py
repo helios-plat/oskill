@@ -14,7 +14,9 @@ def make_returns(T: int = 100, N: int = 5, seed: int = 42) -> np.ndarray:
     return rng.normal(0.001, 0.02, size=(T, N))
 
 
-def make_block_returns(T: int = 200, n_per_block: int = 3, n_blocks: int = 3, seed: int = 0) -> np.ndarray:
+def make_block_returns(
+    T: int = 200, n_per_block: int = 3, n_blocks: int = 3, seed: int = 0
+) -> np.ndarray:
     """Returns with block correlation structure."""
     rng = np.random.default_rng(seed)
     N = n_per_block * n_blocks

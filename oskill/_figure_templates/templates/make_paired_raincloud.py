@@ -6,14 +6,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.patches import Patch
-
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.patches import Patch
 
 PALETTE = {
     "Versicolor": {"edge": "#c9253e", "fill": "#ee7f8d"},
@@ -170,9 +170,25 @@ def draw_bottom_bracket(ax: plt.Axes, pre_x: float, post_x: float) -> None:
     transform = ax.get_xaxis_transform()
     y = -0.115
     tick_y = -0.138
-    ax.plot([pre_x, post_x], [y, y], transform=transform, color="black", linewidth=3.0, clip_on=False)
-    ax.plot([pre_x, pre_x], [y, tick_y], transform=transform, color="black", linewidth=3.0, clip_on=False)
-    ax.plot([post_x, post_x], [y, tick_y], transform=transform, color="black", linewidth=3.0, clip_on=False)
+    ax.plot(
+        [pre_x, post_x], [y, y], transform=transform, color="black", linewidth=3.0, clip_on=False
+    )
+    ax.plot(
+        [pre_x, pre_x],
+        [y, tick_y],
+        transform=transform,
+        color="black",
+        linewidth=3.0,
+        clip_on=False,
+    )
+    ax.plot(
+        [post_x, post_x],
+        [y, tick_y],
+        transform=transform,
+        color="black",
+        linewidth=3.0,
+        clip_on=False,
+    )
 
 
 def make_figure(output_stem: Path) -> None:
@@ -239,15 +255,67 @@ def make_figure(output_stem: Path) -> None:
         zorder=1,
     )
 
-    draw_points(ax, data[("Pre", "Virginica")], positions[("Pre", "Virginica_points")], PALETTE["Virginica"]["fill"], PALETTE["Virginica"]["edge"], 1)
-    draw_points(ax, data[("Pre", "Versicolor")], positions[("Pre", "Versicolor_points")], PALETTE["Versicolor"]["fill"], PALETTE["Versicolor"]["edge"], 2)
-    draw_points(ax, data[("Post", "Virginica")], positions[("Post", "Virginica_points")], PALETTE["Virginica"]["fill"], PALETTE["Virginica"]["edge"], 3)
-    draw_points(ax, data[("Post", "Versicolor")], positions[("Post", "Versicolor_points")], PALETTE["Versicolor"]["fill"], PALETTE["Versicolor"]["edge"], 4)
+    draw_points(
+        ax,
+        data[("Pre", "Virginica")],
+        positions[("Pre", "Virginica_points")],
+        PALETTE["Virginica"]["fill"],
+        PALETTE["Virginica"]["edge"],
+        1,
+    )
+    draw_points(
+        ax,
+        data[("Pre", "Versicolor")],
+        positions[("Pre", "Versicolor_points")],
+        PALETTE["Versicolor"]["fill"],
+        PALETTE["Versicolor"]["edge"],
+        2,
+    )
+    draw_points(
+        ax,
+        data[("Post", "Virginica")],
+        positions[("Post", "Virginica_points")],
+        PALETTE["Virginica"]["fill"],
+        PALETTE["Virginica"]["edge"],
+        3,
+    )
+    draw_points(
+        ax,
+        data[("Post", "Versicolor")],
+        positions[("Post", "Versicolor_points")],
+        PALETTE["Versicolor"]["fill"],
+        PALETTE["Versicolor"]["edge"],
+        4,
+    )
 
-    draw_box(ax, data[("Pre", "Versicolor")], positions[("Pre", "Versicolor_box")], PALETTE["Versicolor"]["fill"], PALETTE["Versicolor"]["edge"])
-    draw_box(ax, data[("Pre", "Virginica")], positions[("Pre", "Virginica_box")], PALETTE["Virginica"]["fill"], PALETTE["Virginica"]["edge"])
-    draw_box(ax, data[("Post", "Versicolor")], positions[("Post", "Versicolor_box")], PALETTE["Versicolor"]["fill"], PALETTE["Versicolor"]["edge"])
-    draw_box(ax, data[("Post", "Virginica")], positions[("Post", "Virginica_box")], PALETTE["Virginica"]["fill"], PALETTE["Virginica"]["edge"])
+    draw_box(
+        ax,
+        data[("Pre", "Versicolor")],
+        positions[("Pre", "Versicolor_box")],
+        PALETTE["Versicolor"]["fill"],
+        PALETTE["Versicolor"]["edge"],
+    )
+    draw_box(
+        ax,
+        data[("Pre", "Virginica")],
+        positions[("Pre", "Virginica_box")],
+        PALETTE["Virginica"]["fill"],
+        PALETTE["Virginica"]["edge"],
+    )
+    draw_box(
+        ax,
+        data[("Post", "Versicolor")],
+        positions[("Post", "Versicolor_box")],
+        PALETTE["Versicolor"]["fill"],
+        PALETTE["Versicolor"]["edge"],
+    )
+    draw_box(
+        ax,
+        data[("Post", "Virginica")],
+        positions[("Post", "Virginica_box")],
+        PALETTE["Virginica"]["fill"],
+        PALETTE["Virginica"]["edge"],
+    )
 
     mean_positions = {
         ("Pre", "Versicolor"): positions[("Pre", "Versicolor_box")],
@@ -284,8 +352,16 @@ def make_figure(output_stem: Path) -> None:
     )
 
     legend_handles = [
-        Patch(facecolor=PALETTE["Versicolor"]["fill"], edgecolor=PALETTE["Versicolor"]["fill"], label="Versicolor"),
-        Patch(facecolor=PALETTE["Virginica"]["fill"], edgecolor=PALETTE["Virginica"]["fill"], label="Virginica"),
+        Patch(
+            facecolor=PALETTE["Versicolor"]["fill"],
+            edgecolor=PALETTE["Versicolor"]["fill"],
+            label="Versicolor",
+        ),
+        Patch(
+            facecolor=PALETTE["Virginica"]["fill"],
+            edgecolor=PALETTE["Virginica"]["fill"],
+            label="Virginica",
+        ),
     ]
     fig.legend(
         handles=legend_handles,

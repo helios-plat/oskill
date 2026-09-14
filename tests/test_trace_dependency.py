@@ -1,6 +1,5 @@
 """Tests for oskill.trace_dependency."""
 
-import pytest
 from oskill import trace_dependency
 
 

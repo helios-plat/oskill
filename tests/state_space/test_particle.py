@@ -31,20 +31,26 @@ class TestParticleFilterPipeline:
     def test_basic_shape(self):
         states, obs = make_tracking_problem()
         r = particle_filter_pipeline(
-            obs, trans_fn, like_fn, init_fn, n_particles=200,
-            transition_params={"sigma_q": 0.5}, likelihood_params={"sigma_r": 1.0},
-            seed=42
+            obs,
+            trans_fn,
+            like_fn,
+            init_fn,
+            n_particles=200,
+            transition_params={"sigma_q": 0.5},
+            likelihood_params={"sigma_r": 1.0},
+            seed=42,
         )
         assert r["filtered_states_mean"].shape == (50,)
 
     def test_returns_all_keys(self):
         _, obs = make_tracking_problem()
-        r = particle_filter_pipeline(
-            obs, trans_fn, like_fn, init_fn, n_particles=100, seed=0
-        )
+        r = particle_filter_pipeline(obs, trans_fn, like_fn, init_fn, n_particles=100, seed=0)
         required = {
-            "filtered_states_mean", "filtered_states_quantiles",
-            "effective_sample_size", "log_likelihood", "resampling_count",
+            "filtered_states_mean",
+            "filtered_states_quantiles",
+            "effective_sample_size",
+            "log_likelihood",
+            "resampling_count",
             "particles_history",
         }
         assert required.issubset(set(r.keys()))
@@ -53,9 +59,14 @@ class TestParticleFilterPipeline:
         """Particle filter should track a random walk (moderate correlation)."""
         states, obs = make_tracking_problem(seed=0, T=50)
         r = particle_filter_pipeline(
-            obs, trans_fn, like_fn, init_fn, n_particles=500,
-            transition_params={"sigma_q": 0.5}, likelihood_params={"sigma_r": 1.0},
-            seed=42
+            obs,
+            trans_fn,
+            like_fn,
+            init_fn,
+            n_particles=500,
+            transition_params={"sigma_q": 0.5},
+            likelihood_params={"sigma_r": 1.0},
+            seed=42,
         )
         corr = np.corrcoef(r["filtered_states_mean"], states)[0, 1]
         assert corr > 0.5
@@ -94,24 +105,21 @@ class TestParticleFilterPipeline:
     def test_systematic_resampling(self):
         _, obs = make_tracking_problem()
         r = particle_filter_pipeline(
-            obs, trans_fn, like_fn, init_fn, n_particles=200,
-            resampling="systematic", seed=5
+            obs, trans_fn, like_fn, init_fn, n_particles=200, resampling="systematic", seed=5
         )
         assert "resampling_count" in r
 
     def test_multinomial_resampling(self):
         _, obs = make_tracking_problem()
         r = particle_filter_pipeline(
-            obs, trans_fn, like_fn, init_fn, n_particles=200,
-            resampling="multinomial", seed=6
+            obs, trans_fn, like_fn, init_fn, n_particles=200, resampling="multinomial", seed=6
         )
         assert "resampling_count" in r
 
     def test_stratified_resampling(self):
         _, obs = make_tracking_problem()
         r = particle_filter_pipeline(
-            obs, trans_fn, like_fn, init_fn, n_particles=200,
-            resampling="stratified", seed=7
+            obs, trans_fn, like_fn, init_fn, n_particles=200, resampling="stratified", seed=7
         )
         assert "resampling_count" in r
 
@@ -119,6 +127,5 @@ class TestParticleFilterPipeline:
         _, obs = make_tracking_problem()
         with pytest.raises(ValueError, match="Unknown resampling"):
             particle_filter_pipeline(
-                obs, trans_fn, like_fn, init_fn, n_particles=100,
-                resampling="bad_method", seed=0
+                obs, trans_fn, like_fn, init_fn, n_particles=100, resampling="bad_method", seed=0
             )

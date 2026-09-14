@@ -10,6 +10,7 @@ Output spec:
 - Timestamp anchors [MM:SS](source_url?t=SECONDS) for time-referenced points
 - No model essay or direct rewrite of the original transcript
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -87,6 +88,7 @@ async def media_to_structured_md(
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _format_transcript_with_timestamps(tr: TranscriptResult) -> str:
     """Format segments as '[MM:SS] text' lines for LLM input."""
     lines = []
@@ -106,7 +108,8 @@ def _build_prompt(
 ) -> str:
     ts_instruction = (
         "Each section should include relevant timestamp anchors in the format "
-        f"[MM:SS]({source_url}?t=SECONDS) where SECONDS is the integer seconds from the transcript. "
+        f"[MM:SS]({source_url}?t=SECONDS) where SECONDS is the integer seconds "
+        "from the transcript. "
         "Place anchors after the relevant bullet point text."
         if has_timestamps
         else "No timestamps are available in this transcript."

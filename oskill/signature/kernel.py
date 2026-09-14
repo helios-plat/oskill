@@ -1,4 +1,5 @@
 """Signature kernel computation for path-valued data."""
+
 from __future__ import annotations
 
 import warnings
@@ -7,6 +8,7 @@ import numpy as np
 
 try:
     from oprim.signature.compute import path_signature_compute
+
     _HAS_SIGNATURE = True
 except ImportError:
     _HAS_SIGNATURE = False

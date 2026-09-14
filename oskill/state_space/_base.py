@@ -74,8 +74,8 @@ def _kalman_filter_core(
         if y.ndim == 0:
             y = y.reshape(1)
 
-        inn = y - H @ x_pred          # innovation
-        S = H @ P_pred @ H.T + R      # innovation covariance
+        inn = y - H @ x_pred  # innovation
+        S = H @ P_pred @ H.T + R  # innovation covariance
         K = P_pred @ H.T @ np.linalg.solve(S, np.eye(m))  # Kalman gain
 
         x = x_pred + K @ inn
@@ -87,10 +87,6 @@ def _kalman_filter_core(
         # Log-likelihood contribution
         sign, logdet = np.linalg.slogdet(S)
         if sign > 0:
-            log_lik += -0.5 * (
-                logdet
-                + inn @ np.linalg.solve(S, inn)
-                + m * np.log(2 * np.pi)
-            )
+            log_lik += -0.5 * (logdet + inn @ np.linalg.solve(S, inn) + m * np.log(2 * np.pi))
 
     return xs, Ps, x_preds, P_preds, log_lik

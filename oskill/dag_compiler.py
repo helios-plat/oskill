@@ -7,9 +7,7 @@ from typing import Any
 
 from obase.veya_workspace import TaskNode
 
-_CHECK = re.compile(
-    r"^(?P<indent>\s*)[-*]\s+\[(?P<mark>[ xX])\]\s+(?P<body>.+)$"
-)
+_CHECK = re.compile(r"^(?P<indent>\s*)[-*]\s+\[(?P<mark>[ xX])\]\s+(?P<body>.+)$")
 _ID_TITLE = re.compile(r"^(?P<id>T\d+(?:\.\d+)*)\s+[:.\-]?\s*(?P<title>.+)$", re.I)
 _DEPENDS = re.compile(r"depends(?:\s+on)?\s*:\s*(.+)$", re.I)
 _ACCEPT = re.compile(r"accept(?:ance)?\s*:\s*(.+)$", re.I)

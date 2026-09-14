@@ -1,12 +1,13 @@
 """K-render_shot: unified shot rendering dispatcher (generative / code_render)."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal
 
+from oprim._render_html_to_mp4 import RenderHtmlError, render_html_to_mp4
 from oprim._shot_types import ShotResult
-from oprim._render_html_to_mp4 import render_html_to_mp4, RenderHtmlError
-from oprim._video_generate import video_generate, VideoGenError
+from oprim._video_generate import VideoGenError, video_generate
 
 
 async def render_shot(
@@ -52,7 +53,10 @@ async def render_shot(
             output_path=output_path,
             shot_type="code_render",
             duration_s=duration_s,
-            metadata={"width": shot_spec.get("width", 1920), "height": shot_spec.get("height", 1080)},
+            metadata={
+                "width": shot_spec.get("width", 1920),
+                "height": shot_spec.get("height", 1080),
+            },
             is_valid=is_valid,
             validation_violations=violations,
         )
@@ -87,4 +91,6 @@ async def render_shot(
         )
 
     else:
-        raise ValueError(f"Unknown shot_type: {shot_type!r}. Must be 'generative' or 'code_render'.")
+        raise ValueError(
+            f"Unknown shot_type: {shot_type!r}. Must be 'generative' or 'code_render'."
+        )

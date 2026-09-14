@@ -9,6 +9,7 @@ Also uses from oskill:
 Does NOT run the agent loop — only prepares SubagentPlan.
 Stateless. No sibling oskill calls.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -58,9 +59,7 @@ async def subagent_dispatch(
         subagent_def: dict[str, Any] = {"system_prompt": "", "tools": [], "permissions": []}
         prompt_result = build_subagent_prompt(subagent_def, task=task, context=parent_ctx)
     prompt: str = (
-        prompt_result.get("system", task)
-        if isinstance(prompt_result, dict)
-        else str(prompt_result)
+        prompt_result.get("system", task) if isinstance(prompt_result, dict) else str(prompt_result)
     )
 
     # Resolve tools: exclude 'task' to prevent infinite recursion

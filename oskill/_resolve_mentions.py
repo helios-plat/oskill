@@ -1,16 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import file_read, glob_match
-import ast
-import json
+
 import re
-import sys
-import os
 from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import file_read, glob_match
+
 
 def resolve_mentions(
     text: str,
@@ -37,8 +34,8 @@ def resolve_mentions(
         >>> "src/main.py" in r["files"]
         True
     """
-    file_refs = re.findall(r'@([\w./\-]+\.\w+)', text)
-    symbol_refs = re.findall(r'@(\w+)(?!\.\w)', text)
+    file_refs = re.findall(r"@([\w./\-]+\.\w+)", text)
+    symbol_refs = re.findall(r"@(\w+)(?!\.\w)", text)
 
     resolved_files: list[str] = []
     expanded = text
@@ -71,6 +68,5 @@ def resolve_mentions(
     return {
         "expanded": expanded,
         "files": resolved_files,
-        "symbols": [s for s in symbol_refs if s not in
-                    {r.replace('.', '') for r in file_refs}],
+        "symbols": [s for s in symbol_refs if s not in {r.replace(".", "") for r in file_refs}],
     }

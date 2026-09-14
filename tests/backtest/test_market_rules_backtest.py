@@ -13,14 +13,16 @@ def _make_bars(symbol, dates_closes):
     bars = []
     opens = [c * 0.99 for c in dates_closes.values()]
     for i, (dt, close) in enumerate(dates_closes.items()):
-        bars.append({
-            "date": dt,
-            "open": opens[i],
-            "high": close * 1.01,
-            "low": close * 0.98,
-            "close": close,
-            "volume": 1_000_000,
-        })
+        bars.append(
+            {
+                "date": dt,
+                "open": opens[i],
+                "high": close * 1.01,
+                "low": close * 0.98,
+                "close": close,
+                "volume": 1_000_000,
+            }
+        )
     return bars
 
 
@@ -94,7 +96,8 @@ class TestMarketRulesBacktestRun:
         assert any("t_plus" in r for r in blocked_reasons)
 
     def test_limit_up_blocks_buy(self):
-        # D[1] price=110 is 10% up from D[0] price=100 -> limit-up triggers, blocks buy signal on D[1]
+        # D[1] price=110 is 10% up from D[0] price=100 -> limit-up triggers,
+        # blocks buy signal on D[1]
         prices = (100.0, 110.0, 112.0, 113.0, 114.0)
         ohlcv = {"SYM": _simple_ohlcv(prices=prices)}
         # Buy signal on D[1] (current_bar=D[1] close=110, prev_bar=D[0] close=100 -> limit-up!)

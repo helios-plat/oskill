@@ -7,6 +7,7 @@ Composes oprim:
 Stateless: reads registry for conflict checking only. Does NOT write disk or
 modify the registry.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -48,9 +49,7 @@ async def install_plugin(source: Path, *, registry: Any) -> PluginSpec:
     if manifest.name in existing_plugins:
         existing = existing_plugins[manifest.name]
         existing_version = getattr(getattr(existing, "manifest", None), "version", "?")
-        errors.append(
-            f"Plugin '{manifest.name}' already installed (version {existing_version})"
-        )
+        errors.append(f"Plugin '{manifest.name}' already installed (version {existing_version})")
 
     registry_commands: set[str] = getattr(registry, "command_names", set())
     for cmd in manifest.commands:

@@ -1,4 +1,5 @@
 """Transcribe an audio substrate via whisper.cpp."""
+
 from __future__ import annotations
 
 import json
@@ -6,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from oprim._logging import log
-from oprim.external.clients.whisper_client import WhisperClient, WhisperSegment
+from oprim.external.clients.whisper_client import WhisperClient
 from oprim.external.gpu_lock import GpuLock
 from oprim.meta_db import open_meta_db
 
@@ -69,10 +70,7 @@ async def transcribe_audio_substrate(
         await whisper.close()
         await gpu_lock.close()
 
-    segments_dicts = [
-        {"start": s.start, "end": s.end, "text": s.text}
-        for s in result.segments
-    ]
+    segments_dicts = [{"start": s.start, "end": s.end, "text": s.text} for s in result.segments]
 
     _update_transcription_job(
         job_id,

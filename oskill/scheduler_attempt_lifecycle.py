@@ -1,4 +1,5 @@
-"""oskill.scheduler_attempt_lifecycle — Cindy attempt phase machine + retry + monthly + knowledge hook.
+"""oskill.scheduler_attempt_lifecycle — Cindy attempt phase machine + retry +
+monthly + knowledge hook.
 
 Enhances ``RecurringScheduler`` with:
   - Attempt lifecycle phase machine (claiming→persisting→running→finalizing) with
@@ -15,7 +16,8 @@ from __future__ import annotations
 import asyncio
 import calendar as cal_mod
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 # legal transitions mimic Cindy's attemptLifecycle.ts
 LEGAL_TRANSITIONS: dict[str, tuple[str, ...]] = {
@@ -27,8 +29,8 @@ LEGAL_TRANSITIONS: dict[str, tuple[str, ...]] = {
     "cancelling": ("finalizing",),
     "finalizing": (),
     "pending": ("claiming", "loading"),  # entry points
-    "completed": ("pending",),           # re-queue
-    "failed": ("pending", "claiming"),   # retry entry
+    "completed": ("pending",),  # re-queue
+    "failed": ("pending", "claiming"),  # retry entry
 }
 
 
@@ -42,7 +44,10 @@ def transition_attempt(attempt: dict[str, Any], to_phase: str) -> dict[str, Any]
     """Enforce legal phase transition; raise ValueError on illegal move."""
     from_phase = attempt.get("phase", "pending")
     if not is_legal_transition(from_phase, to_phase):
-        raise ValueError(f"illegal transition: {from_phase} → {to_phase} (legal: {LEGAL_TRANSITIONS.get(from_phase, ())})")
+        raise ValueError(
+            f"illegal transition: {from_phase} → {to_phase} "
+            f"(legal: {LEGAL_TRANSITIONS.get(from_phase, ())})"
+        )
     attempt["phase"] = to_phase
     attempt["phase_at"] = time.time()
     return attempt
@@ -67,14 +72,15 @@ def monthly_clamp(cron_expr: str, now_ts: float | None = None) -> int:
         return int(now + 3600)
 
     import datetime
-    dt = datetime.datetime.fromtimestamp(now, tz=datetime.timezone.utc)
+
+    dt = datetime.datetime.fromtimestamp(now, tz=datetime.UTC)
     year, month = dt.year, dt.month
 
     # clamp day to month's max
     max_day = cal_mod.monthrange(year, month)[1]
     effective_day = min(day, max_day)
 
-    target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.timezone.utc)
+    target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.UTC)
     if target.timestamp() <= now:
         # advance to next month
         if month == 12:
@@ -84,21 +90,23 @@ def monthly_clamp(cron_expr: str, now_ts: float | None = None) -> int:
             month += 1
         max_day = cal_mod.monthrange(year, month)[1]
         effective_day = min(day, max_day)
-        target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.timezone.utc)
+        target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.UTC)
 
     return int(target.timestamp())
 
 
-async def pre_run_knowledge_hook(schedule: dict[str, Any], context: dict[str, Any] | None = None) -> bool:
+async def pre_run_knowledge_hook(
+    schedule: dict[str, Any], context: dict[str, Any] | None = None
+) -> bool:
     """Cindy-style pre-run hook: auto-refresh stale knowledge entries before executing.
 
     Scans the knowledge store for stale entries, marks them fresh after retrieval,
     and updates the schedule's prompt context with any refreshed items.
     Returns False if no knowledge store is available (skips silently).
     """
-    ctx = context or {}
     try:
         from obase.knowledge_store import KnowledgeStore
+
         store = KnowledgeStore()
         stale = store.list_stale()
         if stale:
@@ -143,7 +151,12 @@ async def retry_execute(
             if hasattr(result, "__await__"):
                 result = await result
             transition_attempt(attempt, "completed")
-            return {"status": "completed", "attempt": i + 1, "result": result, "phase_history": attempt}
+            return {
+                "status": "completed",
+                "attempt": i + 1,
+                "result": result,
+                "phase_history": attempt,
+            }
 
         except Exception as exc:
             attempt["errors"].append(str(exc))
@@ -152,9 +165,14 @@ async def retry_execute(
             except ValueError:
                 attempt["phase"] = "failed"
             if i < max_attempts - 1:
-                delay = backoff_base_s * (2 ** i)
+                delay = backoff_base_s * (2**i)
                 await asyncio.sleep(delay)
             transition_attempt(attempt, "pending")  # re-enter for retry
 
     transition_attempt(attempt, "finalizing")
-    return {"status": "exhausted", "attempt": max_attempts, "errors": attempt["errors"], "phase_history": attempt}
+    return {
+        "status": "exhausted",
+        "attempt": max_attempts,
+        "errors": attempt["errors"],
+        "phase_history": attempt,
+    }

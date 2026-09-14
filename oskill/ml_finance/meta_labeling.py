@@ -54,9 +54,7 @@ def meta_labeling(
 
     n = len(signals)
     if len(returns) != n:
-        raise ValueError(
-            f"primary_signals length {n} != forward_returns length {len(returns)}"
-        )
+        raise ValueError(f"primary_signals length {n} != forward_returns length {len(returns)}")
 
     # Determine reference direction
     if triple_barrier_labels is not None:
@@ -67,6 +65,7 @@ def meta_labeling(
         direction = tb_labels.astype(np.float64)
     elif barrier_horizon is not None:
         from oskill.ml_finance.triple_barrier import triple_barrier_label
+
         result = triple_barrier_label(returns, time_barrier=barrier_horizon)
         direction = result["labels"].astype(np.float64)
     else:

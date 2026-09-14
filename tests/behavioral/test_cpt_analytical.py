@@ -1,4 +1,5 @@
 """Tests for cpt_portfolio_analytical (Bernard-Ghossoub 2010)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -20,8 +21,12 @@ def sample_returns(rng: np.random.Generator) -> np.ndarray:
 def test_returns_required_keys(sample_returns: np.ndarray) -> None:
     result = cpt_portfolio_analytical(sample_returns, reference_return=0.0)
     expected_keys = (
-        "weight_optimal", "cpt_value", "llad", "well_posed",
-        "comparative_statics", "closed_form_used",
+        "weight_optimal",
+        "cpt_value",
+        "llad",
+        "well_posed",
+        "comparative_statics",
+        "closed_form_used",
     )
     for key in expected_keys:
         assert key in result, f"Missing key: {key}"
@@ -56,9 +61,7 @@ def test_well_posed_is_valid(sample_returns: np.ndarray) -> None:
 
 
 def test_closed_form_for_piecewise_linear(sample_returns: np.ndarray) -> None:
-    result = cpt_portfolio_analytical(
-        sample_returns, reference_return=0.0, case="piecewise_linear"
-    )
+    result = cpt_portfolio_analytical(sample_returns, reference_return=0.0, case="piecewise_linear")
     assert result["closed_form_used"] is True
 
 

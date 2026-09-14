@@ -1,8 +1,10 @@
 """Mock aiohttp — verify RestClient parse + error handling."""
-import pytest
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from oskill.exchange.okx_demo import OKXAPIError, OKXClientError, OKXDemoRestClient
+import pytest
+
+from oskill.exchange.okx_demo import OKXClientError, OKXDemoRestClient
 
 
 @pytest.fixture
@@ -47,7 +49,10 @@ async def test_submit_order_success(client):
     }
     with patch("aiohttp.ClientSession", return_value=_mock_session(200, mock_response)):
         result = await client.submit_order(
-            inst_id="BTC-USDT", side="buy", size_in_base=0.001, cl_ord_id="test-1",
+            inst_id="BTC-USDT",
+            side="buy",
+            size_in_base=0.001,
+            cl_ord_id="test-1",
         )
 
     assert result.code == "0"
@@ -64,7 +69,9 @@ async def test_submit_order_rejected(client):
     }
     with patch("aiohttp.ClientSession", return_value=_mock_session(200, mock_response)):
         result = await client.submit_order(
-            inst_id="BTC-USDT", side="buy", size_in_base=0.001,
+            inst_id="BTC-USDT",
+            side="buy",
+            size_in_base=0.001,
         )
 
     assert result.code == "1"
@@ -76,7 +83,9 @@ async def test_submit_order_http_error(client):
     with patch("aiohttp.ClientSession", return_value=_mock_session(500, text_data="Server Error")):
         with pytest.raises(OKXClientError, match="HTTP 500"):
             await client.submit_order(
-                inst_id="BTC-USDT", side="buy", size_in_base=0.001,
+                inst_id="BTC-USDT",
+                side="buy",
+                size_in_base=0.001,
             )
 
 
@@ -91,14 +100,16 @@ async def test_get_account_balance_success(client):
     mock_response = {
         "code": "0",
         "msg": "",
-        "data": [{
-            "totalEq": "100000.5",
-            "uTime": "1700000000",
-            "details": [
-                {"ccy": "USDT", "availBal": "95000.0"},
-                {"ccy": "BTC", "availBal": "0.5"},
-            ],
-        }],
+        "data": [
+            {
+                "totalEq": "100000.5",
+                "uTime": "1700000000",
+                "details": [
+                    {"ccy": "USDT", "availBal": "95000.0"},
+                    {"ccy": "BTC", "availBal": "0.5"},
+                ],
+            }
+        ],
     }
     with patch("aiohttp.ClientSession", return_value=_mock_session(200, mock_response)):
         snapshot = await client.get_account_balance()

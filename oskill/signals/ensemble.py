@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -93,9 +94,7 @@ def signal_ensemble(
     for name in names:
         arr = np.asarray(signals[name], dtype=float)
         if len(arr) != n:
-            raise ValueError(
-                f"Signal '{name}' length {len(arr)} != expected {n}"
-            )
+            raise ValueError(f"Signal '{name}' length {len(arr)} != expected {n}")
         if is_series and isinstance(signals[name], pd.Series):
             if not signals[name].index.equals(idx):
                 raise ValueError(
@@ -137,8 +136,10 @@ def signal_ensemble(
     # --- Apply decay ---
     effective_decay_fn = decay_fn
     if effective_decay_fn is None and decay_lookback > 0:
+
         def _linear_decay(lag: int) -> float:
             return max(0.0, 1.0 - lag / decay_lookback)
+
         effective_decay_fn = _linear_decay
 
     if effective_decay_fn is not None:

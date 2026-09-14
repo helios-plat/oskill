@@ -6,7 +6,6 @@ import pytest
 
 from oskill.llm.tool_validation import tool_call_validator
 
-
 # ---------------------------------------------------------------------------
 # Fixtures / Helpers
 # ---------------------------------------------------------------------------
@@ -36,6 +35,7 @@ def make_call(**args) -> dict:
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_tool_validator_valid_call_passes():
     call = make_call(location="London", unit="celsius")

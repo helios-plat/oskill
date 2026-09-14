@@ -1,4 +1,5 @@
 """Tests for Eisenberg-Noe clearing model."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -10,11 +11,13 @@ from oskill.networks.clearing import eisenberg_noe_clearing
 @pytest.fixture
 def simple_3node():
     """3-bank network with one interconnected bank."""
-    L = np.array([
-        [0.0, 50.0, 0.0],
-        [0.0, 0.0, 50.0],
-        [30.0, 0.0, 0.0],
-    ])
+    L = np.array(
+        [
+            [0.0, 50.0, 0.0],
+            [0.0, 0.0, 50.0],
+            [30.0, 0.0, 0.0],
+        ]
+    )
     e = np.array([60.0, 30.0, 20.0])
     return L, e
 

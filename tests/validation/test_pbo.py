@@ -63,7 +63,12 @@ def test_pbo_overfit_strategies_high_pbo(overfit_strategies):
 def test_pbo_returns_four_keys(random_strategies):
     """Result must have exactly four keys."""
     result = probability_of_backtest_overfitting(random_strategies, n_splits=8)
-    assert set(result.keys()) == {"pbo", "rank_logits", "performance_degradation", "is_significant_overfit"}
+    assert set(result.keys()) == {
+        "pbo",
+        "rank_logits",
+        "performance_degradation",
+        "is_significant_overfit",
+    }
 
 
 def test_pbo_invalid_n_splits_raises(random_strategies):

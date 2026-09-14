@@ -82,9 +82,9 @@ RULES:
                     timeout=self.timeout,
                     max_tokens=4096,
                 )
-                content = (
-                    (response.get("choices") or [{}])[0].get("message") or {}
-                ).get("content") or ""
+                content = ((response.get("choices") or [{}])[0].get("message") or {}).get(
+                    "content"
+                ) or ""
                 return content
             except Exception as exc:  # noqa: BLE001 — one worker's failure must not kill the swarm
                 last_exc = exc

@@ -1,11 +1,12 @@
 import json
 import re
-from typing import Any, Callable, Literal
-
-from pydantic import BaseModel
+from collections.abc import Callable
+from typing import Any, Literal
 
 from obase.tool_registry import ToolRegistry
 from obase.tool_registry.schema import to_anthropic_tool
+from pydantic import BaseModel
+
 from oskill._llm_caller import LLMCaller
 from oskill._signal import Signal
 from oskill._utils import extract_confidence
@@ -16,15 +17,17 @@ class InvestigationStep(BaseModel):
     tool_called: str
     tool_input: dict[str, Any]
     tool_output: dict[str, Any]
-    observation: str                   # LLM 总结这步看到什么
-    next_action: str                   # LLM 决定下一步做什么
+    observation: str  # LLM 总结这步看到什么
+    next_action: str  # LLM 决定下一步做什么
 
 
 class InvestigationOutcome(BaseModel):
     steps_taken: int
     steps: list[InvestigationStep]
-    final_conclusion: dict[str, Any]             # {root_cause_hypothesis, confidence, evidence}
-    stopped_reason: Literal["confidence_threshold", "max_steps", "no_more_tools", "llm_decided_stop", "error"]
+    final_conclusion: dict[str, Any]  # {root_cause_hypothesis, confidence, evidence}
+    stopped_reason: Literal[
+        "confidence_threshold", "max_steps", "no_more_tools", "llm_decided_stop", "error"
+    ]
 
 
 def agentic_investigate_loop(
@@ -44,11 +47,11 @@ def agentic_investigate_loop(
             tools_schemas.append(to_anthropic_tool(meta))
 
     system_prompt = _build_system_prompt(signal, available_tool_names)
-    
+
     messages: list[dict[str, Any]] = [
         {"role": "user", "content": "Start investigation."},
     ]
-    
+
     messages[0]["content"] = f"{system_prompt}\n\n{messages[0]['content']}"
 
     steps: list[InvestigationStep] = []
@@ -96,28 +99,32 @@ def agentic_investigate_loop(
                 tool_output = {"error": str(e)}
 
         observation = _summarize_observation(tool_output)
-        
+
         step = InvestigationStep(
             step_no=step_no,
             tool_called=tool_name,
             tool_input=tool_input,
             tool_output=tool_output,
             observation=observation,
-            next_action=""
+            next_action="",
         )
         steps.append(step)
         if on_step:
             on_step(step.model_dump())
 
         messages.append({"role": "assistant", "content": content})
-        messages.append({
-            "role": "user",
-            "content": [{
-                "type": "tool_result",
-                "tool_use_id": tool_id,
-                "content": json.dumps(tool_output, default=str),
-            }],
-        })
+        messages.append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tool_id,
+                        "content": json.dumps(tool_output, default=str),
+                    }
+                ],
+            }
+        )
 
         confidence = extract_confidence(content)
         if confidence >= confidence_threshold:
@@ -172,11 +179,11 @@ def _parse_final_conclusion(content: Any) -> dict[str, Any]:
     conclusion = {
         "root_cause_hypothesis": "Unknown",
         "confidence": extract_confidence(content),
-        "evidence": []
+        "evidence": [],
     }
-    
+
     match = re.search(r"Root Cause Hypothesis:\s*(.*?)(?:\s+confidence:|$|\n)", text, re.IGNORECASE)
     if match:
         conclusion["root_cause_hypothesis"] = match.group(1).strip()
-        
+
     return conclusion

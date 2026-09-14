@@ -1,4 +1,5 @@
 """Tests for interbank contagion simulation."""
+
 from __future__ import annotations
 
 import numpy as np

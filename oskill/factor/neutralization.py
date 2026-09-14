@@ -52,9 +52,7 @@ def factor_neutralization(
 
     N = len(sig)
     if len(factor_exposures) != N:
-        raise ValueError(
-            f"signal length {N} != factor_exposures rows {len(factor_exposures)}"
-        )
+        raise ValueError(f"signal length {N} != factor_exposures rows {len(factor_exposures)}")
 
     # Select columns
     if factors_to_neutralize is not None:
@@ -81,9 +79,7 @@ def factor_neutralization(
 
         # Create quintile groups
         n_groups = 5
-        group_labels = pd.qcut(
-            combined, q=n_groups, labels=False, duplicates="drop"
-        )
+        group_labels = pd.qcut(combined, q=n_groups, labels=False, duplicates="drop")
 
         result = np.zeros(N, dtype=np.float64)
         unique_groups = np.unique(group_labels[~pd.isna(group_labels)])

@@ -31,8 +31,12 @@ def test_rss_basic(reg_data):
     X, y = reg_data
     result = random_subsampling_validation(X, y, _SimpleRegressor(), n_iterations=20, seed=0)
     expected_keys = {
-        "mean_score", "std_score", "score_distribution",
-        "score_5th_pct", "score_95th_pct", "n_iterations_completed",
+        "mean_score",
+        "std_score",
+        "score_distribution",
+        "score_5th_pct",
+        "score_95th_pct",
+        "n_iterations_completed",
     }
     assert set(result.keys()) == expected_keys
 

@@ -66,9 +66,7 @@ async def mllm_frame_consistency_check(
     if not candidate_frames:
         raise FrameConsistencyError("candidate_frames must not be empty")
 
-    threshold: float = (
-        criteria.threshold if hasattr(criteria, "threshold") else 0.7
-    )
+    threshold: float = criteria.threshold if hasattr(criteria, "threshold") else 0.7
     dimensions: list[str] = (
         criteria.dimensions
         if hasattr(criteria, "dimensions")
@@ -90,7 +88,7 @@ async def mllm_frame_consistency_check(
                     "You are a visual consistency evaluator. "
                     "Score the candidate frame against the reference on a scale 0.0-1.0. "
                     f"Dimensions to evaluate: {dimensions}. "
-                    "Return JSON: {\"score\": <float>, \"breakdown\": {dim: score}}."
+                    'Return JSON: {"score": <float>, "breakdown": {dim: score}}.'
                 ),
             },
             {
