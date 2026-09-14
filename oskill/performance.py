@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import sys
 import warnings
+from types import ModuleType
 from typing import Literal
 
 import numpy as np
+import oprim
 import pandas as pd
 from scipy import stats as scipy_stats
-
-import oprim
 
 
 def bootstrap_sharpe(
@@ -53,7 +54,7 @@ def bootstrap_sharpe(
     rf = risk_free_rate
     sharpe_point = oprim.sharpe_ratio(
         pd.Series(valid),
-        risk_free_rate=float(rf) if np.isscalar(rf) else pd.Series(rf[:len(valid)]),
+        risk_free_rate=float(rf) if np.isscalar(rf) else pd.Series(rf[: len(valid)]),
         annualization_factor=int(annualization_factor),
     )
 
@@ -61,7 +62,7 @@ def bootstrap_sharpe(
     def _sharpe_stat(sample: np.ndarray) -> float:
         return oprim.sharpe_ratio(
             pd.Series(sample),
-            risk_free_rate=float(rf) if np.isscalar(rf) else pd.Series(rf[:len(sample)]),
+            risk_free_rate=float(rf) if np.isscalar(rf) else pd.Series(rf[: len(sample)]),
             annualization_factor=int(annualization_factor),
         )
 
@@ -184,6 +185,7 @@ def psr_dsr(
     # Optional bootstrap CI for PSR
     psr_ci_val = None
     if bootstrap_ci:
+
         def _psr_stat(sample: np.ndarray) -> float:
             sr_s = oprim.sharpe_ratio(
                 pd.Series(sample), annualization_factor=int(annualization_factor)
@@ -196,9 +198,7 @@ def psr_dsr(
                 return np.nan
             return float(scipy_stats.norm.cdf(n / np.sqrt(d_sq)))
 
-        ci_result = oprim.bootstrap_ci(
-            valid, statistic_fn=_psr_stat, n_bootstrap=n_bootstrap
-        )
+        ci_result = oprim.bootstrap_ci(valid, statistic_fn=_psr_stat, n_bootstrap=n_bootstrap)
         psr_ci_val = (ci_result["ci_lower"], ci_result["ci_upper"])
 
     return {
@@ -331,8 +331,10 @@ def factor_attribution(
             return r["alpha"]
 
         ci_alpha = oprim.bootstrap_ci(
-            asset_arr, statistic_fn=_alpha_stat,
-            n_bootstrap=n_bootstrap, confidence_level=confidence_level,
+            asset_arr,
+            statistic_fn=_alpha_stat,
+            n_bootstrap=n_bootstrap,
+            confidence_level=confidence_level,
             random_state=random_state,
         )
         alpha_ci = (ci_alpha["ci_lower"], ci_alpha["ci_upper"])
@@ -357,8 +359,10 @@ def factor_attribution(
         hi = 1 - lo
         betas_ci = {}
         for fn in factor_names:
-            betas_ci[fn] = (float(np.nanpercentile(betas_boots[fn], lo * 100)),
-                            float(np.nanpercentile(betas_boots[fn], hi * 100)))
+            betas_ci[fn] = (
+                float(np.nanpercentile(betas_boots[fn], lo * 100)),
+                float(np.nanpercentile(betas_boots[fn], hi * 100)),
+            )
 
     return {
         "alpha": float(alpha),
@@ -517,8 +521,6 @@ def portfolio_metrics_summary(
     ---------
     Bailey & Lopez de Prado (2014). The Deflated Sharpe Ratio.
     """
-    import math
-    from datetime import date as date_type
 
     n_trades = len(trades)
 
@@ -547,8 +549,10 @@ def portfolio_metrics_summary(
     equity_vals = [v for _, v in equity_curve]
     if len(equity_vals) >= 2:
         daily_rets = pd.Series(
-            [(equity_vals[i] - equity_vals[i - 1]) / equity_vals[i - 1]
-             for i in range(1, len(equity_vals))]
+            [
+                (equity_vals[i] - equity_vals[i - 1]) / equity_vals[i - 1]
+                for i in range(1, len(equity_vals))
+            ]
         )
         sharpe = float(oprim.sharpe_ratio(daily_rets, annualization_factor=252))
     else:
@@ -624,8 +628,12 @@ def trade_pnl_statistics(
         n = len(pnls)
         if n == 0:
             return {
-                "win_rate": 0.0, "profit_loss_ratio": 0.0, "avg_pnl": 0.0,
-                "median_pnl": 0.0, "std_pnl": 0.0, "n_trades": 0,
+                "win_rate": 0.0,
+                "profit_loss_ratio": 0.0,
+                "avg_pnl": 0.0,
+                "median_pnl": 0.0,
+                "std_pnl": 0.0,
+                "n_trades": 0,
             }
         wins = [p for p in pnls if p > 0]
         losses = [p for p in pnls if p <= 0]
@@ -737,9 +745,7 @@ def rule_compliance_winrate_diff(
     # Compute diff
     diff: dict[str, object] = {}
     if c_stats["winrate"] is not None and v_stats["winrate"] is not None:
-        diff["winrate_pct_points"] = round(
-            (c_stats["winrate"] - v_stats["winrate"]) * 100, 2
-        )
+        diff["winrate_pct_points"] = round((c_stats["winrate"] - v_stats["winrate"]) * 100, 2)
         if c_stats["avg_return_pct"] is not None and v_stats["avg_return_pct"] is not None:
             diff["avg_return_pct_points"] = round(
                 c_stats["avg_return_pct"] - v_stats["avg_return_pct"], 2
@@ -779,7 +785,7 @@ def subject_forward_winrate(
             skipped += 1
             continue
         entry_price = price_series[0]
-        forward_prices = price_series[1:forward_window_days + 1]
+        forward_prices = price_series[1 : forward_window_days + 1]
         if entry_price <= 0:
             skipped += 1
             continue
@@ -796,4 +802,17 @@ def subject_forward_winrate(
             losses += 1
     n_valid = wins + losses
     winrate = wins / n_valid if n_valid > 0 else None
-    return {"winrate": winrate, "n_events_total": len(events), "n_events_valid": n_valid, "wins": wins, "losses": losses}
+    return {
+        "winrate": winrate,
+        "n_events_total": len(events),
+        "n_events_valid": n_valid,
+        "wins": wins,
+        "losses": losses,
+    }
+
+
+# Compatibility for the historical package-style import path.  The canonical
+# implementation remains this module-level function.
+_subject_module = ModuleType("oskill.performance.subject_forward_winrate")
+_subject_module.subject_forward_winrate = subject_forward_winrate
+sys.modules.setdefault(_subject_module.__name__, _subject_module)
