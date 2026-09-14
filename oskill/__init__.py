@@ -323,6 +323,16 @@ from oskill.skill_qualification import (  # noqa: E402
     compare_skill_runs,
     detect_skill_regression,
 )
+from oskill.engineering_qualification import (  # noqa: E402
+    evaluate_contract,
+    evaluate_proven_red,
+    evaluate_ratchet,
+)
+from oskill.coding_intelligence import (  # noqa: E402
+    analyze_diff_risk,
+    analyze_symbol_impact,
+    select_relevant_tests,
+)
 from oskill.agent_messaging import (  # noqa: E402
     MSG_STATUS_ERROR,
     MSG_STATUS_SUCCESS,

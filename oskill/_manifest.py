@@ -12,6 +12,13 @@ ELEMENTS: list[str] = [
     # Wave F: skill qualification signals
     "compare_skill_runs",
     "detect_skill_regression",
+    # Wave G/H: qualification and coding intelligence
+    "evaluate_contract",
+    "evaluate_proven_red",
+    "evaluate_ratchet",
+    "analyze_symbol_impact",
+    "analyze_diff_risk",
+    "select_relevant_tests",
     # Action Gateway (PR-09)
     "classify_action_effect",
     "evaluate_action_policy",
