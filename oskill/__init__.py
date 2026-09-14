@@ -18,16 +18,8 @@ __manifest__ = {
             "kind": "oskill",
             "module": "oskill.storyboard_planner",
             "signature": "(config, request, llm) -> dict",
-            "depends_on": ["oprim.llm_complete", "oprim.schema_validate"],
+            "depends_on": ["oprim.style_marker_prompt", "oprim.lighting_control_prompt"],
             "pillars": ["cost", "fingerprint", "trail", "report"],
-        },
-        {
-            "name": "asset_reference_inject",
-            "kind": "oskill",
-            "module": "oskill._asset_reference_inject",
-            "signature": "(prompt, references) -> str",
-            "depends_on": ["oprim.prompt_compose", "oprim.media_inspect"],
-            "pillars": ["fingerprint", "trail", "report"],
         },
     ],
 }
