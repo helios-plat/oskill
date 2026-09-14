@@ -20,7 +20,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from oprim.bkt import KCState, bkt_update, classify_error
+from obase.cognitive_types import KCState
+from oprim.bkt import bkt_update, classify_error
 from oprim.fsrs_engine import (
     fsrs_map_rating,
     fsrs_retrievability,
