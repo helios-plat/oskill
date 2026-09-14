@@ -24,7 +24,7 @@ __manifest__ = {
         {
             "name": "asset_reference_inject",
             "kind": "oskill",
-            "module": "oskill.asset_reference_inject",
+            "module": "oskill._asset_reference_inject",
             "signature": "(prompt, references) -> str",
             "depends_on": ["oprim.prompt_compose", "oprim.media_inspect"],
             "pillars": ["fingerprint", "trail", "report"],
