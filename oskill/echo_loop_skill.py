@@ -44,7 +44,7 @@ from oprim.echo_loop import (
 # 学习循环状态
 # ──────────────────────────────────────────────────────────────────────────────
 
-class EchoLoopStage(str, BaseModel):
+class EchoLoopStage(BaseModel):
     """学习循环阶段。"""
     value: str
     completed: bool = False
