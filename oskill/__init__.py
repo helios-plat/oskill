@@ -6,6 +6,7 @@ import importlib
 from pathlib import Path
 from typing import Any
 from oskill._version import __version__
+__3o_canonical_exports__ = frozenset({"storyboard_planner"})
 
 # Public-package contract for 3O consumers.  A manifest is data only: skills
 # still receive providers through their existing protocols and keep no state.
