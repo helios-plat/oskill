@@ -10,7 +10,7 @@ keywords = ["finance", "quantitative", "meta-skills", "bootstrap-sharpe", "cpcv"
 
 dependencies = [
     "oprim @ git+https://github.com/helios-plat/oprim.git@e7f9c65196437d3bff09401aa02bc817d071eec3",
-    "obase @ git+https://github.com/helios-plat/obase.git@d7bcf9abb7a5baef5003075ad2808dfc0b5e4cac",
+    "obase @ git+https://github.com/helios-plat/obase.git@7d31719d8411b4fb34952ae4098ab320625d14dd",
     "numpy>=1.24",
     "scipy>=1.11",
     "pandas>=2.0",
