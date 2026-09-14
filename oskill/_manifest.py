@@ -5,6 +5,13 @@ from __future__ import annotations
 VERSION = "2.0.0"
 
 ELEMENTS: list[str] = [
+    # Wave E: stateless context engineering
+    "rank_context_items",
+    "select_context_window",
+    "compact_context",
+    # Wave F: skill qualification signals
+    "compare_skill_runs",
+    "detect_skill_regression",
     # Action Gateway (PR-09)
     "classify_action_effect",
     "evaluate_action_policy",

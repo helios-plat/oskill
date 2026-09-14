@@ -311,10 +311,17 @@ from oskill.reflection_agent import (  # noqa: E402
     ReflectionResult,
 )
 from oskill.context_engineering import (  # noqa: E402
+    compact_context,
     ContextBudget,
     ContextEngine,
     ContextMessage,
+    rank_context_items,
+    select_context_window,
     TrimResult,
+)
+from oskill.skill_qualification import (  # noqa: E402
+    compare_skill_runs,
+    detect_skill_regression,
 )
 from oskill.agent_messaging import (  # noqa: E402
     MSG_STATUS_ERROR,

@@ -15,6 +15,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from oprim import count_tokens, truncate_for_context
+
 ROLE_SYSTEM = "system"
 ROLE_USER = "user"
 ROLE_ASSISTANT = "assistant"
@@ -170,6 +172,123 @@ def messages_from_dicts(data: list[dict[str, Any]]) -> list[ContextMessage]:
     ]
 
 
+def rank_context_items(
+    *,
+    items: list[dict[str, Any]],
+    query: str | dict[str, Any] | None = None,
+    context_goal: str | dict[str, Any] | None = None,
+    weights: dict[str, float] | None = None,
+    token_budget: int | None = None,
+) -> dict[str, Any]:
+    """Rank caller-supplied context items without persistence or business state.
+
+    This is deliberately lexical and deterministic.  ``count_tokens`` and
+    ``truncate_for_context`` remain the atomic token/size authorities; this
+    skill only combines their results with item metadata.
+    """
+    if not isinstance(items, list):
+        raise TypeError("items must be a list of dictionaries")
+    if any(not isinstance(item, dict) for item in items):
+        raise TypeError("each context item must be a dictionary")
+    weights = weights or {}
+    goal = query if query is not None else context_goal
+    goal_text = str(goal).lower() if goal is not None else ""
+    budget = token_budget if token_budget is not None else 0
+    scored: list[tuple[float, int, dict[str, Any], dict[str, float]]] = []
+    for index, item in enumerate(items):
+        content = str(item.get("content", item.get("text", "")))
+        compact_content = truncate_for_context(content, max_bytes=50_000)
+        tokens = count_tokens(compact_content)
+        words = set(goal_text.split())
+        content_words = set(compact_content.lower().split())
+        relevance = len(words & content_words) / max(1, len(words)) if words else 0.0
+        recency = float(item.get("recency", item.get("timestamp", 0.0)) or 0.0)
+        importance = float(item.get("importance", item.get("priority", 0.0)) or 0.0)
+        quality = float(item.get("source_quality", item.get("quality", 0.0)) or 0.0)
+        efficiency = (importance + quality + 1.0) / max(1, tokens)
+        signals = {
+            "relevance": relevance,
+            "recency": recency,
+            "importance": importance,
+            "source_quality": quality,
+            "token_value_efficiency": efficiency,
+        }
+        score = sum(
+            signals[name] * float(weight) for name, weight in weights.items() if name in signals
+        )
+        if not weights:
+            score = relevance + importance + quality + efficiency
+        scored.append((score, index, item, signals))
+    scored.sort(key=lambda entry: (-entry[0], entry[1]))
+    return {
+        "ranked_items": [entry[2] for entry in scored],
+        "scores": [entry[0] for entry in scored],
+        "metadata": {
+            "count": len(scored),
+            "token_budget": budget,
+            "composed_primitives": ["count_tokens", "truncate_for_context"],
+        },
+    }
+
+
+def select_context_window(
+    *,
+    ranked_items: list[dict[str, Any]],
+    token_budget: int,
+    constraints: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Select a deterministic, budget-bounded window from ranked items."""
+    if token_budget <= 0:
+        raise ValueError("token_budget must be > 0")
+    if any(not isinstance(item, dict) for item in ranked_items):
+        raise TypeError("each ranked item must be a dictionary")
+    constraints = constraints or {}
+    excluded: list[dict[str, Any]] = []
+    selected: list[dict[str, Any]] = []
+    used = 0
+    for item in ranked_items:
+        if item.get("excluded") or item.get("include") is False:
+            excluded.append(item)
+            continue
+        tokens = count_tokens(truncate_for_context(str(item.get("content", item.get("text", "")))))
+        if constraints.get("max_items") is not None and len(selected) >= int(
+            constraints["max_items"]
+        ):
+            excluded.append(item)
+        elif used + tokens <= token_budget:
+            selected.append(item)
+            used += tokens
+        else:
+            excluded.append(item)
+    return {
+        "selected_items": selected,
+        "excluded_items": excluded,
+        "used_tokens": used,
+        "budget_tokens": token_budget,
+        "truncated": bool(excluded),
+        "metadata": {"composed_primitives": ["count_tokens", "truncate_for_context"]},
+    }
+
+
+def compact_context(
+    *,
+    items: list[dict[str, Any]],
+    token_budget: int,
+    constraints: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Stateless deterministic context transformation.
+
+    This does not replace ``omodul.context_compactor``: it has no session,
+    trail, fingerprint transaction, output directory, or LLM summarisation.
+    """
+    ranked = rank_context_items(items=items, token_budget=token_budget)
+    return select_context_window(
+        ranked_items=ranked["ranked_items"],
+        token_budget=token_budget,
+        constraints=constraints,
+    ) | {"ranking": ranked}
+
+
 __all__ = [
     "ContextBudget",
     "ContextEngine",
@@ -179,5 +298,8 @@ __all__ = [
     "ROLE_TOOL",
     "ROLE_USER",
     "TrimResult",
+    "compact_context",
     "messages_from_dicts",
+    "rank_context_items",
+    "select_context_window",
 ]
