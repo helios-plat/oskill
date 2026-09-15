@@ -4,7 +4,18 @@ from __future__ import annotations
 
 VERSION = "2.0.0"
 
+CANONICAL_ELEMENTS = {
+    "skill_distribution_provider": {
+        "repo": "oskill",
+        "version": 1,
+        "canonical_import": "oskill.skill_distribution_provider",
+        "canonical_export": "SkillDistributionProvider",
+    },
+}
+
 ELEMENTS: list[str] = [
+    # 3O canonical distribution protocol
+    "SkillDistributionProvider",
     # Wave E: stateless context engineering
     "rank_context_items",
     "select_context_window",
