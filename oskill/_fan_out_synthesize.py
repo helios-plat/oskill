@@ -2,8 +2,10 @@
 
 把"同一任务扇给 N 个候选 → 比对 → 合并/择优"内化为**任务无关的纯异步编排**原语:
 
-  * ``generate``   async (task, i) -> candidate     注入的候选生成器 (通常绑 LLM, 靠 i/温度制造多样性);
-  * ``synthesize`` async (task, candidates) -> merged  leader 综合 (有则优先, = Grok leader-synthesizer);
+  * ``generate``   async (task, i) -> candidate     注入的候选生成器 (通常绑 LLM, 靠 i/温度
+    制造多样性);
+  * ``synthesize`` async (task, candidates) -> merged  leader 综合 (有则优先, = Grok
+    leader-synthesizer);
   * ``judge``      (task, candidates) -> best_index    打分择优 (synthesize 缺省时用);
   * 二者都缺 → 退化为多数票 (相同候选票高者胜), 再退化为首个。
 

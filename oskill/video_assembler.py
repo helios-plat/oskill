@@ -76,11 +76,10 @@ async def video_assembler(
     if subtitle_path and subtitle_path.exists():
         from oprim.subtitle_burn import subtitle_burn
 
-        await subtitle_burn(
-            video_path=current, srt_paths=[subtitle_path], output_path=output_path
-        )
+        await subtitle_burn(video_path=current, srt_paths=[subtitle_path], output_path=output_path)
     elif current != output_path:
         import shutil
+
         shutil.copy2(current, output_path)
 
     if not output_path.exists():

@@ -15,13 +15,18 @@ def _make_hist_returns(n=252, seed=42):
 
 # ─── API / return keys ────────────────────────────────────────────────────────
 
+
 def test_returns_expected_keys():
     hist = _make_hist_returns()
     result = ddpm_synthetic_path_generator(hist, n_synthetic_paths=10, path_length=20)
     expected = {
-        "synthetic_paths", "noise_schedule", "gbm_aware_used",
-        "stylized_facts_evaluation", "wasserstein_to_historical",
-        "fingerprint", "denoiser_required",
+        "synthetic_paths",
+        "noise_schedule",
+        "gbm_aware_used",
+        "stylized_facts_evaluation",
+        "wasserstein_to_historical",
+        "fingerprint",
+        "denoiser_required",
     }
     assert expected == set(result.keys())
 
@@ -46,7 +51,9 @@ def test_gbm_aware_used_true():
 
 def test_noise_schedule_keys():
     hist = _make_hist_returns()
-    result = ddpm_synthetic_path_generator(hist, n_synthetic_paths=5, path_length=10, n_diffusion_steps=50)
+    result = ddpm_synthetic_path_generator(
+        hist, n_synthetic_paths=5, path_length=10, n_diffusion_steps=50
+    )
     ns = result["noise_schedule"]
     assert "betas" in ns and "alphas" in ns and "alpha_bar" in ns
     assert ns["betas"].shape == (50,)
@@ -57,8 +64,7 @@ def test_noise_schedule_keys():
 def test_betas_linear_schedule():
     hist = _make_hist_returns()
     result = ddpm_synthetic_path_generator(
-        hist, 5, 10, n_diffusion_steps=100, beta_schedule="linear",
-        beta_start=1e-4, beta_end=0.02
+        hist, 5, 10, n_diffusion_steps=100, beta_schedule="linear", beta_start=1e-4, beta_end=0.02
     )
     betas = result["noise_schedule"]["betas"]
     assert abs(betas[0] - 1e-4) < 1e-6
@@ -111,6 +117,7 @@ def test_stylized_facts_evaluation_keys():
 
 def test_pandas_series_input():
     import pandas as pd
+
     hist = pd.Series(_make_hist_returns())
     result = ddpm_synthetic_path_generator(hist, 5, 10)
     assert result["synthetic_paths"].shape == (5, 10)

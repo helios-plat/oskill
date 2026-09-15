@@ -7,6 +7,7 @@ Composites:
 ⚠️  Forbidden: square-root law.  Only sigmoid is used.
 ⚠️  Missing required params → raise ValueError.  No silent 100bps fallback.
 """
+
 from __future__ import annotations
 
 from typing import Any

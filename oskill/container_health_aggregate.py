@@ -19,7 +19,7 @@ class HealthAggregateResult(BaseModel):
     overall_status: Literal["healthy", "degraded", "down"]
     failing_checks: list[CheckResult] = []
     passing_checks: list[CheckResult] = []
-    aggregate_health_score: float      # passing / total
+    aggregate_health_score: float  # passing / total
 
 
 def container_health_aggregate(
@@ -34,16 +34,12 @@ def container_health_aggregate(
         inspect_info = docker_container_inspect(container_id=container_id, docker_host=docker_host)
     except Exception:
         return HealthAggregateResult(
-            container_id=container_id,
-            overall_status="down",
-            aggregate_health_score=0.0
+            container_id=container_id, overall_status="down", aggregate_health_score=0.0
         )
 
     if inspect_info.state != "running":
         return HealthAggregateResult(
-            container_id=container_id,
-            overall_status="down",
-            aggregate_health_score=0.0
+            container_id=container_id, overall_status="down", aggregate_health_score=0.0
         )
 
     # Check container health status if available
@@ -59,15 +55,11 @@ def container_health_aggregate(
                 healthy=cast(bool, probe["healthy"]),
                 response_time_ms=cast(int, probe["elapsed_ms"]),
                 status_code=cast(int | None, probe["status_code"]),
-                error=cast(str | None, probe.get("error"))
+                error=cast(str | None, probe.get("error")),
             )
         except Exception as e:
             return CheckResult(
-                endpoint=url,
-                healthy=False,
-                response_time_ms=0,
-                status_code=None,
-                error=str(e)
+                endpoint=url, healthy=False, response_time_ms=0, status_code=None, error=str(e)
             )
 
     if check_endpoints:
@@ -79,13 +71,15 @@ def container_health_aggregate(
 
     # Internal healthcheck influence
     if container_health_status == "unhealthy":
-        failing.append(CheckResult(
-            endpoint="docker-internal-healthcheck",
-            healthy=False,
-            response_time_ms=0,
-            status_code=None,
-            error="Container internal healthcheck failed"
-        ))
+        failing.append(
+            CheckResult(
+                endpoint="docker-internal-healthcheck",
+                healthy=False,
+                response_time_ms=0,
+                status_code=None,
+                error="Container internal healthcheck failed",
+            )
+        )
 
     total_checks = len(results) + (1 if container_health_status == "unhealthy" else 0)
 
@@ -107,5 +101,5 @@ def container_health_aggregate(
         overall_status=overall_status,
         failing_checks=failing,
         passing_checks=passing,
-        aggregate_health_score=score
+        aggregate_health_score=score,
     )

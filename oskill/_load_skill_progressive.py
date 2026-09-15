@@ -1,16 +1,14 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import file_read
-import ast
-import json
-import re
-import sys
+
 import os
+import sys
 from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import file_read
+
 
 def load_skill_progressive(
     skill_dir: str,
@@ -39,9 +37,10 @@ def load_skill_progressive(
         >>> "body" in ctx
         True
     """
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "oprim"))
     try:
         from oprim.hooks_image_skill import read_skill_frontmatter
+
         meta = read_skill_frontmatter(skill_dir)
         meta_dict = {
             "name": meta.name,
@@ -61,8 +60,8 @@ def load_skill_progressive(
         try:
             full = file_read(str(skill_md))
             # 去掉 frontmatter，取 body 部分
-            fm_end = full.find('\n---\n', full.find('---\n') + 4)
-            body = full[fm_end + 5:] if fm_end != -1 else full
+            fm_end = full.find("\n---\n", full.find("---\n") + 4)
+            body = full[fm_end + 5 :] if fm_end != -1 else full
         except Exception:  # pragma: no cover
             body = ""  # pragma: no cover
 

@@ -29,7 +29,9 @@ class TestTextTranslate:
 
     def test_auto_detect_source_lang(self) -> None:
         llm = _mock_llm("결과")
-        result = text_translate(text="한국어 텍스트", target_lang="zh", source_lang="auto", llm_client=llm)
+        result = text_translate(
+            text="한국어 텍스트", target_lang="zh", source_lang="auto", llm_client=llm
+        )
         assert result["source_lang_detected"] == "ko"
 
     def test_summary_style_with_max_chars(self) -> None:
@@ -51,7 +53,7 @@ class TestTextTranslate:
     def test_long_text_chunked(self) -> None:
         llm = _mock_llm("chunk result")
         long_text = "A" * 10000
-        result = text_translate(text=long_text, target_lang="zh", llm_client=llm)
+        _result = text_translate(text=long_text, target_lang="zh", llm_client=llm)
         assert llm.call.call_count >= 2  # Should be chunked
 
     def test_llm_failure_raises(self) -> None:
@@ -62,5 +64,7 @@ class TestTextTranslate:
 
     def test_multilang_japanese(self) -> None:
         llm = _mock_llm("日本語の翻訳")
-        result = text_translate(text="こんにちは世界", target_lang="en", source_lang="auto", llm_client=llm)
+        result = text_translate(
+            text="こんにちは世界", target_lang="en", source_lang="auto", llm_client=llm
+        )
         assert result["source_lang_detected"] == "ja"

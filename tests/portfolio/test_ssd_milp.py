@@ -1,4 +1,5 @@
 """Tests for ssd_milp_optimizer."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -24,7 +25,10 @@ def test_required_keys(asset_data: tuple) -> None:
     asset_returns, benchmark = asset_data
     result = ssd_milp_optimizer(asset_returns, benchmark)
     expected_keys = (
-        "weights", "ssd_constraint_active_states", "milp_objective", "dominance_certificate",
+        "weights",
+        "ssd_constraint_active_states",
+        "milp_objective",
+        "dominance_certificate",
     )
     for key in expected_keys:
         assert key in result
@@ -109,8 +113,6 @@ def test_short_selling_allows_negative_weights() -> None:
     T, N = 60, 3
     asset_returns = rng.normal(0.001, 0.02, size=(T, N))
     benchmark_returns = rng.normal(0.0005, 0.018, size=T)
-    result = ssd_milp_optimizer(
-        asset_returns, benchmark_returns, short_selling=True
-    )
+    result = ssd_milp_optimizer(asset_returns, benchmark_returns, short_selling=True)
     # Weights sum to 1 even with short selling
     np.testing.assert_allclose(result["weights"].sum(), 1.0, atol=1e-6)

@@ -8,12 +8,13 @@ Example:
     >>> from pathlib import Path
     >>> results = asyncio.run(canvas_workflow_executor(nodes=nodes, edges=edges, executor=fn))
 """
+
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
-from obase.workflow_engine import CycleError, WorkflowEngine, WorkflowExecutionError
-
+from obase.workflow_engine import WorkflowEngine, WorkflowExecutionError
 from oprim._hevi_types import CanvasEdge, CanvasNode
 from oprim.canvas_node_execute import CanvasNodeResult, canvas_node_execute
 
@@ -75,9 +76,7 @@ async def canvas_workflow_executor(
         return result
 
     try:
-        raw = await WorkflowEngine.execute(
-            layers, node_fn, on_error=on_error, completed=completed
-        )
+        raw = await WorkflowEngine.execute(layers, node_fn, on_error=on_error, completed=completed)
     except WorkflowExecutionError as exc:
         raise CanvasWorkflowError(
             f"Canvas workflow failed at node {exc.failed_node!r}: {exc.__cause__}"

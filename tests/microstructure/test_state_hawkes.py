@@ -8,7 +8,9 @@ import pytest
 from oskill.microstructure.state_hawkes import order_book_state_hawkes
 
 
-def make_events(n: int = 80, n_types: int = 2, seed: int = 42) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def make_events(
+    n: int = 80, n_types: int = 2, seed: int = 42
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate synthetic event data."""
     rng = np.random.default_rng(seed)
     inter_arrivals = rng.exponential(0.5, n)
@@ -21,9 +23,7 @@ def make_events(n: int = 80, n_types: int = 2, seed: int = 42) -> tuple[np.ndarr
 class TestOrderBookStateHawkesBasic:
     def test_returns_dict_keys(self):
         times, types, states = make_events()
-        result = order_book_state_hawkes(
-            times, types, states, n_event_types=2
-        )
+        result = order_book_state_hawkes(times, types, states, n_event_types=2)
         assert "baseline" in result
         assert "excitation" in result
         assert "state_response" in result

@@ -5,6 +5,7 @@ Reference
 López de Prado, M. (2016). Building diversified portfolios that outperform out-of-sample.
     Journal of Portfolio Management, 42(4), 59–69.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,7 +30,7 @@ def _block_corr_returns(
     corr[:half, :half] = rho_within
     corr[half:, half:] = rho_within
     np.fill_diagonal(corr, 1.0)
-    cov = corr * (vol ** 2)
+    cov = corr * (vol**2)
     # Cholesky factor
     L = np.linalg.cholesky(cov)
     z = rng.standard_normal((n_obs, n_assets))
@@ -63,7 +64,6 @@ def test_hrp_more_diversified_than_mv():
     result = hierarchical_risk_parity_v2(returns, use_rie_cleaning=False)
     w_hrp = result["weights"]
     cov = result["cov_used"]
-    stds = np.sqrt(np.diag(cov))
     n = len(w_hrp)
 
     # HRP risk contributions
@@ -80,14 +80,12 @@ def test_hrp_more_diversified_than_mv():
 
     def herfindahl(rc: np.ndarray) -> float:
         rc = rc / (rc.sum() + 1e-12)
-        return float((rc ** 2).sum())
+        return float((rc**2).sum())
 
     hhi_hrp = herfindahl(hrp_rc)
     hhi_mv = herfindahl(mv_rc)
     # HRP should be at least as diversified (lower HHI) or within tolerance
-    assert hhi_hrp <= hhi_mv + 0.2, (
-        f"HRP HHI={hhi_hrp:.4f} is much higher than MV HHI={hhi_mv:.4f}"
-    )
+    assert hhi_hrp <= hhi_mv + 0.2, f"HRP HHI={hhi_hrp:.4f} is much higher than MV HHI={hhi_mv:.4f}"
 
 
 @pytest.mark.academic_reference
@@ -140,9 +138,7 @@ def test_cluster_order_is_permutation():
 def test_ward_linkage_valid():
     """HRP with ward linkage also returns valid weights summing to 1."""
     returns = _block_corr_returns(seed=99)
-    result = hierarchical_risk_parity_v2(
-        returns, use_rie_cleaning=False, linkage_method="ward"
-    )
+    result = hierarchical_risk_parity_v2(returns, use_rie_cleaning=False, linkage_method="ward")
     np.testing.assert_allclose(result["weights"].sum(), 1.0, atol=1e-10)
 
 
@@ -151,10 +147,12 @@ def test_two_asset_trivial_case():
     """2-asset HRP: each asset receives a share inversely proportional to its variance."""
     rng = np.random.default_rng(5)
     # Asset 0 is twice as volatile as asset 1
-    r = np.column_stack([
-        rng.normal(0, 0.02, 300),
-        rng.normal(0, 0.01, 300),
-    ])
+    r = np.column_stack(
+        [
+            rng.normal(0, 0.02, 300),
+            rng.normal(0, 0.01, 300),
+        ]
+    )
     result = hierarchical_risk_parity_v2(r, use_rie_cleaning=False)
     w = result["weights"]
     # Lower volatility asset should get higher weight

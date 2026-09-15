@@ -13,8 +13,11 @@ def test_dsr_single_sharpe_returns_dict_with_five_keys():
     """Result must have exactly five keys."""
     result = deflated_sharpe_ratio([1.5], n_observations=252)
     assert set(result.keys()) == {
-        "dsr_probability", "observed_sharpe", "expected_max_sharpe",
-        "sharpe_variance", "is_significant"
+        "dsr_probability",
+        "observed_sharpe",
+        "expected_max_sharpe",
+        "sharpe_variance",
+        "is_significant",
     }
 
 
@@ -119,23 +122,17 @@ def test_dsr_bailey_lopez_de_prado_formula():
     kurt = 3.0
     N = 50
 
-    result = deflated_sharpe_ratio(
-        [SR] * N, n_observations=n, skewness=skew, kurtosis=kurt
-    )
+    result = deflated_sharpe_ratio([SR] * N, n_observations=n, skewness=skew, kurtosis=kurt)
 
     # Manual computation using the paper's formulas
     euler_gamma = 0.5772156649015329
-    E_max_SR_manual = (1.0 - euler_gamma) * norm.ppf(1 - 1/N) + euler_gamma * norm.ppf(1 - 1/(N * np.e))
+    E_max_SR_manual = (1.0 - euler_gamma) * norm.ppf(1 - 1 / N) + euler_gamma * norm.ppf(
+        1 - 1 / (N * np.e)
+    )
     SR_var_manual = (1.0 / n) * (1.0 - skew * SR + (kurt - 1.0) / 4.0 * SR**2)
     dsr_manual = (SR - E_max_SR_manual) / np.sqrt(SR_var_manual)
     prob_manual = float(norm.cdf(dsr_manual))
 
-    np.testing.assert_allclose(
-        result["expected_max_sharpe"], E_max_SR_manual, rtol=0.02
-    )
-    np.testing.assert_allclose(
-        result["dsr_probability"], prob_manual, rtol=0.02
-    )
-    np.testing.assert_allclose(
-        result["sharpe_variance"], SR_var_manual, rtol=0.02
-    )
+    np.testing.assert_allclose(result["expected_max_sharpe"], E_max_SR_manual, rtol=0.02)
+    np.testing.assert_allclose(result["dsr_probability"], prob_manual, rtol=0.02)
+    np.testing.assert_allclose(result["sharpe_variance"], SR_var_manual, rtol=0.02)

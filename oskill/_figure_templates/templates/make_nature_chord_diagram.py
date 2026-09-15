@@ -7,14 +7,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.path import Path as MplPath
-from matplotlib.patches import PathPatch, Wedge
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.patches import PathPatch, Wedge
+    from matplotlib.path import Path as MplPath
 
 
 @dataclass(frozen=True)
@@ -206,11 +207,27 @@ def ribbon_patch(
         MplPath.CURVE4,
         MplPath.CLOSEPOLY,
     ]
-    return PathPatch(MplPath(vertices, codes), facecolor=color, edgecolor="none", alpha=alpha, zorder=zorder)
+    return PathPatch(
+        MplPath(vertices, codes), facecolor=color, edgecolor="none", alpha=alpha, zorder=zorder
+    )
 
 
-def draw_sector_ring(ax: plt.Axes, layout: dict[str, dict[str, float]], nodes: list[NodeSpec]) -> None:
-    ax.add_patch(Wedge((0, 0), 1.075, 0, 360, width=0.105, facecolor="#eeeeee", edgecolor="none", alpha=0.85, zorder=0))
+def draw_sector_ring(
+    ax: plt.Axes, layout: dict[str, dict[str, float]], nodes: list[NodeSpec]
+) -> None:
+    ax.add_patch(
+        Wedge(
+            (0, 0),
+            1.075,
+            0,
+            360,
+            width=0.105,
+            facecolor="#eeeeee",
+            edgecolor="none",
+            alpha=0.85,
+            zorder=0,
+        )
+    )
     for node in nodes:
         item = layout[node.label]
         ax.add_patch(

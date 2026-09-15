@@ -8,6 +8,7 @@ Composes oprim:
 
 IO-orchestration (git commands). obase.git.run_git available in obase v0.15.1.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -46,10 +47,10 @@ async def git_safe_snapshot(repo: Path) -> SnapshotId:
 
     # Check if there are changes to snapshot
     has_changes = bool(
-        getattr(status, "modified", []) or
-        getattr(status, "added", []) or
-        getattr(status, "deleted", []) or
-        getattr(status, "untracked", [])
+        getattr(status, "modified", [])
+        or getattr(status, "added", [])
+        or getattr(status, "deleted", [])
+        or getattr(status, "untracked", [])
     )
 
     if not has_changes:

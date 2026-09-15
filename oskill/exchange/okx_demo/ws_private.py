@@ -2,6 +2,7 @@
 
 Default endpoint: wss://wspap.okx.com:8443/ws/v5/private
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -46,12 +47,14 @@ class OKXDemoWSPrivate:
         sig = sign_request(self.api_secret, ts, "GET", "/users/self/verify")
         return {
             "op": "login",
-            "args": [{
-                "apiKey": self.api_key,
-                "passphrase": self.passphrase,
-                "timestamp": ts,
-                "sign": sig,
-            }],
+            "args": [
+                {
+                    "apiKey": self.api_key,
+                    "passphrase": self.passphrase,
+                    "timestamp": ts,
+                    "sign": sig,
+                }
+            ],
         }
 
     def _subscribe_payload(self) -> dict:
@@ -71,7 +74,7 @@ class OKXDemoWSPrivate:
         if self._task:
             try:
                 await asyncio.wait_for(self._task, timeout=5)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self._task.cancel()
 
     async def _run(self):

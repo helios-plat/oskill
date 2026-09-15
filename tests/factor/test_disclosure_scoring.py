@@ -55,35 +55,42 @@ class TestDisclosureEventScoring:
         assert result[0]["total_score"] == pytest.approx(50.0)
 
     def test_percentile_method(self):
-        dims = [{
-            "name": "rank",
-            "max_score": 100,
-            "method": "percentile",
-            "params": {"field": "volume", "reference": [100, 200, 300, 400, 500]},
-        }]
+        dims = [
+            {
+                "name": "rank",
+                "max_score": 100,
+                "method": "percentile",
+                "params": {"field": "volume", "reference": [100, 200, 300, 400, 500]},
+            }
+        ]
         events = [{"symbol": "X", "date": date(2024, 1, 1), "volume": 300}]
         result = disclosure_event_scoring(events, dims, {"rank": 1.0})
         # 3 of 5 values <= 300, percentile rank = 3/5 = 0.6, score = 60
         assert result[0]["total_score"] == pytest.approx(60.0)
 
     def test_percentile_method_empty_reference_gives_zero(self):
-        dims = [{
-            "name": "rank",
-            "max_score": 100,
-            "method": "percentile",
-            "params": {"field": "volume", "reference": []},
-        }]
+        dims = [
+            {
+                "name": "rank",
+                "max_score": 100,
+                "method": "percentile",
+                "params": {"field": "volume", "reference": []},
+            }
+        ]
         events = [{"symbol": "X", "date": date(2024, 1, 1), "volume": 300}]
         result = disclosure_event_scoring(events, dims, {"rank": 1.0})
         assert result[0]["total_score"] == pytest.approx(0.0)
 
     def test_context_method_uses_history_lookup(self):
-        dims = [{
-            "name": "hist_score",
-            "max_score": 100,
-            "method": "context",
-            "params": {"field": "base_rate"},
-        }]
+        dims = [
+            {
+                "name": "hist_score",
+                "max_score": 100,
+                "method": "context",
+                "params": {"field": "base_rate"},
+            }
+        ]
+
         def lookup(symbol, date):
             return {"base_rate": 75.0}
 
@@ -92,20 +99,32 @@ class TestDisclosureEventScoring:
         assert result[0]["total_score"] == pytest.approx(75.0)
 
     def test_context_method_no_lookup_gives_zero(self):
-        dims = [{
-            "name": "hist_score",
-            "max_score": 100,
-            "method": "context",
-            "params": {"field": "base_rate"},
-        }]
+        dims = [
+            {
+                "name": "hist_score",
+                "max_score": 100,
+                "method": "context",
+                "params": {"field": "base_rate"},
+            }
+        ]
         events = [{"symbol": "X", "date": date(2024, 1, 1)}]
         result = disclosure_event_scoring(events, dims, {"hist_score": 1.0})
         assert result[0]["total_score"] == pytest.approx(0.0)
 
     def test_weights_normalized_when_not_summing_to_one(self):
         dims = [
-            {"name": "A", "max_score": 100, "method": "direct", "params": {"field": "a", "max": 100}},
-            {"name": "B", "max_score": 100, "method": "direct", "params": {"field": "b", "max": 100}},
+            {
+                "name": "A",
+                "max_score": 100,
+                "method": "direct",
+                "params": {"field": "a", "max": 100},
+            },
+            {
+                "name": "B",
+                "max_score": 100,
+                "method": "direct",
+                "params": {"field": "b", "max": 100},
+            },
         ]
         events = [{"symbol": "X", "date": date(2024, 1, 1), "a": 100, "b": 100}]
         result = disclosure_event_scoring(events, dims, {"A": 1.0, "B": 1.0})
@@ -133,8 +152,10 @@ class TestDisclosureEventScoring:
 
     def test_history_lookup_exception_handled(self):
         dims = [{"name": "h", "max_score": 100, "method": "context", "params": {"field": "x"}}]
+
         def bad_lookup(sym, dt):
             raise RuntimeError("DB error")
+
         events = [{"symbol": "X", "date": date(2024, 1, 1)}]
         result = disclosure_event_scoring(events, dims, {"h": 1.0}, history_lookup=bad_lookup)
         assert result[0]["total_score"] == pytest.approx(0.0)
@@ -161,7 +182,14 @@ class TestDisclosureEventScoring:
                 "params": {"field": "news_sentiment", "max": 100},
             },
         ]
-        events = [{"symbol": "X", "date": date(2024, 1, 1), "market_recognition": 75, "news_sentiment": 50}]
+        events = [
+            {
+                "symbol": "X",
+                "date": date(2024, 1, 1),
+                "market_recognition": 75,
+                "news_sentiment": 50,
+            }
+        ]
         result = disclosure_event_scoring(
             events, dims, {"market_recognition": 0.6, "news_sentiment": 0.4}
         )

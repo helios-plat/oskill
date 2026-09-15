@@ -7,12 +7,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
+    import matplotlib.pyplot as plt
+    import numpy as np
 
 
 @dataclass(frozen=True)
@@ -58,8 +59,8 @@ def auc_to_curve_exponent(auc: float) -> float:
 def base_roc_curve(fpr: np.ndarray, auc: float) -> np.ndarray:
     exponent = auc_to_curve_exponent(auc)
     tpr = 1.0 - (1.0 - fpr) ** exponent
-    early_lift = 0.030 * np.exp(-((fpr - 0.055) / 0.055) ** 2)
-    shoulder = -0.020 * np.exp(-((fpr - 0.34) / 0.20) ** 2)
+    early_lift = 0.030 * np.exp(-(((fpr - 0.055) / 0.055) ** 2))
+    shoulder = -0.020 * np.exp(-(((fpr - 0.34) / 0.20) ** 2))
     return np.clip(tpr + early_lift + shoulder, 0.0, 1.0)
 
 
@@ -138,7 +139,8 @@ def add_caption_and_table(fig: plt.Figure) -> None:
     caption_ax.text(
         0.058,
         0.70,
-        "The average AUC performance of five machine learning models subjected to fivefold external cross-validation",
+        "The average AUC performance of five machine learning models subjected to fivefold "
+        "external cross-validation",
         fontsize=8.5,
         color="#4b4b4b",
         ha="left",

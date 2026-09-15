@@ -1,13 +1,11 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import fnmatch
-import json
+
 import re
-import uuid
 from dataclasses import dataclass
 from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
 
 @dataclass
 class ToolScore:
@@ -15,11 +13,13 @@ class ToolScore:
     score: float
     reason: str
 
+
 @dataclass
 class HookCmd:
     event: str
     command: str
     matcher: str | None
+
 
 def select_tools(
     task: str,
@@ -46,10 +46,17 @@ def select_tools(
         >>> all(t["name"] != "file_write" for t in tools)
         True  # plan 模式排除写操作
     """
-    WRITE_TOOLS = {"file_write", "file_append", "file_delete", "bash_exec",
-                   "git_add", "git_commit", "git_stash"}
+    WRITE_TOOLS = {
+        "file_write",
+        "file_append",
+        "file_delete",
+        "bash_exec",
+        "git_add",
+        "git_commit",
+        "git_stash",
+    }
     task_lower = task.lower()
-    task_words = set(re.findall(r'\w+', task_lower))
+    task_words = set(re.findall(r"\w+", task_lower))
 
     scored: list[ToolScore] = []
     for tool in available:
@@ -61,7 +68,7 @@ def select_tools(
             continue
 
         # 关键词匹配评分
-        tool_words = set(re.findall(r'\w+', name.lower() + " " + desc))
+        tool_words = set(re.findall(r"\w+", name.lower() + " " + desc))
         overlap = task_words & tool_words
         score = len(overlap) / max(len(task_words), 1)
 

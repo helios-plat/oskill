@@ -74,9 +74,7 @@ def avellaneda_stoikov_quotes(
     reservation_price = _as_reservation_price(
         mid_price, inventory, risk_aversion, volatility, time_to_horizon
     )
-    optimal_spread = _as_optimal_spread(
-        risk_aversion, volatility, time_to_horizon, intensity_k
-    )
+    optimal_spread = _as_optimal_spread(risk_aversion, volatility, time_to_horizon, intensity_k)
 
     bid = reservation_price - optimal_spread / 2.0
     ask = reservation_price + optimal_spread / 2.0

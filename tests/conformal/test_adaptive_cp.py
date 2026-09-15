@@ -17,11 +17,19 @@ def _make_data(n=200, noise_std=1.0, seed=42):
 
 # ─── API / return keys ────────────────────────────────────────────────────────
 
+
 def test_returns_expected_keys():
     preds, acts = _make_data()
     result = adaptive_conformal_inference(preds, acts)
-    expected = {"lower", "upper", "alphas", "empirical_coverage_running",
-                "final_alpha", "long_run_coverage", "adaptation_rate"}
+    expected = {
+        "lower",
+        "upper",
+        "alphas",
+        "empirical_coverage_running",
+        "final_alpha",
+        "long_run_coverage",
+        "adaptation_rate",
+    }
     assert expected == set(result.keys())
 
 

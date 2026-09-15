@@ -9,6 +9,7 @@ Composes oprim:
 
 Stateless. No sibling oskill calls.
 """
+
 from __future__ import annotations
 
 import re
@@ -33,10 +34,7 @@ class LspChecker(Protocol):
 def _parse_edit_from_instruction(instruction: str, original: str) -> tuple[str, str] | None:
     """Extract (old, new) from instruction if it follows SEARCH/REPLACE pattern."""
     # Pattern: <<<SEARCH\nold\n===\nnew\n>>>REPLACE
-    m = re.search(
-        r"<<<+\s*SEARCH\s*\n(.*?)\n=+\n(.*?)\n>>>+\s*REPLACE",
-        instruction, re.DOTALL
-    )
+    m = re.search(r"<<<+\s*SEARCH\s*\n(.*?)\n=+\n(.*?)\n>>>+\s*REPLACE", instruction, re.DOTALL)
     if m:
         return m.group(1), m.group(2)
     return None

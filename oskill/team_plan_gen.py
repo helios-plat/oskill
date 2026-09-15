@@ -9,7 +9,8 @@ when mounted; deterministic fallback splits by delimiter keywords.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def team_plan_gen(
@@ -36,17 +37,30 @@ def team_plan_gen(
         try:
             out = llm_caller(
                 messages=[
-                    {"role": "system", "content": (
-                        "You are a team planner. Decompose the goal into subtasks. "
-                        "Output JSON array of {subject, description, priority(low|medium|high|urgent), "
-                        "blocks:[task_ids that this blocks], blocked_by:[task_ids this depends on], suggested_owner}."
-                        "\nOutput ONLY valid JSON array between ```json and ```."
-                    )},
-                    {"role": "user", "content": f"Goal: {goal}\nTeam members: {[m.get('name','') for m in (members or [])]}"},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a team planner. Decompose the goal into subtasks. "
+                            "Output JSON array of {subject, description, "
+                            "priority(low|medium|high|urgent), blocks:[task_ids that this blocks], "
+                            "blocked_by:[task_ids this depends on], suggested_owner}."
+                            "\nOutput ONLY valid JSON array between ```json and ```."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Goal: {goal}\nTeam members: "
+                            f"{[m.get('name', '') for m in (members or [])]}"
+                        ),
+                    },
                 ],
-                tools=None, config=ctx,
+                tools=None,
+                config=ctx,
             )
-            import json, re
+            import json
+            import re
+
             raw = out.get("content") or "" if isinstance(out, dict) else str(out)
             m = re.search(r"```json\s*(.*?)\s*```", raw, re.DOTALL)
             if m:
@@ -62,6 +76,7 @@ def team_plan_gen(
 def _deterministic_split(goal: str) -> list[dict[str, Any]]:
     """Fallback: split by numbered items or delimiter patterns."""
     import re
+
     items = re.split(r"\n\s*\d+[\.\)]\s+|(?:\n?\s*[-•*]\s+)", goal.strip())
     if len(items) <= 1:
         items = [goal]
@@ -70,23 +85,25 @@ def _deterministic_split(goal: str) -> list[dict[str, Any]]:
         item = item.strip()
         if not item:
             continue
-        tid = f"t{i+1}"
+        tid = f"t{i + 1}"
         blocked_by = [f"t{i}"] if i > 0 else []
-        tasks.append({
-            "id": tid,
-            "subject": item[:80],
-            "description": item,
-            "priority": "high" if i == 0 else "medium",
-            "blocks": [f"t{i+2}"] if i + 1 < len(items) else [],
-            "blocked_by": blocked_by,
-            "suggested_owner": "",
-        })
+        tasks.append(
+            {
+                "id": tid,
+                "subject": item[:80],
+                "description": item,
+                "priority": "high" if i == 0 else "medium",
+                "blocks": [f"t{i + 2}"] if i + 1 < len(items) else [],
+                "blocked_by": blocked_by,
+                "suggested_owner": "",
+            }
+        )
     return tasks
 
 
 def _normalize(tasks: list[dict]) -> list[dict[str, Any]]:
     for i, t in enumerate(tasks):
-        t.setdefault("id", f"t{i+1}")
+        t.setdefault("id", f"t{i + 1}")
         t.setdefault("blocks", [])
         t.setdefault("blocked_by", [])
         t.setdefault("priority", "medium")

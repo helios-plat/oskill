@@ -7,6 +7,7 @@ Composes oprim:
 
 IO-orchestration (MCP network call). Stateless.
 """
+
 from __future__ import annotations
 
 import json

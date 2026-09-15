@@ -29,8 +29,12 @@ def test_denoised_cov_returns_dict_with_six_keys(sample_returns):
     """Result must have exactly six keys."""
     result = denoised_covariance(sample_returns)
     expected_keys = {
-        "covariance", "correlation", "eigenvalues_original",
-        "eigenvalues_denoised", "lambda_plus", "n_signal_eigenvalues"
+        "covariance",
+        "correlation",
+        "eigenvalues_original",
+        "eigenvalues_denoised",
+        "lambda_plus",
+        "n_signal_eigenvalues",
     }
     assert set(result.keys()) == expected_keys
 
@@ -137,8 +141,12 @@ def test_denoised_covariance_constant_residual_method():
     data = rng.standard_normal((200, 10))
     result = denoised_covariance(data, method="constant_residual")
     expected_keys = {
-        "covariance", "correlation", "eigenvalues_original",
-        "eigenvalues_denoised", "lambda_plus", "n_signal_eigenvalues"
+        "covariance",
+        "correlation",
+        "eigenvalues_original",
+        "eigenvalues_denoised",
+        "lambda_plus",
+        "n_signal_eigenvalues",
     }
     assert set(result.keys()) == expected_keys
     assert result["covariance"].shape == (10, 10)
@@ -165,8 +173,10 @@ def test_denoised_cov_mp_upper_bound_formula(sample_returns):
     q = T / N
     lambda_plus_expected = (1.0 + np.sqrt(1.0 / q)) ** 2
     np.testing.assert_allclose(
-        result["lambda_plus"], lambda_plus_expected, rtol=1e-10,
-        err_msg="Marchenko-Pastur upper bound formula incorrect"
+        result["lambda_plus"],
+        lambda_plus_expected,
+        rtol=1e-10,
+        err_msg="Marchenko-Pastur upper bound formula incorrect",
     )
 
     # Eigenvalues structure check

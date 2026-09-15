@@ -5,9 +5,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
-from scipy import stats
 import oprim
+import pandas as pd
 
 try:
     from oprim import distributional_distance
@@ -114,7 +113,6 @@ def ddpm_synthetic_path_generator(
         # Use the last step's alpha_bar to set scale
         # At the "denoised" level, paths look like GBM
         # Scale each path step by historical volatility
-        vol_scale = hist_std
         paths = x0  # GBM-based
     else:
         # Pure noise, scaled by sqrt(1 - alpha_bar[-1])
@@ -133,21 +131,21 @@ def ddpm_synthetic_path_generator(
     else:
         # Fallback: sort-based approximation
         n_min = min(len(flat_synthetic), len(hist))
-        w1 = float(np.mean(np.abs(
-            np.sort(flat_synthetic[:n_min]) - np.sort(hist[:n_min])
-        )))
+        w1 = float(np.mean(np.abs(np.sort(flat_synthetic[:n_min]) - np.sort(hist[:n_min]))))
     wasserstein_to_historical = float(w1)
 
     fingerprint = oprim.sha256_hash(
-        oprim.canonical_json({
-            "beta_end": beta_end,
-            "beta_schedule": beta_schedule,
-            "beta_start": beta_start,
-            "n_diffusion_steps": n_diffusion_steps,
-            "n_hist": len(hist),
-            "n_synthetic_paths": n_synthetic_paths,
-            "path_length": path_length,
-        })
+        oprim.canonical_json(
+            {
+                "beta_end": beta_end,
+                "beta_schedule": beta_schedule,
+                "beta_start": beta_start,
+                "n_diffusion_steps": n_diffusion_steps,
+                "n_hist": len(hist),
+                "n_synthetic_paths": n_synthetic_paths,
+                "path_length": path_length,
+            }
+        )
     )
 
     return {
@@ -200,7 +198,6 @@ def _evaluate_stylized_facts(paths: np.ndarray) -> dict[str, Any]:
         negative_skew: bool — mean skewness < 0
     """
     from scipy.stats import kurtosis, skew
-    from scipy.stats import jarque_bera
 
     n_paths = paths.shape[0]
 
@@ -214,10 +211,11 @@ def _evaluate_stylized_facts(paths: np.ndarray) -> dict[str, Any]:
     lb_pvals: list[float] = []
     for i in range(n_paths):
         r = paths[i]
-        r2 = r ** 2
+        r2 = r**2
         if len(r2) > 5 and np.std(r2) > 1e-12:
             # Manual lag-1 autocorrelation test
             from scipy.stats import pearsonr
+
             try:
                 _, p = pearsonr(r2[:-1], r2[1:])
                 lb_pvals.append(float(p))

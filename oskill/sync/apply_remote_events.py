@@ -26,6 +26,10 @@ class SyncApplyResult:
     errors: list[str] = field(default_factory=list)
 
 
+# Historical import name retained for compatibility with pre-sync callers.
+ApplyResult = SyncApplyResult
+
+
 def _state_path(user_id: str, device_id: str, state_dir: Path) -> Path:
     return state_dir / f"sync_state_{user_id}_{device_id}.json"
 
@@ -132,7 +136,8 @@ def _apply_concept_upsert(db: MetaDB, event: ChangefeedEvent) -> None:
     db.execute("DELETE FROM concepts WHERE id = ?", [p.get("id")])
     db.execute(
         "INSERT INTO concepts "
-        "(id, user_id, name, type, aliases, wikilink, substrate_refs, related_concept_ids, created_at) "
+        "(id, user_id, name, type, aliases, wikilink, substrate_refs, "
+        "related_concept_ids, created_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             p.get("id"),

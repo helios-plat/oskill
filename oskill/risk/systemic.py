@@ -1,4 +1,5 @@
 """Systemic risk metrics: CoVaR, MES, SRISK."""
+
 from __future__ import annotations
 
 from typing import Literal

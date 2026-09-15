@@ -3,19 +3,17 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import numpy as np
-
 from oprim import vector_similarity
 
 
 def chunking_strategy_apply(
     text: str,
     *,
-    strategy: Literal[
-        "fixed_size", "sentence", "paragraph", "recursive", "semantic"
-    ] = "recursive",
+    strategy: Literal["fixed_size", "sentence", "paragraph", "recursive", "semantic"] = "recursive",
     chunk_size: int = 512,
     chunk_overlap: int = 50,
     separators: list[str] | None = None,
@@ -66,9 +64,7 @@ def chunking_strategy_apply(
     if chunk_size < 1:
         raise ValueError(f"chunk_size must be >= 1, got {chunk_size}")
     if chunk_overlap >= chunk_size:
-        raise ValueError(
-            f"chunk_overlap ({chunk_overlap}) must be < chunk_size ({chunk_size})"
-        )
+        raise ValueError(f"chunk_overlap ({chunk_overlap}) must be < chunk_size ({chunk_size})")
     if strategy == "semantic" and embedding_fn is None:
         raise ValueError("strategy='semantic' requires embedding_fn to be provided")
 
@@ -92,7 +88,11 @@ def chunking_strategy_apply(
         raw_chunks = _chunk_recursive(text, chunk_size, chunk_overlap, seps, length_fn)
     elif strategy == "semantic":
         raw_chunks = _chunk_semantic(
-            text, embedding_fn, semantic_threshold, chunk_size, length_fn  # type: ignore[arg-type]
+            text,
+            embedding_fn,
+            semantic_threshold,
+            chunk_size,
+            length_fn,  # type: ignore[arg-type]
         )
     else:
         raise ValueError(f"Unknown strategy: {strategy!r}")
@@ -102,16 +102,18 @@ def chunking_strategy_apply(
     prev_end = -1
     for i, (content, start, end) in enumerate(raw_chunks):
         overlap_with_prev = (i > 0) and (start < prev_end)
-        result.append({
-            "content": content,
-            "start_index": start,
-            "end_index": end,
-            "chunk_index": i,
-            "metadata": {
-                "strategy": strategy,
-                "overlap_with_prev": overlap_with_prev,
-            },
-        })
+        result.append(
+            {
+                "content": content,
+                "start_index": start,
+                "end_index": end,
+                "chunk_index": i,
+                "metadata": {
+                    "strategy": strategy,
+                    "overlap_with_prev": overlap_with_prev,
+                },
+            }
+        )
         prev_end = end
 
     return result
@@ -150,7 +152,7 @@ def _chunk_sentence(
 ) -> list[tuple[str, int, int]]:
     """Split on sentence boundaries (.!?) and group into chunks."""
     # Split on sentence-ending punctuation followed by whitespace
-    sentence_pattern = re.compile(r'(?<=[.!?])\s+')
+    sentence_pattern = re.compile(r"(?<=[.!?])\s+")
     parts = sentence_pattern.split(text)
 
     # Find actual positions in original text
@@ -214,7 +216,7 @@ def _chunk_sentence(
 
 def _chunk_paragraph(text: str) -> list[tuple[str, int, int]]:
     """Split on double newlines."""
-    parts = re.split(r'\n\n+', text)
+    parts = re.split(r"\n\n+", text)
     chunks: list[tuple[str, int, int]] = []
     pos = 0
     for part in parts:
@@ -283,18 +285,22 @@ def _recursive_split(
                 current = candidate
             else:
                 if current:
-                    result.append((current, offset + current_start, offset + current_start + len(current)))
+                    result.append(
+                        (current, offset + current_start, offset + current_start + len(current))
+                    )
                     # Overlap: keep trailing characters
                     if overlap > 0 and len(current) > overlap:
                         overlap_text = current[-overlap:]
                         current = overlap_text + (sep if sep else "") + part
-                        current_start = current_start + len(current) - len(overlap_text) - len(sep) - len(part)
+                        current_start = (
+                            current_start + len(current) - len(overlap_text) - len(sep) - len(part)
+                        )
                     else:
                         current = part
                         current_start = current_start + len(current) - len(part)
                 else:
                     # Single part too big: recurse with next separator
-                    next_seps = separators[separators.index(sep) + 1:]
+                    next_seps = separators[separators.index(sep) + 1 :]
                     if next_seps:
                         _recursive_split(
                             part, offset, chunk_size, overlap, next_seps, length_fn, result
@@ -340,7 +346,7 @@ def _chunk_semantic(
 ) -> list[tuple[str, int, int]]:
     """Split on semantic boundaries using cosine similarity between adjacent sentences."""
     # First split into sentences
-    sentence_pattern = re.compile(r'(?<=[.!?])\s+')
+    sentence_pattern = re.compile(r"(?<=[.!?])\s+")
     parts = sentence_pattern.split(text)
     sentences = [p.strip() for p in parts if p.strip()]
 

@@ -1,13 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import count_tokens, file_read
-import json
-import re
-import sys
-import os
+
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from oprim import count_tokens, file_read
+
+from ._types import LLMOskillError
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -17,7 +17,9 @@ class VectorStoreHandle(Protocol):
     生产实现由 obase.persistence.VectorStore 提供。
     """
 
-    async def search(self, *, vector: list[float], top_k: int=5, filter: dict | None=None) -> list[dict[str, Any]]:
+    async def search(
+        self, *, vector: list[float], top_k: int = 5, filter: dict | None = None
+    ) -> list[dict[str, Any]]:
         """
         向量相似度搜索。
 
@@ -25,6 +27,7 @@ class VectorStoreHandle(Protocol):
             list of {"chunk_id": str, "content": str, "score": float, "path": str}
         """
         ...
+
 
 async def summarize_file(
     path: str,
@@ -65,15 +68,17 @@ async def summarize_file(
     if toks > max_content_tokens:
         # 粗截断：按比例取前缀
         ratio = max_content_tokens / toks
-        content = content[:int(len(content) * ratio)]
+        content = content[: int(len(content) * ratio)]
 
-    messages = [{
-        "role": "user",
-        "content": (
-            f"Summarize this file in 2-4 sentences. Focus on what it does "
-            f"and key exported symbols.\n\nFile: {path}\n\n```\n{content}\n```"
-        ),
-    }]
+    messages = [
+        {
+            "role": "user",
+            "content": (
+                f"Summarize this file in 2-4 sentences. Focus on what it does "
+                f"and key exported symbols.\n\nFile: {path}\n\n```\n{content}\n```"
+            ),
+        }
+    ]
 
     try:
         response = await caller(messages=messages, tools=None, max_tokens=256)

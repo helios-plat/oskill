@@ -29,7 +29,12 @@ def large_returns():
 def test_lw_shrinkage_returns_dict_with_four_keys(sample_returns):
     """Result must have exactly four keys."""
     result = ledoit_wolf_shrinkage(sample_returns)
-    assert set(result.keys()) == {"covariance", "shrinkage_intensity", "sample_covariance", "target_matrix"}
+    assert set(result.keys()) == {
+        "covariance",
+        "shrinkage_intensity",
+        "sample_covariance",
+        "target_matrix",
+    }
 
 
 def test_lw_shrinkage_constant_correlation_target(sample_returns):

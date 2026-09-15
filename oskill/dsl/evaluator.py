@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
 
 STABILITY = "experimental"
 
@@ -25,7 +25,6 @@ def dsl_rule_validate(
     Uses: jsonschema (OK at Layer 2 boundaries)
     """
     try:
-        import jsonschema  # type: ignore[import]
         from jsonschema import Draft202012Validator
     except ImportError:
         return False, ["jsonschema not installed; run: pip install jsonschema"]

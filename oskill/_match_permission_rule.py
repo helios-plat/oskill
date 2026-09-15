@@ -1,13 +1,11 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
+
 import fnmatch
-import json
-import re
-import uuid
 from dataclasses import dataclass
 from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
 
 @dataclass
 class ToolScore:
@@ -15,11 +13,13 @@ class ToolScore:
     score: float
     reason: str
 
+
 @dataclass
 class HookCmd:
     event: str
     command: str
     matcher: str | None
+
 
 def match_permission_rule(
     tool_call: dict[str, Any],
@@ -48,11 +48,24 @@ def match_permission_rule(
         'deny'
     """
     name = tool_call.get("name", "")
-    READ_ONLY = {"file_read", "dir_list", "glob_match", "git_status", "git_diff",
-                 "git_log", "git_show", "git_blame", "lsp_diagnostics",
-                 "lsp_hover", "lsp_definition", "lsp_references",
-                 "lsp_document_symbols", "lsp_workspace_symbols",
-                 "lsp_completion", "ripgrep_search"}
+    READ_ONLY = {
+        "file_read",
+        "dir_list",
+        "glob_match",
+        "git_status",
+        "git_diff",
+        "git_log",
+        "git_show",
+        "git_blame",
+        "lsp_diagnostics",
+        "lsp_hover",
+        "lsp_definition",
+        "lsp_references",
+        "lsp_document_symbols",
+        "lsp_workspace_symbols",
+        "lsp_completion",
+        "ripgrep_search",
+    }
 
     if mode == "bypass":
         return "allow"
@@ -61,12 +74,12 @@ def match_permission_rule(
         return "allow" if name in READ_ONLY else "deny"
 
     # denied 列表
-    for pattern in (denied_tools or []):
+    for pattern in denied_tools or []:
         if fnmatch.fnmatch(name, pattern):
             return "deny"
 
     # allowed 列表
-    for pattern in (allowed_tools or []):
+    for pattern in allowed_tools or []:
         if fnmatch.fnmatch(name, pattern):
             return "allow"
 

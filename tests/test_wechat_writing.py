@@ -20,8 +20,8 @@ def test_write_prompt_contract():
     p = write_prompt("AI 编程", audience="程序员", style="口语化", requirements="800字")
     assert "AI 编程" in p["user"]
     assert "目标读者: 程序员" in p["user"]
-    assert "image_brief" in p["system"]          # 默认带配图 brief
-    assert '"title"' in p["system"]              # JSON 契约
+    assert "image_brief" in p["system"]  # 默认带配图 brief
+    assert '"title"' in p["system"]  # JSON 契约
     assert '"sections"' in p["system"]
     assert '"closing"' in p["system"]
 
@@ -33,8 +33,8 @@ def test_write_prompt_no_image_brief():
 
 def test_title_prompt_clamps_and_hook():
     p = title_prompt("# 文章\n正文", n_candidates=99, hook_level=9)
-    assert "10 个" in p["system"]                 # 钳制到上限
-    assert "强冲突" in p["system"]                # hook_level=3 描述
+    assert "10 个" in p["system"]  # 钳制到上限
+    assert "强冲突" in p["system"]  # hook_level=3 描述
     assert "文章" in p["user"]
     p2 = title_prompt("正文", n_candidates=2, hook_level=1)
     assert "2 个" in p2["system"]
@@ -51,7 +51,7 @@ def test_humanize_prompt_rules():
 def test_cover_prompt_contract():
     p = cover_prompt("AI 写作", style="极简", palette="黑白")
     assert "AI 写作" in p["user"]
-    assert "2.35:1" in p["system"]               # 封面比例契约
+    assert "2.35:1" in p["system"]  # 封面比例契约
     assert "aspect_ratio" in p["system"]
 
 

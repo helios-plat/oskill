@@ -1,4 +1,5 @@
 """Tests for CC supplement oskill elements (K-NEW1: install_plugin)."""
+
 from __future__ import annotations
 
 import json
@@ -9,10 +10,11 @@ import pytest
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+
 def _make_registry(
-    plugins: "dict | None" = None,
-    command_names: "set | None" = None,
-    skill_names: "set | None" = None,
+    plugins: dict | None = None,
+    command_names: set | None = None,
+    skill_names: set | None = None,
 ) -> Any:
     class Reg:
         pass
@@ -32,6 +34,7 @@ def _write_plugin(tmp_path: Path, data: dict) -> Path:
 
 
 # ── K-NEW1 install_plugin ─────────────────────────────────────────────────────
+
 
 class TestInstallPlugin:
     @pytest.mark.asyncio
@@ -64,10 +67,14 @@ class TestInstallPlugin:
     async def test_command_name_conflict_error(self, tmp_path: Path) -> None:
         from oskill.install_plugin import install_plugin
 
-        plugin_dir = _write_plugin(tmp_path, {
-            "name": "p", "version": "1.0",
-            "commands": [{"name": "deploy"}],
-        })
+        plugin_dir = _write_plugin(
+            tmp_path,
+            {
+                "name": "p",
+                "version": "1.0",
+                "commands": [{"name": "deploy"}],
+            },
+        )
         spec = await install_plugin(plugin_dir, registry=_make_registry(command_names={"deploy"}))
         assert not spec.is_valid
         assert any("deploy" in e for e in spec.validation_errors)
@@ -76,10 +83,14 @@ class TestInstallPlugin:
     async def test_skill_name_conflict_error(self, tmp_path: Path) -> None:
         from oskill.install_plugin import install_plugin
 
-        plugin_dir = _write_plugin(tmp_path, {
-            "name": "p", "version": "1.0",
-            "skills": [{"name": "my-skill"}],
-        })
+        plugin_dir = _write_plugin(
+            tmp_path,
+            {
+                "name": "p",
+                "version": "1.0",
+                "skills": [{"name": "my-skill"}],
+            },
+        )
         spec = await install_plugin(plugin_dir, registry=_make_registry(skill_names={"my-skill"}))
         assert not spec.is_valid
         assert any("my-skill" in e for e in spec.validation_errors)
@@ -125,11 +136,15 @@ class TestInstallPlugin:
     async def test_manifest_fields_in_spec(self, tmp_path: Path) -> None:
         from oskill.install_plugin import install_plugin
 
-        plugin_dir = _write_plugin(tmp_path, {
-            "name": "rich-plugin", "version": "2.1.0",
-            "description": "A rich plugin",
-            "skills": [{"name": "s1"}],
-        })
+        plugin_dir = _write_plugin(
+            tmp_path,
+            {
+                "name": "rich-plugin",
+                "version": "2.1.0",
+                "description": "A rich plugin",
+                "skills": [{"name": "s1"}],
+            },
+        )
         spec = await install_plugin(plugin_dir, registry=_make_registry())
         assert spec.manifest.description == "A rich plugin"
         assert len(spec.manifest.skills) == 1
@@ -138,11 +153,15 @@ class TestInstallPlugin:
     async def test_no_conflicts_spec_is_valid(self, tmp_path: Path) -> None:
         from oskill.install_plugin import install_plugin
 
-        plugin_dir = _write_plugin(tmp_path, {
-            "name": "new-plugin", "version": "1.0",
-            "skills": [{"name": "skill-a"}],
-            "commands": [{"name": "cmd-a"}],
-        })
+        plugin_dir = _write_plugin(
+            tmp_path,
+            {
+                "name": "new-plugin",
+                "version": "1.0",
+                "skills": [{"name": "skill-a"}],
+                "commands": [{"name": "cmd-a"}],
+            },
+        )
         registry = _make_registry(
             plugins={"other": object()},
             skill_names={"other-skill"},

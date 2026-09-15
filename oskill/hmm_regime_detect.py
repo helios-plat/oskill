@@ -4,6 +4,7 @@ Composites:
     - oprim.hmm_baum_welch  (Baum-Welch EM fit)
     - oprim.hmm_viterbi     (Viterbi decoding)
 """
+
 from __future__ import annotations
 
 from typing import Any

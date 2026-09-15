@@ -9,7 +9,8 @@ workers with role-specific tool access and git worktree isolation.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def leader_worker_dispatch(
@@ -36,19 +37,35 @@ def leader_worker_dispatch(
     # LLM path
     if llm_caller is not None and ctx.get("use_llm", True):
         try:
-            import json, re
+            import json
+            import re
+
             out = llm_caller(
-                messages=[{"role": "system", "content": (
-                    "You are a team leader. Decompose the goal into specialized worker roles. "
-                    "Output JSON array of {worker_name, role, prompt (system prompt for worker), "
-                    "skills: [skill names], depends_on: [worker names that must finish first]}."
-                    "\nOutput ONLY valid JSON array between ```json and ```."
-                )}, {"role": "user", "content": f"Goal: {goal}\nAvailable members: {member_names}"}],
-                tools=None, config=ctx,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a team leader. Decompose the goal into specialized worker "
+                            "roles. Output JSON array of {worker_name, role, prompt (system "
+                            "prompt for worker), skills: [skill names], depends_on: [worker names "
+                            "that must finish first]}."
+                            "\nOutput ONLY valid JSON array between ```json and ```."
+                        ),
+                    },
+                    {"role": "user", "content": f"Goal: {goal}\nAvailable members: {member_names}"},
+                ],
+                tools=None,
+                config=ctx,
             )
             raw = out.get("content", "") if isinstance(out, dict) else str(out)
             m = re.search(r"```json\s*(.*?)\s*```", raw, re.DOTALL)
-            parsed = json.loads(m.group(1)) if m else json.loads(raw) if raw.strip().startswith("[") else []
+            parsed = (
+                json.loads(m.group(1))
+                if m
+                else json.loads(raw)
+                if raw.strip().startswith("[")
+                else []
+            )
             if isinstance(parsed, list) and parsed:
                 return _normalize_workers(parsed, member_names)
         except Exception:
@@ -56,6 +73,7 @@ def leader_worker_dispatch(
 
     # Fallback: one worker per goal segment
     import re
+
     items = re.split(r"\n\s*\d+[\.\)]\s+|(?:\n?\s*[-•*]\s+)", goal.strip())
     if len(items) <= 1:
         items = [goal]
@@ -64,22 +82,24 @@ def leader_worker_dispatch(
         item = item.strip()
         if not item:
             continue
-        name = member_names[i] if i < len(member_names) else f"worker-{i+1}"
-        deps = [member_names[i-1]] if i > 0 and i-1 < len(member_names) else []
-        workers.append({
-            "worker_name": name,
-            "role": item[:40],
-            "prompt": f"你是 {name}，负责 {item}。使用你的专业工具完成任务后报告结果。",
-            "skills": [],
-            "depends_on": deps,
-            "worktree_branch": f"swarm/{name}",
-        })
+        name = member_names[i] if i < len(member_names) else f"worker-{i + 1}"
+        deps = [member_names[i - 1]] if i > 0 and i - 1 < len(member_names) else []
+        workers.append(
+            {
+                "worker_name": name,
+                "role": item[:40],
+                "prompt": f"你是 {name}，负责 {item}。使用你的专业工具完成任务后报告结果。",
+                "skills": [],
+                "depends_on": deps,
+                "worktree_branch": f"swarm/{name}",
+            }
+        )
     return workers
 
 
 def _normalize_workers(parsed: list[dict], member_names: list[str]) -> list[dict]:
     for i, w in enumerate(parsed):
-        w.setdefault("worker_name", member_names[i] if i < len(member_names) else f"worker-{i+1}")
+        w.setdefault("worker_name", member_names[i] if i < len(member_names) else f"worker-{i + 1}")
         w.setdefault("depends_on", [])
         w.setdefault("skills", [])
         w.setdefault("worktree_branch", f"swarm/{w.get('worker_name', f'w{i}')}")

@@ -17,13 +17,13 @@ class SynthesizedResult(BaseModel):
     retrieved_docs: list[RetrievedDoc]
     synthesized_answer: str
     confidence: float
-    citations: list[dict[str, Any]] = []              # [{doc_id, snippet, relevance}]
+    citations: list[dict[str, Any]] = []  # [{doc_id, snippet, relevance}]
 
 
 def retrieve_and_synthesize(
     *,
     query: str,
-    corpus_id: str,                    # 在哪个 corpus 检索 (服务层映射 user_id → corpus_id)
+    corpus_id: str,  # 在哪个 corpus 检索 (服务层映射 user_id → corpus_id)
     llm: LLMCaller,
     top_k: int = 5,
     vector_search_fn: Callable[[str, str, int], list[RetrievedDoc]] | None = None,
@@ -40,9 +40,7 @@ def retrieve_and_synthesize(
 
     if not docs:
         return SynthesizedResult(
-            retrieved_docs=[],
-            synthesized_answer="No relevant documents found.",
-            confidence=0.0
+            retrieved_docs=[], synthesized_answer="No relevant documents found.", confidence=0.0
         )
 
     # 2. Synthesize
@@ -57,19 +55,17 @@ Provide a concise answer with citations (e.g., [Document ID]).
 Include your confidence score (0.0 to 1.0).
 """
 
-    response = llm(
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=2048
-    )
+    response = llm(messages=[{"role": "user", "content": prompt}], max_tokens=2048)
 
     answer = response.get("content", "Failed to synthesize answer.")
 
     # Extract confidence (reusing logic from agentic_investigate_loop)
     from oskill._utils import extract_confidence
+
     confidence = extract_confidence(answer)
     return SynthesizedResult(
         retrieved_docs=docs,
         synthesized_answer=answer,
         confidence=confidence,
-        citations=[] # Simplified: citations could be extracted from answer if needed
+        citations=[],  # Simplified: citations could be extracted from answer if needed
     )

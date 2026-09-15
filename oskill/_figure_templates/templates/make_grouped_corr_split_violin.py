@@ -7,13 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.lines import Line2D
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.lines import Line2D
 
 
 @dataclass(frozen=True)
@@ -56,7 +57,9 @@ def configure_matplotlib() -> None:
     )
 
 
-def simulate_feature_data(seed: int = 20260506, n_train: int = 170, n_test: int = 84) -> tuple[np.ndarray, np.ndarray]:
+def simulate_feature_data(
+    seed: int = 20260506, n_train: int = 170, n_test: int = 84
+) -> tuple[np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
 
     def latent_samples(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -68,7 +71,9 @@ def simulate_feature_data(seed: int = 20260506, n_train: int = 170, n_test: int 
 
     def build(n: int, shift: float = 0.0) -> np.ndarray:
         s, b, o, h = latent_samples(n)
-        noise = lambda scale=1.0: rng.normal(0.0, scale, size=n)
+
+        def noise(scale=1.0):
+            return rng.normal(0.0, scale, size=n)
 
         infp = np.clip(10 + 3.3 * s + 0.8 * h + noise(2.2) + shift, 0.2, 34)
         infc = np.clip(78 + 18 * s + 9 * h + noise(12), 24, 175)
@@ -87,7 +92,21 @@ def simulate_feature_data(seed: int = 20260506, n_train: int = 170, n_test: int 
         salinity = np.exp(np.clip(-0.58 + 0.62 * o - 0.32 * s + noise(0.82), -2.6, 1.25))
 
         return np.column_stack(
-            [infp, infc, infac, infpro, infs, mlss, mlvss, vss_tss, volume, ana_time, ph, temp, salinity]
+            [
+                infp,
+                infc,
+                infac,
+                infpro,
+                infs,
+                mlss,
+                mlvss,
+                vss_tss,
+                volume,
+                ana_time,
+                ph,
+                temp,
+                salinity,
+            ]
         )
 
     train = build(n_train, shift=0.0)
@@ -162,11 +181,22 @@ def draw_lower_corr(ax: plt.Axes, corr: np.ndarray) -> None:
     draw_group_bracket(ax, start=7.75, end=12.35, x=14.60, color="#3f9d54", label="Operation")
 
 
-def draw_group_bracket(ax: plt.Axes, start: float, end: float, x: float, color: str, label: str) -> None:
+def draw_group_bracket(
+    ax: plt.Axes, start: float, end: float, x: float, color: str, label: str
+) -> None:
     ax.plot([x, x], [start, end], color=color, lw=1.3, clip_on=False)
     ax.plot([x - 0.95, x], [start, start], color=color, lw=1.3, clip_on=False)
     ax.plot([x - 0.95, x], [end, end], color=color, lw=1.3, clip_on=False)
-    ax.text(x + 0.20, (start + end) / 2, label, color=color, fontsize=8, fontweight="bold", fontstyle="italic", va="center")
+    ax.text(
+        x + 0.20,
+        (start + end) / 2,
+        label,
+        color=color,
+        fontsize=8,
+        fontweight="bold",
+        fontstyle="italic",
+        va="center",
+    )
 
 
 def draw_split_violin(
@@ -186,7 +216,9 @@ def draw_split_violin(
     test_density = kde_1d(test_plot, grid) * 0.40
 
     y_grid = 10**grid if spec.log_scale else grid
-    ax.fill_betweenx(y_grid, -train_density, 0, facecolor="none", edgecolor=train_color, linewidth=1.1)
+    ax.fill_betweenx(
+        y_grid, -train_density, 0, facecolor="none", edgecolor=train_color, linewidth=1.1
+    )
     ax.fill_betweenx(y_grid, 0, test_density, facecolor="none", edgecolor=test_color, linewidth=1.1)
     ax.plot(-train_density, y_grid, color=train_color, lw=1.25)
     ax.plot(test_density, y_grid, color=test_color, lw=1.25)
@@ -194,7 +226,9 @@ def draw_split_violin(
 
     for values, color, side in [(train, train_color, -1), (test, test_color, 1)]:
         q1, med, q3 = np.percentile(values, [25, 50, 75])
-        ax.hlines([q1, med, q3], side * 0.04, side * 0.33, color=color, linestyles="--", linewidth=0.75)
+        ax.hlines(
+            [q1, med, q3], side * 0.04, side * 0.33, color=color, linestyles="--", linewidth=0.75
+        )
 
     ax.set_xlim(-0.45, 0.45)
     if spec.log_scale:
@@ -249,7 +283,14 @@ def make_figure(output_stem: Path) -> None:
         Line2D([0], [0], color="#2f7fa7", lw=1.5, label="Train"),
         Line2D([0], [0], color="#b4162d", lw=1.5, label="Test"),
     ]
-    fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.725, 0.022), ncol=2, fontsize=8, frameon=False)
+    fig.legend(
+        handles=handles,
+        loc="lower center",
+        bbox_to_anchor=(0.725, 0.022),
+        ncol=2,
+        fontsize=8,
+        frameon=False,
+    )
 
     output_stem.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_stem.with_suffix(".png"), dpi=300, bbox_inches="tight")

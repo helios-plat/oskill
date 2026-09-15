@@ -227,7 +227,5 @@ def _render(
         lines.append("- none")
     for item in findings:
         loc = f"{item['file']}:{item['line']}" if item.get("file") else "(diff)"
-        lines.append(
-            f"- [{item['severity']}/{item['category']}] {loc} — {item['message']}"
-        )
+        lines.append(f"- [{item['severity']}/{item['category']}] {loc} — {item['message']}")
     return "\n".join(lines) + "\n"

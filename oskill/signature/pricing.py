@@ -1,4 +1,5 @@
 """Signature-based option pricing via functional linear regression."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -8,6 +9,7 @@ import numpy as np
 
 try:
     from oprim.signature.compute import path_signature_compute
+
     _HAS_SIGNATURE = True
 except ImportError:
     _HAS_SIGNATURE = False
@@ -109,9 +111,7 @@ def signature_based_pricing(
         s = _get_signature(new_path, truncation_depth)
         return float(model.predict(s.reshape(1, -1))[0])
 
-    fp = oprim.sha256_hash(
-        oprim.canonical_json({"coeff_sum": float(np.sum(coeff)), "r_sq": r_sq})
-    )
+    fp = oprim.sha256_hash(oprim.canonical_json({"coeff_sum": float(np.sum(coeff)), "r_sq": r_sq}))
 
     return {
         "pricing_functional": coeff,

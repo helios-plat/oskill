@@ -1,4 +1,5 @@
 """Epstein-Zin recursive utility solver (Bansal-Yaron 2004 calibration)."""
+
 from __future__ import annotations
 
 from typing import Any, Literal

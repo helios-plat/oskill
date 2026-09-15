@@ -27,22 +27,27 @@ class TestCandidatePoolBuilder:
 
     def test_scoring_fn_exception(self) -> None:
         universe = [{"name": "a"}, {"name": "b"}]
+
         def bad_score(x):
             if x["name"] == "a":
                 raise ValueError("bad")
             return 1.0
+
         result = candidate_pool_builder(universe=universe, scoring_fn=bad_score)
         assert result["stats"]["errors"] == 1
 
     def test_filter_short_circuit(self) -> None:
         universe = [{"name": "a"}]
         calls = []
+
         def rule1(x):
             calls.append(1)
             return False
+
         def rule2(x):
             calls.append(2)
             return True
+
         candidate_pool_builder(
             universe=universe, scoring_fn=lambda x: 1.0, filter_rules=[rule1, rule2]
         )

@@ -9,6 +9,7 @@
 
 Added: oskill v3.25.12
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -28,6 +29,7 @@ class ReadingGuideResult:
     answer_leaked : bool
         True 表示检测到可能泄露答案
     """
+
     assistant_text: str
     located_passage: bool = False
     answer_leaked: bool = False
@@ -53,9 +55,10 @@ _READING_SYSTEM_ZH = """你是一位语文老师，正在用苏格拉底法引�
   "answer_leaked": false
 }"""
 
-_READING_SYSTEM_EN = """You are an English teacher guiding a student through a reading comprehension exercise using the Socratic method.
-
-【STRICT RED LINES】
+_READING_SYSTEM_EN = (
+    "You are an English teacher guiding a student through a reading comprehension exercise "
+    "using the Socratic method.\n\n"
+    """【STRICT RED LINES】
 1. Never directly state the answer to the question
 2. Do not quote the key sentence that IS the answer
 3. Ask only ONE guiding question per turn
@@ -72,9 +75,13 @@ Output strict JSON:
   "located_passage": false,
   "answer_leaked": false
 }"""
+)
 
 _OPENING_ZH = "好，我们一起来做这道题。先不要急着答，你觉得这道题在考查什么？"
-_OPENING_EN = "Let's work through this together. Before answering, what do you think this question is asking you to find?"
+_OPENING_EN = (
+    "Let's work through this together. Before answering, "
+    "what do you think this question is asking you to find?"
+)
 
 
 async def reading_comprehension_guide(
@@ -123,8 +130,11 @@ async def reading_comprehension_guide(
             answer_leaked=False,
         )
 
-    context = f"【阅读材料】\n{article_text}\n\n【题目】\n{question}" if not is_english else \
-              f"[Passage]\n{article_text}\n\n[Question]\n{question}"
+    context = (
+        f"【阅读材料】\n{article_text}\n\n【题目】\n{question}"
+        if not is_english
+        else f"[Passage]\n{article_text}\n\n[Question]\n{question}"
+    )
 
     history: list[dict] = [
         {"role": "user", "content": context},
@@ -152,8 +162,11 @@ async def reading_comprehension_guide(
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        fallback = "Can you go back to the passage and find the relevant paragraph?" if is_english \
-                   else "你能回到原文，找一找哪个段落和这道题最相关吗？"
+        fallback = (
+            "Can you go back to the passage and find the relevant paragraph?"
+            if is_english
+            else "你能回到原文，找一找哪个段落和这道题最相关吗？"
+        )
         data = {"assistant_text": fallback, "located_passage": False, "answer_leaked": False}
 
     assistant_text: str = data.get("assistant_text", opening)
@@ -166,8 +179,11 @@ async def reading_comprehension_guide(
     leak_patterns = _EN_LEAK if is_english else _ZH_LEAK
     if any(p in assistant_text.lower() for p in [lp.lower() for lp in leak_patterns]):
         answer_leaked = True
-        fallback = "Can you find the paragraph in the passage that relates to this question?" \
-                   if is_english else "你能先找找原文中和这道题最相关的段落吗？"
+        fallback = (
+            "Can you find the paragraph in the passage that relates to this question?"
+            if is_english
+            else "你能先找找原文中和这道题最相关的段落吗？"
+        )
         assistant_text = fallback
 
     return ReadingGuideResult(

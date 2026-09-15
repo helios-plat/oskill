@@ -1,8 +1,8 @@
 """Tests for signature_based_pricing."""
+
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from oskill.signature.pricing import signature_based_pricing
 
@@ -93,6 +93,7 @@ def test_sbp_fallback_when_no_signature(mocker):
 def test_compute_sig_helper_pricing():
     """_compute_sig helper produces correct shape output."""
     from oskill.signature.pricing import _compute_sig
+
     path = np.cumsum(np.random.default_rng(0).normal(0, 0.1, (8, 2)), axis=0)
     sig = _compute_sig(path, depth=2)
     assert sig.ndim == 1
@@ -103,6 +104,7 @@ def test_get_signature_fallback(mocker):
     """_get_signature uses _compute_sig when _HAS_SIGNATURE is False."""
     mocker.patch("oskill.signature.pricing._HAS_SIGNATURE", False)
     from oskill.signature.pricing import _get_signature
+
     path = np.cumsum(np.random.default_rng(0).normal(0, 0.1, (8, 2)), axis=0)
     sig = _get_signature(path, depth=2)
     assert sig.ndim == 1

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
 
 
 def reranker_score(
@@ -56,14 +56,12 @@ def reranker_score(
 
     if len(scores) != len(candidates):
         raise ValueError(
-            f"reranker_fn returned {len(scores)} scores but there are "
-            f"{len(candidates)} candidates"
+            f"reranker_fn returned {len(scores)} scores but there are {len(candidates)} candidates"
         )
 
     # Attach scores (copy dicts to avoid mutation of originals)
     scored = [
-        {**candidate, "reranker_score": score}
-        for candidate, score in zip(candidates, scores)
+        {**candidate, "reranker_score": score} for candidate, score in zip(candidates, scores)
     ]
 
     # Sort descending (stable sort preserves original order on ties when flag is set)

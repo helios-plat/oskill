@@ -4,7 +4,37 @@ from __future__ import annotations
 
 VERSION = "2.0.0"
 
+CANONICAL_ELEMENTS = {
+    "skill_distribution_provider": {
+        "repo": "oskill",
+        "version": 1,
+        "canonical_import": "oskill.skill_distribution_provider",
+        "canonical_export": "SkillDistributionProvider",
+    },
+}
+
 ELEMENTS: list[str] = [
+    # 3O canonical distribution protocol
+    "SkillDistributionProvider",
+    # Wave E: stateless context engineering
+    "rank_context_items",
+    "select_context_window",
+    "compact_context",
+    # Wave F: skill qualification signals
+    "compare_skill_runs",
+    "detect_skill_regression",
+    # Wave G/H: qualification and coding intelligence
+    "evaluate_contract",
+    "evaluate_proven_red",
+    "evaluate_ratchet",
+    "analyze_symbol_impact",
+    "analyze_diff_risk",
+    "select_relevant_tests",
+    # Action Gateway (PR-09)
+    "classify_action_effect",
+    "evaluate_action_policy",
+    # Computer Supervisor (PR-10)
+    "evaluate_computer_readiness",
     # Group 1: Performance
     "bootstrap_sharpe",
     "psr_dsr",
@@ -367,6 +397,7 @@ ELEMENTS: list[str] = [
 ]
 
 CATEGORIES: dict[str, list[str]] = {
+    "action_gateway": ["classify_action_effect", "evaluate_action_policy"],
     "performance": [
         "bootstrap_sharpe",
         "psr_dsr",

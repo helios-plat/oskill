@@ -1,11 +1,14 @@
 """Tests for ingest_substrate pipeline."""
 
 from __future__ import annotations
+
+from datetime import UTC
 from pathlib import Path
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
 
-from oskill.ingest_substrate import ingest_substrate, IngestResult, _sha256, _chunk_text, _slugify
+from oskill.ingest_substrate import _chunk_text, _sha256, _slugify, ingest_substrate
 
 
 class TestHelpers:
@@ -59,16 +62,19 @@ class TestIngestSubstrate:
 
     async def test_duplicate_returns_duplicate_of(self, stratum_schema, simple_txt):
         """If file was already ingested, IngestResult.duplicate_of is set."""
+        from datetime import datetime
+
         from oprim.meta_db import open_meta_db
+
         from oskill.knowledge._context import meta_db_path
-        from datetime import datetime, timezone
 
         file_hash = _sha256(simple_txt)
         db_p = meta_db_path()
         db = open_meta_db(db_p)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
-            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, "
+            "meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
                 "EXISTINGID012345678901234",
                 "test_user",
@@ -105,6 +111,7 @@ class TestIngestSubstrate:
     async def test_ingest_creates_substrate_in_db(self, stratum_schema, simple_md):
         """After ingest, substrate should be in meta_db."""
         from oprim.meta_db import open_meta_db
+
         from oskill.knowledge._context import meta_db_path
 
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
@@ -123,6 +130,7 @@ class TestIngestSubstrate:
     async def test_ingest_creates_fulltext_index_entry(self, stratum_schema, simple_md):
         """After ingest, substrate should be searchable via tantivy."""
         from oprim.fulltext import open_fulltext_index
+
         from oskill.knowledge._context import tantivy_path
 
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
@@ -149,6 +157,7 @@ class TestIngestV2:
     async def test_writes_user_id_to_substrates(self, stratum_schema, simple_md):
         """After ingest, substrates.user_id equals the supplied user_id_hash."""
         from oprim.meta_db import open_meta_db
+
         from oskill.knowledge._context import meta_db_path
 
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):
@@ -165,6 +174,7 @@ class TestIngestV2:
     async def test_null_mime_when_detect_returns_none(self, stratum_schema, simple_md):
         """When detect_mime returns None, substrates.mime is NULL."""
         from oprim.meta_db import open_meta_db
+
         from oskill.knowledge._context import meta_db_path
 
         with patch("oskill.ingest_substrate.embed_text", return_value=[[0.1] * 1024]):

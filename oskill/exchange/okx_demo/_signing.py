@@ -2,10 +2,11 @@
 
 Reference: https://www.okx.com/docs-v5/en/#overview-api-authentication
 """
+
 import base64
 import hashlib
 import hmac
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def sign_request(
@@ -33,5 +34,5 @@ def sign_request(
 
 def make_timestamp() -> str:
     """OKX-style ISO8601 timestamp."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return now.strftime("%Y-%m-%dT%H:%M:%S") + f".{now.microsecond // 1000:03d}Z"

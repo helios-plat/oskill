@@ -5,11 +5,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from oskill.trend_compose import trend_signal_compose
 from oskill.mean_reversion_compose import mean_reversion_compose
-
+from oskill.trend_compose import trend_signal_compose
 
 # ──────────────────── Fixtures ────────────────────
+
 
 @pytest.fixture
 def flat_ohlcv():
@@ -45,9 +45,9 @@ def default_trend_config():
     return {
         "indicators": {
             "supertrend": {"enabled": True, "period": 10, "multiplier": 3.0},
-            "ema":        {"enabled": True, "fast": 20, "slow": 50},
-            "adx":        {"enabled": True, "period": 14, "threshold": 25.0},
-            "macd":       {"enabled": True, "fast": 12, "slow": 26, "signal": 9},
+            "ema": {"enabled": True, "fast": 20, "slow": 50},
+            "adx": {"enabled": True, "period": 14, "threshold": 25.0},
+            "macd": {"enabled": True, "fast": 12, "slow": 26, "signal": 9},
         },
         "signal_logic": {"min_confluence": 2, "direction": "both"},
     }
@@ -57,11 +57,17 @@ def default_trend_config():
 def default_mr_config():
     return {
         "indicators": {
-            "vwap":        {"enabled": True, "window": 4,  "z_threshold": 2.0},
-            "bollinger":   {"enabled": True, "window": 20, "num_std": 2.0},
-            "rsi":         {"enabled": True, "period": 14, "oversold": 0.3, "overbought": 0.7},
-            "stochastic":  {"enabled": True, "k_period": 14, "d_period": 3, "smooth_k": 3,
-                            "oversold": 0.2, "overbought": 0.8},
+            "vwap": {"enabled": True, "window": 4, "z_threshold": 2.0},
+            "bollinger": {"enabled": True, "window": 20, "num_std": 2.0},
+            "rsi": {"enabled": True, "period": 14, "oversold": 0.3, "overbought": 0.7},
+            "stochastic": {
+                "enabled": True,
+                "k_period": 14,
+                "d_period": 3,
+                "smooth_k": 3,
+                "oversold": 0.2,
+                "overbought": 0.8,
+            },
         },
         "signal_logic": {"min_confluence": 2, "direction": "both"},
     }
@@ -69,8 +75,8 @@ def default_mr_config():
 
 # ──────────────────── trend_signal_compose ────────────────────
 
-class TestTrendSignalCompose:
 
+class TestTrendSignalCompose:
     def test_output_shape(self, uptrend_ohlcv, default_trend_config):
         sig = trend_signal_compose(uptrend_ohlcv, config=default_trend_config)
         assert sig.shape == (len(uptrend_ohlcv["close"]),)
@@ -81,13 +87,13 @@ class TestTrendSignalCompose:
 
     def test_uptrend_dominated_by_long(self, uptrend_ohlcv, default_trend_config):
         sig = trend_signal_compose(uptrend_ohlcv, config=default_trend_config)
-        longs  = int(np.sum(sig == 1))
+        longs = int(np.sum(sig == 1))
         shorts = int(np.sum(sig == -1))
         assert longs >= shorts, f"uptrend should produce more longs: {longs} vs {shorts}"
 
     def test_downtrend_dominated_by_short(self, downtrend_ohlcv, default_trend_config):
         sig = trend_signal_compose(downtrend_ohlcv, config=default_trend_config)
-        longs  = int(np.sum(sig == 1))
+        longs = int(np.sum(sig == 1))
         shorts = int(np.sum(sig == -1))
         assert shorts >= longs, f"downtrend should produce more shorts: {shorts} vs {longs}"
 
@@ -118,9 +124,9 @@ class TestTrendSignalCompose:
         config = {
             "indicators": {
                 "supertrend": {"enabled": False},
-                "ema":        {"enabled": True, "fast": 20, "slow": 50},
-                "adx":        {"enabled": False},
-                "macd":       {"enabled": True, "fast": 12, "slow": 26, "signal": 9},
+                "ema": {"enabled": True, "fast": 20, "slow": 50},
+                "adx": {"enabled": False},
+                "macd": {"enabled": True, "fast": 12, "slow": 26, "signal": 9},
             },
             "signal_logic": {"min_confluence": 2, "direction": "both"},
         }
@@ -131,9 +137,9 @@ class TestTrendSignalCompose:
         config = {
             "indicators": {
                 "supertrend": {"enabled": False},
-                "ema":        {"enabled": False},
-                "adx":        {"enabled": False},
-                "macd":       {"enabled": False},
+                "ema": {"enabled": False},
+                "adx": {"enabled": False},
+                "macd": {"enabled": False},
             },
             "signal_logic": {"min_confluence": 1, "direction": "both"},
         }
@@ -154,8 +160,8 @@ class TestTrendSignalCompose:
 
 # ──────────────────── mean_reversion_compose ────────────────────
 
-class TestMeanReversionCompose:
 
+class TestMeanReversionCompose:
     def test_output_shape(self, sine_ohlcv, default_mr_config):
         sig = mean_reversion_compose(sine_ohlcv, config=default_mr_config)
         assert sig.shape == (len(sine_ohlcv["close"]),)
@@ -184,9 +190,9 @@ class TestMeanReversionCompose:
     def test_disabled_vwap(self, sine_ohlcv, default_mr_config):
         cfg = {
             "indicators": {
-                "vwap":       {"enabled": False},
-                "bollinger":  {"enabled": True, "window": 20, "num_std": 2.0},
-                "rsi":        {"enabled": True, "period": 14, "oversold": 0.3, "overbought": 0.7},
+                "vwap": {"enabled": False},
+                "bollinger": {"enabled": True, "window": 20, "num_std": 2.0},
+                "rsi": {"enabled": True, "period": 14, "oversold": 0.3, "overbought": 0.7},
                 "stochastic": {"enabled": False},
             },
             "signal_logic": {"min_confluence": 2, "direction": "both"},
@@ -197,32 +203,32 @@ class TestMeanReversionCompose:
     def test_low_threshold_more_signals(self, sine_ohlcv):
         cfg_tight = {
             "indicators": {
-                "rsi":        {"enabled": True, "period": 14, "oversold": 0.45, "overbought": 0.55},
-                "bollinger":  {"enabled": True, "window": 20, "num_std": 0.5},
-                "vwap":       {"enabled": False},
+                "rsi": {"enabled": True, "period": 14, "oversold": 0.45, "overbought": 0.55},
+                "bollinger": {"enabled": True, "window": 20, "num_std": 0.5},
+                "vwap": {"enabled": False},
                 "stochastic": {"enabled": False},
             },
             "signal_logic": {"min_confluence": 1, "direction": "both"},
         }
         cfg_wide = {
             "indicators": {
-                "rsi":        {"enabled": True, "period": 14, "oversold": 0.1, "overbought": 0.9},
-                "bollinger":  {"enabled": True, "window": 20, "num_std": 3.0},
-                "vwap":       {"enabled": False},
+                "rsi": {"enabled": True, "period": 14, "oversold": 0.1, "overbought": 0.9},
+                "bollinger": {"enabled": True, "window": 20, "num_std": 3.0},
+                "vwap": {"enabled": False},
                 "stochastic": {"enabled": False},
             },
             "signal_logic": {"min_confluence": 1, "direction": "both"},
         }
         sig_tight = mean_reversion_compose(sine_ohlcv, config=cfg_tight)
-        sig_wide  = mean_reversion_compose(sine_ohlcv, config=cfg_wide)
+        sig_wide = mean_reversion_compose(sine_ohlcv, config=cfg_wide)
         assert int(np.sum(sig_tight != 0)) >= int(np.sum(sig_wide != 0))
 
     def test_empty_indicators_all_neutral(self, sine_ohlcv):
         config = {
             "indicators": {
-                "vwap":       {"enabled": False},
-                "bollinger":  {"enabled": False},
-                "rsi":        {"enabled": False},
+                "vwap": {"enabled": False},
+                "bollinger": {"enabled": False},
+                "rsi": {"enabled": False},
                 "stochastic": {"enabled": False},
             },
             "signal_logic": {"min_confluence": 1, "direction": "both"},

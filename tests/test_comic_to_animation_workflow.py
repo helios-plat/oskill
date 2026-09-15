@@ -8,9 +8,8 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from PIL import Image
-
 from obase import ProviderRegistry
+from PIL import Image
 
 
 @pytest.fixture(autouse=True)
@@ -241,7 +240,9 @@ class TestComicToAnimationWorkflow:
             return {"content": "[]"}
 
         with pytest.raises(ComicToAnimationError, match="no frames"):
-            with patch("oprim.video_concat.video_concat", new=AsyncMock(side_effect=_mock_video_concat)):
+            with patch(
+                "oprim.video_concat.video_concat", new=AsyncMock(side_effect=_mock_video_concat)
+            ):
                 await comic_to_animation_workflow(
                     comic_image=comic,
                     llm=_empty_llm,
@@ -264,7 +265,9 @@ class TestComicToAnimationWorkflow:
             "oprim.image_generate.image_generate",
             new=AsyncMock(side_effect=RuntimeError("unexpected io")),
         ):
-            with patch("oprim.video_concat.video_concat", new=AsyncMock(side_effect=_mock_video_concat)):
+            with patch(
+                "oprim.video_concat.video_concat", new=AsyncMock(side_effect=_mock_video_concat)
+            ):
                 with pytest.raises(ComicToAnimationError, match="Unexpected error for keyframe"):
                     await comic_to_animation_workflow(
                         comic_image=comic,
@@ -289,7 +292,9 @@ class TestComicToAnimationWorkflow:
             "oprim.image_to_video.image_to_video",
             new=AsyncMock(side_effect=RuntimeError("unexpected clip error")),
         ):
-            with patch("oprim.video_concat.video_concat", new=AsyncMock(side_effect=_mock_video_concat)):
+            with patch(
+                "oprim.video_concat.video_concat", new=AsyncMock(side_effect=_mock_video_concat)
+            ):
                 with pytest.raises(ComicToAnimationError, match="Unexpected error for clip"):
                     await comic_to_animation_workflow(
                         comic_image=comic,
@@ -301,11 +306,12 @@ class TestComicToAnimationWorkflow:
 
     async def test_video_concat_raises_video_concat_error(self, tmp_path: Path) -> None:
         """Line 139: video_concat raises VideoConcatError → ComicToAnimationError."""
+        from oprim.video_concat import VideoConcatError
+
         from oskill.comic_to_animation_workflow import (
             ComicToAnimationError,
             comic_to_animation_workflow,
         )
-        from oprim.video_concat import VideoConcatError
 
         comic = tmp_path / "panel.png"
         _make_png(comic)

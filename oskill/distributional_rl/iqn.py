@@ -11,8 +11,8 @@ from oskill.distributional_rl.quantile_regression import _pinball_loss
 
 def implicit_quantile_loss(
     predicted_quantiles: np.ndarray,  # (batch, n_sample_quantiles)
-    target_quantiles: np.ndarray,      # (batch, n_target_quantiles) or (batch,)
-    sample_taus: np.ndarray,           # (batch, n_sample_quantiles)
+    target_quantiles: np.ndarray,  # (batch, n_target_quantiles) or (batch,)
+    sample_taus: np.ndarray,  # (batch, n_sample_quantiles)
     target_taus: np.ndarray | None = None,
     *,
     huber_delta: float = 1.0,
@@ -59,7 +59,6 @@ def implicit_quantile_loss(
     if tq.ndim == 1:
         # (batch,) → (batch, 1)
         tq = tq[:, np.newaxis]
-    n_target = tq.shape[1]
 
     st = np.asarray(sample_taus, dtype=np.float64)
     if st.ndim == 1:
@@ -70,10 +69,10 @@ def implicit_quantile_loss(
         )
 
     # u[b, j, i] = target[b, j] - pred[b, i]
-    pred_exp = pq[:, np.newaxis, :]    # (batch, 1, n_sample)
+    pred_exp = pq[:, np.newaxis, :]  # (batch, 1, n_sample)
     target_exp = tq[:, :, np.newaxis]  # (batch, n_target, 1)
     # sample_taus_exp: (batch, 1, n_sample)
-    taus_exp = st[:, np.newaxis, :]    # (batch, 1, n_sample)
+    taus_exp = st[:, np.newaxis, :]  # (batch, 1, n_sample)
 
     u = target_exp - pred_exp  # (batch, n_target, n_sample)
     losses = _pinball_loss(u, taus_exp, huber_delta)  # (batch, n_target, n_sample)

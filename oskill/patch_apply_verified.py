@@ -9,6 +9,7 @@ Composes oprim:
 
 Stateless. No sibling oskill calls.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

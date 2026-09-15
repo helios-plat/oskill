@@ -8,13 +8,13 @@ Mandates (CI-checked):
   - Returns None when no clear relation found
   - LLM prompt instructs: "如无关系请返回 null，不要强行推断"
 """
+
 from __future__ import annotations
 
 import json
 import re
 
 from oprim._aii_graph_types import RelationResult
-
 
 _SYSTEM_PROMPT = (
     "You are a knowledge graph specialist. Analyze relationships between "

@@ -1,4 +1,5 @@
 """SHA-256 exact-match duplicate detection. Phase 1: hash-only, no embedding similarity."""
+
 from __future__ import annotations
 
 from oprim._logging import log
@@ -22,9 +23,7 @@ async def detect_duplicate_substrate(
 
     try:
         db = open_meta_db(db_path)
-        rows = db.fetchall(
-            "SELECT id FROM substrates WHERE file_hash = ?", [file_hash]
-        )
+        rows = db.fetchall("SELECT id FROM substrates WHERE file_hash = ?", [file_hash])
         db.close()
     except Exception as e:
         log.warning("oskill.detect_duplicate.db_error", error=str(e))

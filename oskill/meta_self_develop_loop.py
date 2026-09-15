@@ -9,7 +9,8 @@ heart of AutoAgent's "Self-Managing Workflow Generation".
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 async def meta_self_develop_loop(
@@ -24,7 +25,8 @@ async def meta_self_develop_loop(
 
     Args:
         task: {goal, agent_name, messages, context_variables}
-        run_turn_fn: async (agent_id, messages, ctx) → Response {messages, agent, context_variables, resolved}
+        run_turn_fn: async (agent_id, messages, ctx) → Response
+            {messages, agent, context_variables, resolved}
         meta_fn: async (messages, ctx) → {new_agents: [...], new_tools: [...], resolved}
         max_retry: Maximum retries before giving up
         context: Optional config

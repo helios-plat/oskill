@@ -115,9 +115,7 @@ class TestInstallCommands:
         assert cmds == ["snap install x"]
 
     def test_fallback_to_all(self) -> None:
-        spec = DepSpec(
-            name="x", kind="cmd", check="x", installs={"all": ["pip3 install x"]}
-        )
+        spec = DepSpec(name="x", kind="cmd", check="x", installs={"all": ["pip3 install x"]})
         cmds = install_commands(spec, {"platform_tag": "mac", "distro": ""})
         assert cmds == ["pip3 install x"]
 

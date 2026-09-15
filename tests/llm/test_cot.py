@@ -6,13 +6,18 @@ import pytest
 
 from oskill.llm.cot import chain_of_thought_extractor
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-REQUIRED_KEYS = {"reasoning", "final_answer", "steps", "method_used",
-                 "extraction_confidence", "raw_response"}
+REQUIRED_KEYS = {
+    "reasoning",
+    "final_answer",
+    "steps",
+    "method_used",
+    "extraction_confidence",
+    "raw_response",
+}
 
 
 def make_mock_client(content: str):
@@ -23,12 +28,14 @@ def make_mock_client(content: str):
             "input_tokens": 10,
             "output_tokens": 20,
         }
+
     return client_fn
 
 
 # ---------------------------------------------------------------------------
 # marker_based tests
 # ---------------------------------------------------------------------------
+
 
 def test_cot_marker_based_basic():
     response = (
@@ -70,11 +77,7 @@ def test_cot_returns_all_fields():
 
 def test_cot_steps_list_populated_when_delimiters_found():
     response = (
-        "Let me think:\n"
-        "Step 1: Start here.\n"
-        "Step 2: Continue.\n"
-        "Step 3: Conclude.\n"
-        "Answer: Final."
+        "Let me think:\nStep 1: Start here.\nStep 2: Continue.\nStep 3: Conclude.\nAnswer: Final."
     )
     result = chain_of_thought_extractor(response)
     assert isinstance(result["steps"], list)
@@ -89,10 +92,7 @@ def test_cot_no_markers_low_confidence():
 
 def test_cot_default_markers_anthropic_compatible():
     """Default markers should work with standard Anthropic response format."""
-    response = (
-        "<thinking>I need to reason step by step.</thinking>"
-        "Answer: The answer is 100."
-    )
+    response = "<thinking>I need to reason step by step.</thinking>Answer: The answer is 100."
     result = chain_of_thought_extractor(response)
     assert result["reasoning"]  # should have extracted reasoning
     assert REQUIRED_KEYS.issubset(result.keys())
@@ -101,6 +101,7 @@ def test_cot_default_markers_anthropic_compatible():
 # ---------------------------------------------------------------------------
 # pattern_based tests
 # ---------------------------------------------------------------------------
+
 
 def test_cot_pattern_based_step_extraction():
     response = (
@@ -119,13 +120,16 @@ def test_cot_pattern_based_step_extraction():
 # llm_assisted tests
 # ---------------------------------------------------------------------------
 
+
 def test_cot_llm_assisted_requires_client_fn():
     with pytest.raises(ValueError, match="client_fn"):
         chain_of_thought_extractor("some response", method="llm_assisted")
 
 
 def test_cot_llm_assisted_uses_client_fn():
-    json_response = '{"reasoning": "I thought carefully", "steps": ["Step A", "Step B"], "final_answer": "42"}'
+    json_response = (
+        '{"reasoning": "I thought carefully", "steps": ["Step A", "Step B"], "final_answer": "42"}'
+    )
     mock_client = make_mock_client(json_response)
     result = chain_of_thought_extractor(
         "some complex response",
@@ -141,6 +145,7 @@ def test_cot_llm_assisted_uses_client_fn():
 # ---------------------------------------------------------------------------
 # Academic reference test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.academic_reference
 def test_cot_wei_2022_examples():

@@ -1,9 +1,8 @@
 """Generate an illustration for a substrate or fragment via SD 1.5."""
+
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
-from pathlib import Path
 
 from oprim._logging import log
 from oprim.external.clients.sd_client import SdClient
@@ -146,7 +145,7 @@ def _fetch_title_snippet(substrate_id: str, fragment_id: str | None) -> tuple[st
             "SELECT title FROM substrates WHERE id = ?",
             [substrate_id],
         )
-        title = (rows[0][0] if rows and rows[0][0] else substrate_id)
+        title = rows[0][0] if rows and rows[0][0] else substrate_id
 
         if fragment_id:
             frows = db.fetchall(
@@ -156,7 +155,8 @@ def _fetch_title_snippet(substrate_id: str, fragment_id: str | None) -> tuple[st
             snippet = (frows[0][0] or "")[:200] if frows else ""
         else:
             drows = db.fetchall(
-                "SELECT content FROM derivative WHERE substrate_id = ? AND kind = 'plaintext' LIMIT 1",
+                "SELECT content FROM derivative WHERE substrate_id = ? AND kind = 'plaintext' "
+                "LIMIT 1",
                 [substrate_id],
             )
             snippet = (drows[0][0] or "")[:200] if drows else ""

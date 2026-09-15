@@ -8,10 +8,9 @@ from __future__ import annotations
 
 import base64
 import json
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
-
 from oprim._mneme_speech_types import (
     EssayAssessmentInput,
     EssayAssessmentResult,
@@ -19,17 +18,21 @@ from oprim._mneme_speech_types import (
     SpeakingPracticeResult,
 )
 
-
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------
+
 
 def _b64(text: str = "audio") -> str:
     return base64.b64encode(text.encode()).decode()
 
 
-def _pron(overall: float = 0.8, fluency: float = 0.75, accuracy: float = 0.85) -> PronunciationResult:
-    return PronunciationResult(overall_score=overall, fluency_score=fluency, accuracy_score=accuracy, word_scores=[])
+def _pron(
+    overall: float = 0.8, fluency: float = 0.75, accuracy: float = 0.85
+) -> PronunciationResult:
+    return PronunciationResult(
+        overall_score=overall, fluency_score=fluency, accuracy_score=accuracy, word_scores=[]
+    )
 
 
 def _make_tts():
@@ -47,6 +50,7 @@ def _make_pron_eval(overall: float = 0.8):
 def _make_llm(text: str = "Great job! What else would you like to share？"):
     async def caller(*, messages, max_tokens=256, **kwargs):
         return {"content": [{"type": "text", "text": text}]}
+
     return caller
 
 
@@ -62,6 +66,7 @@ _SAMPLE_ESSAY = """\
 # ===========================================================================
 # K-1: english_speaking_practice
 # ===========================================================================
+
 
 class TestEnglishSpeakingPractice:
     async def test_returns_speaking_practice_result(self):
@@ -148,7 +153,10 @@ class TestEnglishSpeakingPractice:
         """LLM returning 'You should say X' lines are filtered out."""
         from oskill._english_speaking_practice import english_speaking_practice
 
-        bad_llm_text = "You should say 'I enjoy' not 'I enjoyable'.\nGreat effort though! What else do you like？"
+        bad_llm_text = (
+            "You should say 'I enjoy' not 'I enjoyable'.\n"
+            "Great effort though! What else do you like？"
+        )
 
         async def bad_llm(*, messages, max_tokens=256, **kwargs):
             return {"content": [{"type": "text", "text": bad_llm_text}]}
@@ -203,13 +211,21 @@ class TestEnglishSpeakingPractice:
 # K-2: essay_assessment
 # ===========================================================================
 
+
 class TestEssayAssessment:
     def _make_llm_with_questions(self, questions=None):
         if questions is None:
-            questions = ["你认为这段论述有什么可以补充的？", "这个例子能否更有说服力？", "结尾是否完整表达了你的观点？"]
+            questions = [
+                "你认为这段论述有什么可以补充的？",
+                "这个例子能否更有说服力？",
+                "结尾是否完整表达了你的观点？",
+            ]
 
         async def caller(*, messages, max_tokens=512, **kwargs):
-            return {"content": [{"type": "text", "text": json.dumps(questions, ensure_ascii=False)}]}
+            return {
+                "content": [{"type": "text", "text": json.dumps(questions, ensure_ascii=False)}]
+            }
+
         return caller
 
     async def test_returns_essay_assessment_result(self):
@@ -261,13 +277,15 @@ class TestEssayAssessment:
         assert result.revision_needed is True
 
     async def test_revision_needed_false_for_good_essay(self):
-        from oskill._essay_assessment import essay_assessment
-
         # Patch rubric_score to return high scores
         from unittest.mock import patch
-        with patch("oskill._essay_assessment.rubric_score", return_value={
-            "结构": 90.0, "立意": 88.0, "语言": 85.0, "格式": 92.0
-        }):
+
+        from oskill._essay_assessment import essay_assessment
+
+        with patch(
+            "oskill._essay_assessment.rubric_score",
+            return_value={"结构": 90.0, "立意": 88.0, "语言": 85.0, "格式": 92.0},
+        ):
             result = await essay_assessment(
                 EssayAssessmentInput(essay_text=_SAMPLE_ESSAY),
                 llm=self._make_llm_with_questions(),
@@ -276,7 +294,9 @@ class TestEssayAssessment:
 
     async def test_essay_guide_not_imported(self):
         """CI guard: essay_guide must not be imported by essay_assessment."""
-        import importlib, sys
+        import importlib
+        import sys
+
         for key in list(sys.modules.keys()):
             if "essay_assessment" in key:
                 del sys.modules[key]
@@ -289,7 +309,9 @@ class TestEssayAssessment:
 
         custom_rubric = {"论点": 0.5, "例证": 0.5}
         inp = EssayAssessmentInput(essay_text=_SAMPLE_ESSAY, essay_type="议论文")
-        result = await essay_assessment(inp, llm=self._make_llm_with_questions(), rubric=custom_rubric)
+        result = await essay_assessment(
+            inp, llm=self._make_llm_with_questions(), rubric=custom_rubric
+        )
         assert set(result.rubric_scores.keys()) == {"论点", "例证"}
 
     async def test_llm_plain_text_questions_parsed(self):
@@ -297,7 +319,10 @@ class TestEssayAssessment:
         from oskill._essay_assessment import essay_assessment
 
         async def line_llm(*, messages, max_tokens=512, **kwargs):
-            return {"content": "1. 你的论点是否清晰？\n2. 能否补充更多例子？\n3. 结尾表达了什么观点"}
+            return {
+                "content": "1. 你的论点是否清晰？\n2. 能否补充更多例子？\n3. 结尾表达了什么观点"
+            }
+
         inp = EssayAssessmentInput(essay_text=_SAMPLE_ESSAY)
         result = await essay_assessment(inp, llm=line_llm)
         assert len(result.guidance_questions) >= 1

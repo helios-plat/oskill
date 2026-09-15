@@ -2,6 +2,7 @@
 
 Parametrized over 20 seeds to keep CI fast while covering diverse random inputs.
 """
+
 from __future__ import annotations
 
 import math

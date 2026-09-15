@@ -1,4 +1,5 @@
 """SSD-constrained portfolio optimization via LP/MILP."""
+
 from __future__ import annotations
 
 import warnings
@@ -68,9 +69,7 @@ def ssd_milp_optimizer(
     if N < 2:
         raise ValueError(f"asset_returns must have at least 2 assets, got {N}")
     if benchmark_returns.shape != (T,):
-        raise ValueError(
-            f"benchmark_returns must have shape ({T},), got {benchmark_returns.shape}"
-        )
+        raise ValueError(f"benchmark_returns must have shape ({T},), got {benchmark_returns.shape}")
 
     # Use a subset of threshold levels for efficiency
     T_thresh = min(T, 20)
@@ -87,9 +86,7 @@ def ssd_milp_optimizer(
     if dominance_order == "msd":
         mad = float(np.mean(np.abs(benchmark_returns - np.mean(benchmark_returns))))
         thresholds = thresholds + mad * 0.1  # small perturbation for MSD
-        bench_lpm = np.array(
-            [_bench_partial_moment(benchmark_returns, c) for c in thresholds]
-        )
+        bench_lpm = np.array([_bench_partial_moment(benchmark_returns, c) for c in thresholds])
 
     # Variable layout: [w (N), z (T_thresh * T)]
     # z[s, t] >= threshold[s] - sum_n w_n * r[t, n]
@@ -192,8 +189,7 @@ def ssd_milp_optimizer(
             obj_val = float(-result.fun)  # negate back
         else:
             warnings.warn(
-                f"SSD LP infeasible (status={result.status}); "
-                "returning uniform weights.",
+                f"SSD LP infeasible (status={result.status}); returning uniform weights.",
                 stacklevel=2,
             )
             w_star = np.full(N, 1.0 / N)
@@ -218,9 +214,7 @@ def ssd_milp_optimizer(
     # Identify active SSD constraints (where z ≈ 0 and threshold binds)
     active_states: list[int] = []
     for s in range(T_thresh):
-        lpm_portfolio = float(
-            np.mean(np.maximum(thresholds[s] - asset_returns @ w_star, 0.0))
-        )
+        lpm_portfolio = float(np.mean(np.maximum(thresholds[s] - asset_returns @ w_star, 0.0)))
         if abs(lpm_portfolio - bench_lpm[s]) < 1e-6:
             active_states.append(int(thresh_idx[s]))
 

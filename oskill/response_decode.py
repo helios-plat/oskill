@@ -7,6 +7,7 @@ Composes oprim:
 
 Sync (pure algorithm). Stateless.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -38,10 +39,7 @@ def response_decode(raw: dict[str, Any], *, provider: str) -> DecodedTurn:
     # Parse tool calls
     try:
         tool_calls_raw = parse_tool_calls(raw, provider=provider)
-        tool_calls = [
-            {"id": tc.id, "name": tc.name, "args": tc.args}
-            for tc in tool_calls_raw
-        ]
+        tool_calls = [{"id": tc.id, "name": tc.name, "args": tc.args} for tc in tool_calls_raw]
     except Exception:
         tool_calls = []
 

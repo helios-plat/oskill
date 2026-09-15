@@ -6,14 +6,18 @@ import pytest
 
 from oskill.llm.faithfulness import faithfulness_score
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 REQUIRED_KEYS = {
-    "faithfulness_score", "is_faithful", "claims", "claim_support",
-    "n_supported", "n_total", "evaluation_fingerprint",
+    "faithfulness_score",
+    "is_faithful",
+    "claims",
+    "claim_support",
+    "n_supported",
+    "n_total",
+    "evaluation_fingerprint",
 }
 
 
@@ -36,6 +40,7 @@ def make_claim_extractor_then_nli(claims: list[str], nli_answers: list[str]):
             "input_tokens": 10,
             "output_tokens": 5,
         }
+
     return client_fn
 
 
@@ -52,12 +57,14 @@ def make_fixed_client(responses: list[str]):
             "input_tokens": 10,
             "output_tokens": 5,
         }
+
     return client_fn
 
 
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_faithfulness_all_claims_supported_score_one():
     claims = ["The sky is blue.", "Water is wet."]
@@ -202,6 +209,7 @@ def test_faithfulness_empty_claims_vacuously_faithful():
 # ---------------------------------------------------------------------------
 # Academic reference test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.academic_reference
 def test_faithfulness_ragas_paper_examples():

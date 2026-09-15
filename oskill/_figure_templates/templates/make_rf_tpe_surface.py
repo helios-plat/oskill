@@ -6,12 +6,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
+    import matplotlib.pyplot as plt
+    import numpy as np
 
 
 def configure_matplotlib() -> None:
@@ -33,16 +34,22 @@ def true_rmse_surface(max_depth: np.ndarray, n_estimators: np.ndarray) -> np.nda
 
     base = 0.505
     broad_slope = 0.018 * np.exp(-x / 9.0) + 0.010 * np.cos(y / 32.0)
-    red_ridge = 0.165 * np.exp(-((x - 6.0) / 5.2) ** 2 - ((y - 162.0) / 34.0) ** 2)
-    red_cap = 0.045 * np.exp(-((x - 3.0) / 3.5) ** 2 - ((y - 190.0) / 24.0) ** 2)
-    warm_hump = 0.052 * np.exp(-((x - 22.0) / 5.5) ** 2 - ((y - 96.0) / 21.0) ** 2)
-    cool_basin = -0.116 * np.exp(-((x - 30.0) / 8.5) ** 2 - ((y - 112.0) / 29.0) ** 2)
-    narrow_trough = -0.047 * np.exp(-((x - 34.5) / 3.2) ** 2 - ((y - 124.0) / 9.5) ** 2)
+    red_ridge = 0.165 * np.exp(-(((x - 6.0) / 5.2) ** 2) - ((y - 162.0) / 34.0) ** 2)
+    red_cap = 0.045 * np.exp(-(((x - 3.0) / 3.5) ** 2) - ((y - 190.0) / 24.0) ** 2)
+    warm_hump = 0.052 * np.exp(-(((x - 22.0) / 5.5) ** 2) - ((y - 96.0) / 21.0) ** 2)
+    cool_basin = -0.116 * np.exp(-(((x - 30.0) / 8.5) ** 2) - ((y - 112.0) / 29.0) ** 2)
+    narrow_trough = -0.047 * np.exp(-(((x - 34.5) / 3.2) ** 2) - ((y - 124.0) / 9.5) ** 2)
     ripples = 0.011 * np.sin(x * 0.70 + y * 0.055) + 0.007 * np.cos(x * 1.50 - y * 0.035)
-    return np.clip(base + broad_slope + red_ridge + red_cap + warm_hump + cool_basin + narrow_trough + ripples, 0.375, 0.655)
+    return np.clip(
+        base + broad_slope + red_ridge + red_cap + warm_hump + cool_basin + narrow_trough + ripples,
+        0.375,
+        0.655,
+    )
 
 
-def simulate_tpe_trials(seed: int = 20260505, n_trials: int = 210) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def simulate_tpe_trials(
+    seed: int = 20260505, n_trials: int = 210
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
     depth_trials = []
     estimator_trials = []
@@ -113,7 +120,9 @@ def make_figure(output_stem: Path) -> None:
     max_depth = np.linspace(1, 40, 115)
     n_estimators = np.linspace(5, 200, 125)
     depth_grid, estimator_grid = np.meshgrid(max_depth, n_estimators)
-    rmse_grid = idw_response_surface(depth_trials, estimator_trials, rmse_trials, depth_grid, estimator_grid)
+    rmse_grid = idw_response_surface(
+        depth_trials, estimator_trials, rmse_trials, depth_grid, estimator_grid
+    )
 
     fig = plt.figure(figsize=(9.2, 7.2))
     ax = fig.add_axes([0.02, 0.05, 0.78, 0.88], projection="3d")

@@ -1,6 +1,8 @@
 """Test referee parsing, clamping, verdict normalization."""
-import pytest
+
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from oskill.llm_agent.referee import referee
 
@@ -21,7 +23,10 @@ def _mock_result(content):
 
 @pytest.mark.asyncio
 async def test_referee_happy_long():
-    content = '{"reasoning": "Bull case strong", "factor_value": 0.7, "confidence": 80, "verdict": "long"}'
+    content = (
+        '{"reasoning": "Bull case strong", "factor_value": 0.7, '
+        '"confidence": 80, "verdict": "long"}'
+    )
     with patch(
         "oskill.llm_agent.referee.deepseek_call",
         new=AsyncMock(return_value=_mock_result(content)),

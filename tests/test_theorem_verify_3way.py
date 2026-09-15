@@ -1,18 +1,16 @@
 """Tests for K-AII-5: theorem_verify_3way."""
+
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
 
-import pytest
-
 from oskill._theorem_verify_3way import theorem_verify_3way
-from oprim._aii_graph_types import TheoremVerifyResult
-
 
 # ---------------------------------------------------------------------------
 # Stub types mirroring MathlibLookupResult / MathlibHit
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class _Hit:
@@ -30,6 +28,7 @@ class _LookupResult:
 
 def _make_lookup(count: int, lean_name: str = "Theorem.name", type_sig: str = "∀ x, P x"):
     """Return a sync callable that simulates mathlib_lookup returning one result."""
+
     def _lookup(candidate: str) -> _LookupResult:
         if count == 1:
             return _LookupResult(
@@ -38,6 +37,7 @@ def _make_lookup(count: int, lean_name: str = "Theorem.name", type_sig: str = "�
                 hits=[_Hit(name=lean_name, type_signature=type_sig)],
             )
         return _LookupResult(query=candidate, count=count, hits=[])
+
     return _lookup
 
 
@@ -55,8 +55,8 @@ def _make_llm(verdict: str, reason: str = ""):
 # Tests
 # ---------------------------------------------------------------------------
 
-class TestTheoremVerify3Way:
 
+class TestTheoremVerify3Way:
     # 1. 正例：语义一致 → verified
     async def test_consistent_returns_verified(self):
         result = await theorem_verify_3way(
@@ -92,7 +92,9 @@ class TestTheoremVerify3Way:
     # 3. 反向假阳性：拉格朗日 KU + 罗尔 lean_name → rejected
     async def test_lagrange_ku_rolle_name_rejected(self):
         result = await theorem_verify_3way(
-            ku_text="There exists c in (a,b) such that f'(c) equals the mean slope (f(b)-f(a))/(b-a).",
+            ku_text=(
+                "There exists c in (a,b) such that f'(c) equals the mean slope (f(b)-f(a))/(b-a)."
+            ),
             candidate_lean_names=["Rolle.theorem"],
             mathlib_lookup=_make_lookup(
                 count=1,
@@ -223,11 +225,13 @@ class TestTheoremVerify3Way:
     # 11. verified 命门：lean_name 来自 mathlib_lookup，非 LLM
     async def test_verified_lean_name_from_lookup_not_llm(self):
         # LLM response says consistent but we verify lean_name is from lookup
-        llm_payload = json.dumps({
-            "verdict": "consistent",
-            "reason": "match",
-            "lean_name": "LLM.injected.name",  # LLM tries to inject lean_name — must be ignored
-        })
+        llm_payload = json.dumps(
+            {
+                "verdict": "consistent",
+                "reason": "match",
+                "lean_name": "LLM.injected.name",  # LLM tries to inject lean_name — must be ignored
+            }
+        )
 
         async def injecting_llm(*, messages, system=None, max_tokens=256, **kw):
             return {"content": [{"type": "text", "text": llm_payload}], "usage": {}}

@@ -4,6 +4,7 @@ Composites:
     - oprim.zscore_signal      (rolling normalisation / posterior evidence)
     - oprim.risk_limit_check   (threshold gate on changepoint probability)
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -49,7 +50,6 @@ def bocpd_changepoint(
         - ``hazard_rate``          – the hazard rate used.
     """
     import numpy as np  # noqa: PLC0415
-
     from oprim.risk_limit_check import risk_limit_check  # noqa: PLC0415
     from oprim.zscore_signal import zscore_signal  # noqa: PLC0415
 
@@ -77,9 +77,9 @@ def bocpd_changepoint(
     effective_lb = min(zscore_lookback, max(2, T // 4))
     if T >= effective_lb + 1:
         zs = zscore_signal(obs.tolist(), lookback=effective_lb)
-        zscores = np.array(zs["zscores"])
+        _zscores = np.array(zs["zscores"])
     else:
-        zscores = np.zeros(T)
+        _zscores = np.zeros(T)
 
     # BOCPD core: run-length distribution via Normal-Gamma conjugate
     # R[t, r] = P(run length = r at time t)
@@ -103,33 +103,30 @@ def bocpd_changepoint(
         # Predictive probability under Student-t for each run length
         pred_probs = stats.t.pdf(
             x,
-            df=2 * alpha[:t + 1],
-            loc=mu[:t + 1],
-            scale=np.sqrt(beta[:t + 1] * (kappa[:t + 1] + 1) / (alpha[:t + 1] * kappa[:t + 1])),
+            df=2 * alpha[: t + 1],
+            loc=mu[: t + 1],
+            scale=np.sqrt(beta[: t + 1] * (kappa[: t + 1] + 1) / (alpha[: t + 1] * kappa[: t + 1])),
         )
 
         # Growth (run length extends)
-        R[t + 1, 1:t + 2] = R[t, :t + 1] * pred_probs * (1 - hazard_rate)
+        R[t + 1, 1 : t + 2] = R[t, : t + 1] * pred_probs * (1 - hazard_rate)
         # Change point (run length resets to 0)
-        R[t + 1, 0] = np.sum(R[t, :t + 1] * pred_probs) * hazard_rate
+        R[t + 1, 0] = np.sum(R[t, : t + 1] * pred_probs) * hazard_rate
 
         # Normalise
-        total = R[t + 1, :t + 2].sum()
+        total = R[t + 1, : t + 2].sum()
         if total > 0:
-            R[t + 1, :t + 2] /= total
+            R[t + 1, : t + 2] /= total
 
         # Update sufficient statistics for growing runs
-        kappa_new = kappa[:t + 1] + 1
-        mu_new = (kappa[:t + 1] * mu[:t + 1] + x) / kappa_new
-        alpha_new = alpha[:t + 1] + 0.5
-        beta_new = (
-            beta[:t + 1]
-            + 0.5 * kappa[:t + 1] / kappa_new * (x - mu[:t + 1]) ** 2
-        )
-        mu[1:t + 2] = mu_new
-        kappa[1:t + 2] = kappa_new
-        alpha[1:t + 2] = alpha_new
-        beta[1:t + 2] = beta_new
+        kappa_new = kappa[: t + 1] + 1
+        mu_new = (kappa[: t + 1] * mu[: t + 1] + x) / kappa_new
+        alpha_new = alpha[: t + 1] + 0.5
+        beta_new = beta[: t + 1] + 0.5 * kappa[: t + 1] / kappa_new * (x - mu[: t + 1]) ** 2
+        mu[1 : t + 2] = mu_new
+        kappa[1 : t + 2] = kappa_new
+        alpha[1 : t + 2] = alpha_new
+        beta[1 : t + 2] = beta_new
 
         # Reset stats for run length 0
         mu[0] = mu0
@@ -148,12 +145,14 @@ def bocpd_changepoint(
     gate = risk_limit_check(
         last_prob,
         max_position=1.0,  # prob is in [0,1], always passes position check
-        rules=[{
-            "name": "cp_threshold",
-            "limit": threshold,
-            "value": last_prob,
-            "direction": "above",
-        }],
+        rules=[
+            {
+                "name": "cp_threshold",
+                "limit": threshold,
+                "value": last_prob,
+                "direction": "above",
+            }
+        ],
     )
     # gate["pass"] is True when last_prob <= threshold (no CP at last step)
     # gate["pass"] is False when last_prob > threshold (CP detected at last step)

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from oskill.classifier.rule_based import rule_based_classifier
 
 STABILITY = "experimental"
@@ -12,9 +10,9 @@ STABILITY = "experimental"
 def multi_state_classify(
     indicators: dict[str, float],
     state_definitions: list[dict],
-    transition_rules: Optional[dict] = None,
-    prev_state: Optional[str] = None,
-    n_states_constraint: Optional[int] = None,
+    transition_rules: dict | None = None,
+    prev_state: str | None = None,
+    n_states_constraint: int | None = None,
 ) -> dict:
     """Classify the current regime state based on indicators and rule-based state definitions.
 
@@ -65,7 +63,8 @@ def multi_state_classify(
 
     if n_states_constraint is not None and len(state_definitions) != n_states_constraint:
         raise ValueError(
-            f"n_states_constraint={n_states_constraint} but got {len(state_definitions)} state_definitions"
+            f"n_states_constraint={n_states_constraint} but got "
+            f"{len(state_definitions)} state_definitions"
         )
 
     classification = rule_based_classifier(indicators, rule_table)

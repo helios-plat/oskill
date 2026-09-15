@@ -14,7 +14,7 @@ Precise identifier matching (ADR-038) via BM25 complements graph traversal.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Callable
+from collections.abc import Callable
 
 from oprim import bm25_search, entity_graph_search
 

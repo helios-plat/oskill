@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.triple_barrier import triple_barrier_label
 
@@ -25,7 +24,9 @@ class TestTripleBarrierLabel:
         """n_positive + n_negative + n_neutral should equal number of observations."""
         rng = np.random.default_rng(42)
         prices = 100 * np.cumprod(1 + rng.normal(0, 0.01, 50))
-        result = triple_barrier_label(prices, upper_barrier=0.02, lower_barrier=-0.02, time_barrier=5)
+        result = triple_barrier_label(
+            prices, upper_barrier=0.02, lower_barrier=-0.02, time_barrier=5
+        )
         n = len(prices)
         total = result["n_positive"] + result["n_negative"] + result["n_neutral"]
         assert total == n
@@ -42,21 +43,27 @@ class TestTripleBarrierLabel:
         """Steadily rising prices should produce positive labels."""
         # Prices that always hit upper barrier
         prices = np.array([100.0, 103.0, 106.0, 109.0, 112.0, 115.0, 118.0, 121.0])
-        result = triple_barrier_label(prices, upper_barrier=0.02, lower_barrier=-0.05, time_barrier=3)
+        result = triple_barrier_label(
+            prices, upper_barrier=0.02, lower_barrier=-0.05, time_barrier=3
+        )
         # Most should be +1
         assert result["n_positive"] > 0
 
     def test_lower_barrier_hit(self):
         """Steadily falling prices should produce negative labels."""
         prices = np.array([100.0, 97.0, 94.0, 91.0, 88.0, 85.0, 82.0, 79.0])
-        result = triple_barrier_label(prices, upper_barrier=0.05, lower_barrier=-0.02, time_barrier=3)
+        result = triple_barrier_label(
+            prices, upper_barrier=0.05, lower_barrier=-0.02, time_barrier=3
+        )
         assert result["n_negative"] > 0
 
     def test_time_barrier_produces_neutral(self):
         """Flat prices (no barrier hit) should produce neutral labels."""
         # Exactly flat: no barrier hit within time window
         prices = np.ones(20) * 100.0
-        result = triple_barrier_label(prices, upper_barrier=0.10, lower_barrier=-0.10, time_barrier=3)
+        result = triple_barrier_label(
+            prices, upper_barrier=0.10, lower_barrier=-0.10, time_barrier=3
+        )
         # All should be neutral
         assert result["n_neutral"] == 20
 

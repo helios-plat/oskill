@@ -1,4 +1,5 @@
 """Referee agent: weigh bull + bear + classic factor → final factor value."""
+
 from __future__ import annotations
 
 import json

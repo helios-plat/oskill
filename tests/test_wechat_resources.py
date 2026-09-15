@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from oskill.agent_discovery import ResourceCatalog
 from oskill.wechat_resources import (
     catalog_summary,
@@ -26,7 +24,7 @@ def test_catalog_theme_details_loadable():
     assert "科技" in theme.description
     detail = catalog.detail("theme", "tech")
     assert detail.name == "tech"
-    assert detail.title_color == "#5b21b6"          # 详情可加载为 WechatTheme
+    assert detail.title_color == "#5b21b6"  # 详情可加载为 WechatTheme
 
 
 def test_catalog_layout_and_prompt():
@@ -42,7 +40,7 @@ def test_catalog_layout_and_prompt():
 def test_catalog_idempotent():
     catalog = wechat_catalog()
     before = len(catalog.discover())
-    register_wechat_resources(catalog)              # 重复注册不膨胀
+    register_wechat_resources(catalog)  # 重复注册不膨胀
     register_wechat_resources(catalog)
     assert len(catalog.discover()) == before
 
@@ -51,7 +49,7 @@ def test_catalog_reuses_existing_catalog():
     shared = ResourceCatalog()
     shared.register_wechat = None
     register_wechat_resources(shared)
-    assert shared.kinds()                            # 注入既有目录
+    assert shared.kinds()  # 注入既有目录
 
 
 def test_catalog_summary_shape():
@@ -63,14 +61,14 @@ def test_catalog_summary_shape():
 
 def test_reviewer_prompt_contract():
     p = reviewer_prompt()
-    assert "审核官" in p["system"]                    # 主链路测试依赖该关键词
+    assert "审核官" in p["system"]  # 主链路测试依赖该关键词
     assert "topic_match" in p["system"]
-    assert "image_miss_streak" in p["user_extra"]    # 槽位模板
+    assert "image_miss_streak" in p["user_extra"]  # 槽位模板
     assert "{sections}" in p["user_extra"]
 
 
 def test_reviser_prompt_contract():
     p = reviser_prompt()
-    assert "只改写" in p["system"]                    # 主链路测试依赖该关键词
+    assert "只改写" in p["system"]  # 主链路测试依赖该关键词
     assert "{draft_json}" in p["user_extra"]
     assert "{issues}" in p["user_extra"]

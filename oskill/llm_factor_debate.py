@@ -4,6 +4,7 @@ Composites:
     - llm_complete × 3 via LLMCaller Protocol injection
       (bull analyst / bear analyst / referee)
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -61,7 +62,8 @@ async def llm_factor_debate(
         content = resp.get("content", [])
         if isinstance(content, list):
             return "".join(
-                b.get("text", "") for b in content
+                b.get("text", "")
+                for b in content
                 if isinstance(b, dict) and b.get("type") == "text"
             )
         if isinstance(content, str):
@@ -70,32 +72,45 @@ async def llm_factor_debate(
 
     factor_line = f"\nFactor hypothesis: {factor_hypothesis}" if factor_hypothesis else ""
 
-    bull_msgs = [{"role": "user", "content":
-        f"You are a bullish quantitative analyst.\n"
-        f"Market context: {market_context}{factor_line}\n"
-        "Argue strongly FOR this factor / strategy. Be concise (3–5 sentences)."}]
+    bull_msgs = [
+        {
+            "role": "user",
+            "content": f"You are a bullish quantitative analyst.\n"
+            f"Market context: {market_context}{factor_line}\n"
+            "Argue strongly FOR this factor / strategy. Be concise (3–5 sentences).",
+        }
+    ]
 
-    bear_msgs = [{"role": "user", "content":
-        f"You are a bearish quantitative analyst.\n"
-        f"Market context: {market_context}{factor_line}\n"
-        "Argue strongly AGAINST this factor / strategy. Be concise (3–5 sentences)."}]
+    bear_msgs = [
+        {
+            "role": "user",
+            "content": f"You are a bearish quantitative analyst.\n"
+            f"Market context: {market_context}{factor_line}\n"
+            "Argue strongly AGAINST this factor / strategy. Be concise (3–5 sentences).",
+        }
+    ]
 
     # Referee prompt uses placeholders; real content filled after gather
     # Launch all three concurrently — referee gets a second call after
     # collecting bull/bear (but all three slots run in parallel for latency).
     # We launch a placeholder referee first, then override with real synthesis.
-    placeholder_ref_msgs = [{"role": "user", "content":
-        f"You are an objective quantitative research referee.\n"
-        f"Market context: {market_context}{factor_line}\n"
-        "Synthesise the bull and bear perspectives. "
-        "End your response with exactly one line: "
-        "VERDICT: <bullish|bearish|neutral> CONFIDENCE: <0.0-1.0>"}]
+    placeholder_ref_msgs = [
+        {
+            "role": "user",
+            "content": f"You are an objective quantitative research referee.\n"
+            f"Market context: {market_context}{factor_line}\n"
+            "Synthesise the bull and bear perspectives. "
+            "End your response with exactly one line: "
+            "VERDICT: <bullish|bearish|neutral> CONFIDENCE: <0.0-1.0>",
+        }
+    ]
 
     bull_resp, bear_resp, ref_resp = await asyncio.gather(
         llm_caller(bull_msgs, system="Quantitative analyst debate", max_tokens=max_tokens),
         llm_caller(bear_msgs, system="Quantitative analyst debate", max_tokens=max_tokens),
-        llm_caller(placeholder_ref_msgs, system="Quantitative research referee",
-                   max_tokens=max_tokens),
+        llm_caller(
+            placeholder_ref_msgs, system="Quantitative research referee", max_tokens=max_tokens
+        ),
     )
 
     bull_text = _text(bull_resp)
@@ -114,6 +129,7 @@ async def llm_factor_debate(
                     consensus = label.lower()
                     break
             import re  # noqa: PLC0415
+
             m = re.search(r"CONFIDENCE:\s*([\d.]+)", line, re.IGNORECASE)
             if m:
                 try:

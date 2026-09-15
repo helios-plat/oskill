@@ -7,13 +7,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".mplconfig"))
 
-import matplotlib as mpl
+if True:
+    import matplotlib as mpl
 
-mpl.use("Agg")
+    mpl.use("Agg")
 
-import matplotlib.pyplot as plt
-import numpy as np
-
+    import matplotlib.pyplot as plt
+    import numpy as np
 
 VARIABLES = [f"Variable_{idx}" for idx in range(1, 10)]
 
@@ -39,7 +39,9 @@ def simulate_data(seed: int = 20260629, n_samples: int = 130) -> np.ndarray:
     f1 = rng.normal(size=n_samples)
     f2 = rng.normal(size=n_samples)
     f3 = rng.normal(size=n_samples)
-    noise = lambda scale=1.0: rng.normal(scale=scale, size=n_samples)
+
+    def noise(scale=1.0):
+        return rng.normal(scale=scale, size=n_samples)
 
     data = np.column_stack(
         [
@@ -67,7 +69,9 @@ def kde_1d(values: np.ndarray, grid: np.ndarray) -> np.ndarray:
     return density
 
 
-def fit_line_with_ci(x: np.ndarray, y: np.ndarray, x_grid: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def fit_line_with_ci(
+    x: np.ndarray, y: np.ndarray, x_grid: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     slope, intercept = np.polyfit(x, y, deg=1)
     y_hat = slope * x_grid + intercept
 
@@ -122,7 +126,9 @@ def draw_scatter_cell(ax: plt.Axes, x: np.ndarray, y: np.ndarray, xlabel: str, y
 
 
 def draw_hist_cell(ax: plt.Axes, values: np.ndarray, xlabel: str) -> None:
-    counts, bins, _ = ax.hist(values, bins=12, color="#9ecae1", edgecolor="#2b5d73", linewidth=0.55, alpha=0.90)
+    counts, bins, _ = ax.hist(
+        values, bins=12, color="#9ecae1", edgecolor="#2b5d73", linewidth=0.55, alpha=0.90
+    )
     grid = np.linspace(values.min() - 0.25, values.max() + 0.25, 180)
     density = kde_1d(values, grid)
     scaled = density / density.max() * max(counts) if density.max() > 0 else density
@@ -145,10 +151,29 @@ def draw_corr_cell(
     ax.set_xticks([])
     ax.set_yticks([])
     text_color = "white" if abs(r) >= 0.55 else "#1f1f1f"
-    ax.text(0.5, 0.46, f"{r:.2f}", ha="center", va="center", fontsize=6.7, color=text_color, transform=ax.transAxes)
+    ax.text(
+        0.5,
+        0.46,
+        f"{r:.2f}",
+        ha="center",
+        va="center",
+        fontsize=6.7,
+        color=text_color,
+        transform=ax.transAxes,
+    )
     star_text = stars_for_p(p_value)
     if star_text:
-        ax.text(0.5, 0.68, star_text, ha="center", va="center", fontsize=6.4, fontweight="bold", color=text_color, transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.68,
+            star_text,
+            ha="center",
+            va="center",
+            fontsize=6.4,
+            fontweight="bold",
+            color=text_color,
+            transform=ax.transAxes,
+        )
 
 
 def make_figure(output_stem: Path) -> None:

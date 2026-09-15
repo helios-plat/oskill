@@ -58,8 +58,7 @@ def adaptive_conformal_inference(
 
     if len(preds) != len(acts):
         raise ValueError(
-            f"predictions and actuals must have the same length, "
-            f"got {len(preds)} vs {len(acts)}"
+            f"predictions and actuals must have the same length, got {len(preds)} vs {len(acts)}"
         )
     if not (0 < alpha_target < 1):
         raise ValueError(f"alpha_target must be in (0, 1), got {alpha_target}")

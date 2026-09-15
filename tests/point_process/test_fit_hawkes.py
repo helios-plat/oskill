@@ -7,11 +7,12 @@ import pytest
 
 from oskill.point_process import fit_hawkes
 
-
 # ─── fixtures ────────────────────────────────────────────────────────────────
 
-def _make_hawkes_events(mu: float, alpha: float, beta: float,
-                        T: float, seed: int = 42) -> np.ndarray:
+
+def _make_hawkes_events(
+    mu: float, alpha: float, beta: float, T: float, seed: int = 42
+) -> np.ndarray:
     """Generate Hawkes process events via thinning algorithm."""
     rng = np.random.default_rng(seed)
     times = []
@@ -33,6 +34,7 @@ def _make_hawkes_events(mu: float, alpha: float, beta: float,
 
 
 # ─── basic API ───────────────────────────────────────────────────────────────
+
 
 def test_fit_hawkes_too_few_events_returns_not_converged():
     """len < 5 → converged=False, branching_ratio=nan."""
@@ -76,8 +78,9 @@ def test_fit_hawkes_stable_branching_ratio():
 
 def test_fit_hawkes_known_events():
     """Simple event stream returns mu > 0 when it converges."""
-    events = np.array([0.5, 1.0, 1.2, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0,
-                       8.0, 9.0, 10.0, 11.0, 12.0])
+    events = np.array(
+        [0.5, 1.0, 1.2, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+    )
     result = fit_hawkes(events, T=13.0, n_restarts=2, random_state=0)
     if result["converged"]:
         assert result["mu"] > 0
@@ -101,6 +104,5 @@ def test_fit_hawkes_hawkes_1971():
     if result["converged"] and np.isfinite(result["branching_ratio"]):
         br = result["branching_ratio"]
         assert 0 < br < 1, (
-            f"Hawkes (1971): stationary process requires branching_ratio in (0,1), "
-            f"got {br:.4f}"
+            f"Hawkes (1971): stationary process requires branching_ratio in (0,1), got {br:.4f}"
         )

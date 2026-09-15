@@ -271,8 +271,9 @@ def test_marketplace_deliver_wrong_creator():
     listing = market.post("m", "b")
     market.claim(listing.id, "c1")
     with pytest.raises(ValueError, match="not claimed"):
-        market.deliver(listing.id, "c2", platform="p", content={},
-                       publish_fn=lambda listing, content: "x")
+        market.deliver(
+            listing.id, "c2", platform="p", content={}, publish_fn=lambda listing, content: "x"
+        )
 
 
 # ── 8b. svg_path_tools ──────────────────────────────────────────────

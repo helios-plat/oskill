@@ -117,14 +117,26 @@ class TestSerialization:
         from oskill.workflow_pipeline import workflow_from_dict, workflow_to_dict
 
         iv = InterviewState()
-        iv.add_question(InterviewQuestion(id="q1", title="目标", body="做什么?", recommended="A",
-                                          depends_on=[], facts_needed=["repo_lang"]))
+        iv.add_question(
+            InterviewQuestion(
+                id="q1",
+                title="目标",
+                body="做什么?",
+                recommended="A",
+                depends_on=[],
+                facts_needed=["repo_lang"],
+            )
+        )
         record_interview_answers(iv, {"q1": "A"})
         record_interview_facts(iv, {"repo_lang": "python"})
 
-        state = WorkflowState(idea="x", spec="spec", stage="IMPLEMENT",
-                              interview=iv,
-                              tickets=[Ticket("t1", "a"), Ticket("t2", "b", blocked_by=["t1"])])
+        state = WorkflowState(
+            idea="x",
+            spec="spec",
+            stage="IMPLEMENT",
+            interview=iv,
+            tickets=[Ticket("t1", "a"), Ticket("t2", "b", blocked_by=["t1"])],
+        )
         restored = workflow_from_dict(workflow_to_dict(state))
         assert restored.stage == "IMPLEMENT"
         assert restored.spec == "spec"

@@ -66,7 +66,9 @@ def rule_based_classifier(
             if isinstance(feature_val, bool) or isinstance(feature_val, str):
                 satisfied = (feature_val == threshold) if op == "eq" else (feature_val != threshold)
             else:
-                satisfied = oprim.evaluate_threshold_condition(float(feature_val), float(threshold), op)
+                satisfied = oprim.evaluate_threshold_condition(
+                    float(feature_val), float(threshold), op
+                )
 
             if satisfied:
                 n_satisfied += 1
@@ -134,11 +136,13 @@ def rule_based_veto_check(
             triggered = oprim.evaluate_threshold_condition(float(fact_val), float(threshold), op)
 
         if triggered:
-            triggered_vetos.append({
-                "name": name,
-                "severity": severity,
-                "detail": {"field": field, "value": fact_val, "threshold": threshold, "op": op},
-            })
+            triggered_vetos.append(
+                {
+                    "name": name,
+                    "severity": severity,
+                    "detail": {"field": field, "value": fact_val, "threshold": threshold, "op": op},
+                }
+            )
             if severity == "hard":
                 hard_veto = True
             else:

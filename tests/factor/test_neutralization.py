@@ -30,7 +30,7 @@ class TestFactorNeutralization:
         assert len(result) == len(signal)
 
     def test_regression_method_reduces_correlation(self):
-        """After regression neutralization, signal should have near-zero correlation with factors."""
+        """Regression neutralization should remove correlation with factors."""
         rng = np.random.default_rng(42)
         N = 100
         fe = pd.DataFrame({"F0": rng.normal(0, 1, N)})

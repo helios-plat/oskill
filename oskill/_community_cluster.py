@@ -6,17 +6,17 @@ Composition:
 
 Pure computation, no LLM.
 """
+
 from __future__ import annotations
 
-import math
 import random as _random
 
 from oprim._aii_graph_types import Community
 
-
 # ---------------------------------------------------------------------------
 # Pure-Python k-means (inline, no sklearn dependency)
 # ---------------------------------------------------------------------------
+
 
 def _sq_dist(a: list[float], b: list[float]) -> float:
     return sum((x - y) ** 2 for x, y in zip(a, b))
@@ -42,10 +42,7 @@ def _kmeans(
     first = rng.randrange(n)
     centers_idx = [first]
     while len(centers_idx) < k:
-        dists = [
-            min(_sq_dist(X[i], X[ci]) for ci in centers_idx)
-            for i in range(n)
-        ]
+        dists = [min(_sq_dist(X[i], X[ci]) for ci in centers_idx) for i in range(n)]
         total = sum(dists)
         if total == 0.0:
             break
@@ -106,6 +103,7 @@ def _elbow_k(X: list[list[float]], max_k: int = 10) -> int:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def community_cluster(
     *,
     ku_ids: list[str],
@@ -128,9 +126,7 @@ def community_cluster(
         List of Community objects (filtered by min_community_size).
     """
     if len(ku_ids) != len(embeddings):
-        raise ValueError(
-            f"ku_ids length ({len(ku_ids)}) != embeddings length ({len(embeddings)})"
-        )
+        raise ValueError(f"ku_ids length ({len(ku_ids)}) != embeddings length ({len(embeddings)})")
     if not ku_ids:
         return []
 
@@ -152,11 +148,13 @@ def community_cluster(
         members = [ku_ids[i] for i in range(len(X)) if labels[i] == j]
         if len(members) < min_community_size:
             continue
-        communities.append(Community(
-            label=members[0],
-            ku_ids=members,
-            centroid=centroids[j],
-            size=len(members),
-        ))
+        communities.append(
+            Community(
+                label=members[0],
+                ku_ids=members,
+                centroid=centroids[j],
+                size=len(members),
+            )
+        )
 
     return communities

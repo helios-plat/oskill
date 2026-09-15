@@ -1,13 +1,14 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import fnmatch
-import json
-import re
-import uuid
+
 from dataclasses import dataclass
-from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
+from ._types import (
+    OskillError,
+    TodoItem,
+)
+
 
 @dataclass
 class ToolScore:
@@ -15,11 +16,13 @@ class ToolScore:
     score: float
     reason: str
 
+
 @dataclass
 class HookCmd:
     event: str
     command: str
     matcher: str | None
+
 
 def apply_todo_update(
     todos: list[TodoItem],
@@ -62,12 +65,14 @@ def apply_todo_update(
     for todo in todos:
         if todo.id == todo_id:
             found = True
-            updated.append(TodoItem(
-                id=todo.id,
-                content=content if content is not None else todo.content,
-                status=status if status is not None else todo.status,
-                priority=priority if priority is not None else todo.priority,
-            ))
+            updated.append(
+                TodoItem(
+                    id=todo.id,
+                    content=content if content is not None else todo.content,
+                    status=status if status is not None else todo.status,
+                    priority=priority if priority is not None else todo.priority,
+                )
+            )
         else:
             updated.append(todo)
 

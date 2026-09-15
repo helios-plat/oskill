@@ -1,16 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import detect_language
+
 import ast
 import json
-import re
-import sys
-import os
-from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import detect_language
+
 
 def syntax_check(
     content: str,
@@ -43,25 +40,31 @@ def syntax_check(
         try:
             ast.parse(content)
         except SyntaxError as e:
-            errors.append({
-                "line": e.lineno or 1,
-                "message": str(e.msg),
-                "severity": 1,
-                "language": "python",
-            })
+            errors.append(
+                {
+                    "line": e.lineno or 1,
+                    "message": str(e.msg),
+                    "severity": 1,
+                    "language": "python",
+                }
+            )
         except Exception as e:  # pragma: no cover
-            errors.append({"line": 1, "message": str(e), "severity": 1, "language": "python"})  # pragma: no cover
+            errors.append(
+                {"line": 1, "message": str(e), "severity": 1, "language": "python"}
+            )  # pragma: no cover
 
     elif lang == "json":
         try:
             json.loads(content)
         except json.JSONDecodeError as e:
-            errors.append({
-                "line": e.lineno,
-                "message": e.msg,
-                "severity": 1,
-                "language": "json",
-            })
+            errors.append(
+                {
+                    "line": e.lineno,
+                    "message": e.msg,
+                    "severity": 1,
+                    "language": "json",
+                }
+            )
 
     # 其他语言：暂无错误（tree-sitter 扩展点）
     return errors

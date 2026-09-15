@@ -107,7 +107,8 @@ def title_prompt(article: str, *, n_candidates: int = 5, hook_level: int = 2) ->
         "标题规范: 不超过 64 字; 不用绝对化用语(最/第一/唯一/绝对); "
         "不用低俗/恐吓/诱导分享词; 保留文章核心信息。\n"
         "只返回一个 JSON 数组, 不要任何其他文字:\n"
-        f'[{{"title": "...", "hook_type": "悬念|数据|痛点|反差|平实", "reason": "为什么有效"}}] (共 {n_candidates} 个)'
+        f'[{{"title": "...", "hook_type": "悬念|数据|痛点|反差|平实", '
+        f'"reason": "为什么有效"}}] (共 {n_candidates} 个)'
     )
     return {"system": system, "user": f"文章内容:\n{article[:6000]}"}
 
@@ -193,9 +194,9 @@ def reviewer_prompt() -> dict[str, str]:
         "你是公众号内容审核官, 只审核不改写。依据下面四项标准判断这篇文章能否发布:\n"
         "1. topic_match: 是否严格贴合给定主题与要求\n"
         "2. compliance: 是否含公众号违禁/风险用语(如医疗功效极限词、金融收益承诺、"
-        "政治敏感话题、\"最/第一/唯一/绝对\"等绝对化用语)\n"
+        '政治敏感话题、"最/第一/唯一/绝对"等绝对化用语)\n'
         "3. image_match: 各小节配图是否与文字内容相关; 若某节配图状态是 missing 且"
-        '\"配图连续缺失轮次\">=2, 这属于外部图片服务的已知限制, 不应仅因为缺图就判不通过\n'
+        '"配图连续缺失轮次">=2, 这属于外部图片服务的已知限制, 不应仅因为缺图就判不通过\n'
         "4. readability: 分段、小标题、开头钩子、结尾引导是否符合公众号写作规范\n"
         "只返回 JSON, 不要任何其他文字:\n"
         '{"pass": true/false, "issues": [{"criterion": "topic_match|compliance|'
@@ -300,23 +301,58 @@ _COMPLIANCE_RULES: list[tuple[str, tuple[str, ...]]] = [
     (
         "absolute",
         (
-            "最", "第一", "唯一", "绝对", "100%", "百分之百", "国家级", "世界级",
-            "顶级", "极致", "首选", "全网", "史上", "空前", "绝无仅有", "最佳",
-            "最好", "最强", "最低价", "全网最低",
+            "最",
+            "第一",
+            "唯一",
+            "绝对",
+            "100%",
+            "百分之百",
+            "国家级",
+            "世界级",
+            "顶级",
+            "极致",
+            "首选",
+            "全网",
+            "史上",
+            "空前",
+            "绝无仅有",
+            "最佳",
+            "最好",
+            "最强",
+            "最低价",
+            "全网最低",
         ),
     ),
     (
         "medical",
         (
-            "治疗", "治愈", "根治", "药到病除", "包治", "疗效", "痊愈", "抗癌",
-            "降糖", "降压", "消炎", "除根", "立竿见影",
+            "治疗",
+            "治愈",
+            "根治",
+            "药到病除",
+            "包治",
+            "疗效",
+            "痊愈",
+            "抗癌",
+            "降糖",
+            "降压",
+            "消炎",
+            "除根",
+            "立竿见影",
         ),
     ),
     (
         "finance",
         (
-            "稳赚", "保本", "无风险", "收益保证", "躺赚", "暴富", "翻倍赚",
-            "理财高回报", "稳收益",
+            "稳赚",
+            "保本",
+            "无风险",
+            "收益保证",
+            "躺赚",
+            "暴富",
+            "翻倍赚",
+            "理财高回报",
+            "稳收益",
         ),
     ),
     (
@@ -353,7 +389,7 @@ def scan_compliance(text: str) -> list[ComplianceHit]:
     for criterion, pattern in _COMPILED_RULES:
         for m in pattern.finditer(text):
             start, end = m.start(), m.end()
-            snippet = text[max(0, start - 15): end + 15].replace("\n", " ")
+            snippet = text[max(0, start - 15) : end + 15].replace("\n", " ")
             hits.append(
                 ComplianceHit(
                     criterion=criterion,

@@ -5,10 +5,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
 import oprim
-
-from oskill.conformal.split_cp import conformal_prediction_interval
+import pandas as pd
 
 
 def conformal_with_change_points(
@@ -83,10 +81,12 @@ def conformal_with_change_points(
             cps = sorted(int(cp) for cp in change_points if 0 < cp < T)
     elif detection_method == "bocpd":
         from oskill import bocpd_bayesian
+
         result_bocpd = bocpd_bayesian(acts, **kwargs)
         cps = sorted(int(cp) for cp in result_bocpd["change_points"] if 0 < cp < T)
     elif detection_method == "pelt":
         from oskill import pelt_change_point
+
         result_pelt = pelt_change_point(acts, **kwargs)
         cps = sorted(int(cp) for cp in result_pelt["change_points"] if 0 < cp < T)
     else:
@@ -131,13 +131,15 @@ def conformal_with_change_points(
         upper[start:end] = preds[start:end] + q
 
     fingerprint = oprim.sha256_hash(
-        oprim.canonical_json({
-            "alpha": alpha,
-            "detection_method": detection_method,
-            "min_segment_length": min_segment_length,
-            "n_change_points": len(cps),
-            "T": T,
-        })
+        oprim.canonical_json(
+            {
+                "alpha": alpha,
+                "detection_method": detection_method,
+                "min_segment_length": min_segment_length,
+                "n_change_points": len(cps),
+                "T": T,
+            }
+        )
     )
 
     return {

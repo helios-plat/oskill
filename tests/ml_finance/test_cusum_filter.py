@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.cusum_filter import cusum_filter
 
@@ -50,9 +49,9 @@ class TestCusumFilter:
     def test_asymmetric_method_only_detects_upward(self):
         """Asymmetric method should only detect upward moves."""
         x = np.zeros(20)
-        x[5] = 0.5   # upward jump
+        x[5] = 0.5  # upward jump
         x[15] = -0.5  # downward jump (same magnitude)
-        sym_result = cusum_filter(x, threshold=0.1, method="symmetric")
+        _sym_result = cusum_filter(x, threshold=0.1, method="symmetric")
         asym_result = cusum_filter(x, threshold=0.1, method="asymmetric")
         # Symmetric detects both; asymmetric detects only upward
         assert 5 in asym_result["event_indices"]
@@ -62,8 +61,8 @@ class TestCusumFilter:
         """After an event, accumulators should reset, preventing back-to-back triggers."""
         # Two jumps closely spaced: only second should trigger new event after reset
         x = np.zeros(30)
-        x[5] = 0.5   # first jump → event
-        x[6] = 0.5   # second jump right after → separate event
+        x[5] = 0.5  # first jump → event
+        x[6] = 0.5  # second jump right after → separate event
         result = cusum_filter(x, threshold=0.1)
         # Each large jump should be detected independently
         assert result["n_events"] >= 1

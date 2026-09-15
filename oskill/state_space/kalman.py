@@ -117,13 +117,16 @@ def kalman_filter_pipeline(
         n_state = m  # default: state dim = obs dim
 
     F, H, Q, R = _build_matrices(
-        n_state, m, transition_matrix, observation_matrix,
-        process_noise, observation_noise
+        n_state, m, transition_matrix, observation_matrix, process_noise, observation_noise
     )
 
     # Initial state and covariance
     x0 = np.zeros(n_state) if initial_state is None else np.asarray(initial_state, dtype=float)
-    P0 = np.eye(n_state) if initial_covariance is None else np.asarray(initial_covariance, dtype=float)
+    P0 = (
+        np.eye(n_state)
+        if initial_covariance is None
+        else np.asarray(initial_covariance, dtype=float)
+    )
 
     n_iter = 0
 
@@ -239,13 +242,21 @@ def kalman_smoother(
         )
 
         F_mat, H_mat, Q, R = _build_matrices(
-            n_state_guess, m, transition_matrix, observation_matrix,
-            process_noise, observation_noise
+            n_state_guess,
+            m,
+            transition_matrix,
+            observation_matrix,
+            process_noise,
+            observation_noise,
         )
         n_state = n_state_guess
 
         x0 = np.zeros(n_state) if initial_state is None else np.asarray(initial_state, dtype=float)
-        P0 = np.eye(n_state) if initial_covariance is None else np.asarray(initial_covariance, dtype=float)
+        P0 = (
+            np.eye(n_state)
+            if initial_covariance is None
+            else np.asarray(initial_covariance, dtype=float)
+        )
 
         xs, Ps, x_preds, P_preds, log_lik = _kalman_filter_core(obs, F_mat, H_mat, Q, R, x0, P0)
 

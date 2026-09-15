@@ -6,10 +6,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-import pytest
-
-from oskill._schemas import ReferenceSet, ShotFrame
-from oskill.select_reference import SelectReferenceError, select_reference
+from oskill._schemas import ShotFrame
+from oskill.select_reference import select_reference
 
 
 @dataclass
@@ -50,11 +48,13 @@ class TestSelectReference:
     async def test_single_character_single_environment(self, tmp_path: Path) -> None:
         """Single char + env present in history → ReferenceSet populated."""
         frame = _make_frame("s001", 0, ["hero"], "forest", tmp_path)
-        llm = _make_llm({
-            "character_refs": {"hero": str(frame.frame_path)},
-            "environment_refs": {"forest": str(frame.frame_path)},
-            "selected_from": ["s001"],
-        })
+        llm = _make_llm(
+            {
+                "character_refs": {"hero": str(frame.frame_path)},
+                "environment_refs": {"forest": str(frame.frame_path)},
+                "selected_from": ["s001"],
+            }
+        )
         result = await select_reference(
             llm=llm,
             current_shot=_Shot("s002"),
@@ -70,14 +70,16 @@ class TestSelectReference:
         """Multiple characters found across different shots."""
         f1 = _make_frame("s001", 0, ["hero"], "city", tmp_path)
         f2 = _make_frame("s002", 1, ["villain"], "city", tmp_path)
-        llm = _make_llm({
-            "character_refs": {
-                "hero": str(f1.frame_path),
-                "villain": str(f2.frame_path),
-            },
-            "environment_refs": {"city": str(f1.frame_path)},
-            "selected_from": ["s001", "s002"],
-        })
+        llm = _make_llm(
+            {
+                "character_refs": {
+                    "hero": str(f1.frame_path),
+                    "villain": str(f2.frame_path),
+                },
+                "environment_refs": {"city": str(f1.frame_path)},
+                "selected_from": ["s001", "s002"],
+            }
+        )
         result = await select_reference(
             llm=llm,
             current_shot=_Shot("s003"),
@@ -88,16 +90,16 @@ class TestSelectReference:
         assert set(result.character_refs.keys()) == {"hero", "villain"}
         assert len(result.selected_from) == 2
 
-    async def test_character_not_in_history_absent_from_result(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_character_not_in_history_absent_from_result(self, tmp_path: Path) -> None:
         """Character that never appeared → not in character_refs (needs generation)."""
         frame = _make_frame("s001", 0, ["hero"], "forest", tmp_path)
-        llm = _make_llm({
-            "character_refs": {"hero": str(frame.frame_path)},
-            "environment_refs": {},
-            "selected_from": ["s001"],
-        })
+        llm = _make_llm(
+            {
+                "character_refs": {"hero": str(frame.frame_path)},
+                "environment_refs": {},
+                "selected_from": ["s001"],
+            }
+        )
         result = await select_reference(
             llm=llm,
             current_shot=_Shot("s002"),
@@ -112,11 +114,13 @@ class TestSelectReference:
         """Same environment appears multiple times → best frame selected."""
         f1 = _make_frame("s001", 0, ["hero"], "forest", tmp_path)
         f2 = _make_frame("s002", 1, ["hero"], "forest", tmp_path)
-        llm = _make_llm({
-            "character_refs": {},
-            "environment_refs": {"forest": str(f2.frame_path)},
-            "selected_from": ["s002"],
-        })
+        llm = _make_llm(
+            {
+                "character_refs": {},
+                "environment_refs": {"forest": str(f2.frame_path)},
+                "selected_from": ["s002"],
+            }
+        )
         result = await select_reference(
             llm=llm,
             current_shot=_Shot("s003"),
@@ -152,11 +156,15 @@ class TestSelectReference:
 
         def _llm(messages: list, **_: object) -> dict:
             received_messages.extend(messages)
-            return {"content": json.dumps({
-                "character_refs": {"hero": str(frame.frame_path)},
-                "environment_refs": {},
-                "selected_from": ["s001"],
-            })}
+            return {
+                "content": json.dumps(
+                    {
+                        "character_refs": {"hero": str(frame.frame_path)},
+                        "environment_refs": {},
+                        "selected_from": ["s001"],
+                    }
+                )
+            }
 
         await select_reference(
             llm=_llm,

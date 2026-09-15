@@ -57,7 +57,7 @@ class TestFormatCheck:
 
     def test_well_formatted_file(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         path = tmp_path / "doc.typ"
-        path.write_text("#set text(font: \"serif\")\n", encoding="utf-8")
+        path.write_text('#set text(font: "serif")\n', encoding="utf-8")
 
         def fake_bash_exec(command: str, **_: object) -> _ShellResult:
             if command.startswith("command -v typstyle"):
@@ -72,7 +72,7 @@ class TestFormatCheck:
 
     def test_needs_format_then_apply(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         path = tmp_path / "doc.typ"
-        path.write_text("#set text(font: \"serif\")\n", encoding="utf-8")
+        path.write_text('#set text(font: "serif")\n', encoding="utf-8")
         calls: list[str] = []
 
         def fake_bash_exec(command: str, **_: object) -> _ShellResult:

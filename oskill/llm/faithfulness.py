@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from oprim import canonical_json, sha256_hash
-
 
 _DEFAULT_CLAIM_EXTRACTOR_TEMPLATE = (
     "Extract atomic factual claims from the following response. "
@@ -73,11 +73,7 @@ def faithfulness_score(
     raw_claims_text = extraction_result.get("content", "")
 
     # Parse claims: one per line, skip empty lines
-    claims = [
-        line.strip()
-        for line in raw_claims_text.splitlines()
-        if line.strip()
-    ]
+    claims = [line.strip() for line in raw_claims_text.splitlines() if line.strip()]
 
     # Edge case: no claims extracted → vacuously faithful
     if not claims:

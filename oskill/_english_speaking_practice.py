@@ -6,15 +6,15 @@ LLM feedback must be encouraging/guiding — never a direct correction or model 
 
 from __future__ import annotations
 
-import json
-from typing import Any, Callable, Awaitable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from oprim._mneme_speech_types import PronunciationResult, SpeakingPracticeResult
-
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 async def english_speaking_practice(
     *,
@@ -51,20 +51,20 @@ async def english_speaking_practice(
 
     # Generate opening teacher utterance
     ai_text = await _llm_text(history, llm=llm, model=model)
-    ai_audio_b64 = await tts(text=ai_text, language="en")
+    _ai_audio_b64 = await tts(text=ai_text, language="en")
     history.append({"role": "assistant", "content": ai_text})
 
     for turn_idx in range(max_turns):
         # Simulate student audio with placeholder — real callers pass actual audio
-        student_audio_b64 = await _await_if_coro(tts(text="[student input placeholder]", language="en"))
+        student_audio_b64 = await _await_if_coro(
+            tts(text="[student input placeholder]", language="en")
+        )
 
         # STT: transcribe student audio
         student_text = await stt(audio_b64=student_audio_b64, language="en")
 
         # Pronunciation evaluation against the student's own utterance
-        pron = await pronunciation_eval(
-            audio_b64=student_audio_b64, reference_text=student_text
-        )
+        pron = await pronunciation_eval(audio_b64=student_audio_b64, reference_text=student_text)
         pronunciation_scores.append(pron)
 
         # Append student turn to history
@@ -76,18 +76,20 @@ async def english_speaking_practice(
         ai_feedback = await _llm_text(history, llm=llm, model=model)
         ai_feedback = _ensure_encouraging(ai_feedback)
         history.append({"role": "assistant", "content": ai_feedback})
-        ai_audio_b64 = await tts(text=ai_feedback, language="en")
+        _ai_audio_b64 = await tts(text=ai_feedback, language="en")
 
-        turns.append({
-            "turn": turn_idx + 1,
-            "student_text": student_text,
-            "ai_feedback": ai_feedback,
-            "pronunciation": {
-                "overall": pron.overall_score,
-                "fluency": pron.fluency_score,
-                "accuracy": pron.accuracy_score,
-            },
-        })
+        turns.append(
+            {
+                "turn": turn_idx + 1,
+                "student_text": student_text,
+                "ai_feedback": ai_feedback,
+                "pronunciation": {
+                    "overall": pron.overall_score,
+                    "fluency": pron.fluency_score,
+                    "accuracy": pron.accuracy_score,
+                },
+            }
+        )
 
     overall_progress = (
         sum(p.overall_score for p in pronunciation_scores) / len(pronunciation_scores)
@@ -105,6 +107,7 @@ async def english_speaking_practice(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _opening_prompt(topic: str) -> str:
     return (
@@ -132,6 +135,7 @@ def _feedback_prompt(student_text: str, pron: PronunciationResult) -> str:
 async def _llm_text(history: list[dict], *, llm: Callable[..., Any], model: str) -> str:
     """Call LLM and extract text from the response."""
     import asyncio
+
     coro_or_result = llm(messages=history, max_tokens=256)
     if asyncio.iscoroutine(coro_or_result):
         response = await coro_or_result
@@ -160,14 +164,14 @@ def _ensure_encouraging(text: str) -> str:
     )
     lines = text.splitlines()
     filtered = [
-        line for line in lines
-        if not any(line.lower().strip().startswith(p) for p in bad_prefixes)
+        line for line in lines if not any(line.lower().strip().startswith(p) for p in bad_prefixes)
     ]
     return "\n".join(filtered).strip() or text.strip()
 
 
 async def _await_if_coro(value: Any) -> Any:
     import asyncio
+
     if asyncio.iscoroutine(value):
         return await value
     return value

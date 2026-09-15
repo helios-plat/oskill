@@ -10,10 +10,10 @@ from oskill.validation import (
     walk_forward_optimization,
 )
 
-
 # ============================================================
 # walk_forward_optimization tests
 # ============================================================
+
 
 class TestWalkForwardOptimization:
     """Tests for walk_forward_optimization."""
@@ -91,8 +91,7 @@ class TestWalkForwardOptimization:
     def test_integration_mock_rolling_window(self, mocker):
         """Integration: oprim.rolling_window_split is called."""
         mock_rw = mocker.patch(
-            "oskill.validation.oprim.rolling_window_split",
-            return_value=[(0, 49), (50, 99)]
+            "oskill.validation.oprim.rolling_window_split", return_value=[(0, 49), (50, 99)]
         )
         mocker.patch("oskill.validation.oprim.purge_embargo_split", return_value=[])
         walk_forward_optimization(500, is_window=100, oos_window=50)
@@ -100,12 +99,9 @@ class TestWalkForwardOptimization:
 
     def test_integration_mock_purge_embargo(self, mocker):
         """Integration: oprim.purge_embargo_split is called."""
-        mock_pe = mocker.patch(
-            "oskill.validation.oprim.purge_embargo_split", return_value=[]
-        )
+        mock_pe = mocker.patch("oskill.validation.oprim.purge_embargo_split", return_value=[])
         mocker.patch(
-            "oskill.validation.oprim.rolling_window_split",
-            return_value=[(0, 49), (50, 99)]
+            "oskill.validation.oprim.rolling_window_split", return_value=[(0, 49), (50, 99)]
         )
         walk_forward_optimization(500, is_window=100, oos_window=50)
         mock_pe.assert_called_once()
@@ -114,6 +110,7 @@ class TestWalkForwardOptimization:
 # ============================================================
 # cpcv_pipeline tests
 # ============================================================
+
 
 class TestCpcvPipeline:
     """Tests for cpcv_pipeline."""
@@ -136,6 +133,7 @@ class TestCpcvPipeline:
 
     def test_with_backtest_fn(self):
         """backtest_fn given: full pipeline runs."""
+
         def mock_bt(train_idx, test_idx):
             return np.random.default_rng(42).normal(0.001, 0.01, len(test_idx))
 
@@ -153,8 +151,7 @@ class TestCpcvPipeline:
 
     def test_no_purge_no_embargo_standard_kfold(self):
         """label_horizon=0, embargo_pct=0 → standard combinatorial K-fold."""
-        result = cpcv_pipeline(1000, n_folds=6, n_test_groups=2,
-                               label_horizon=0, embargo_pct=0.0)
+        result = cpcv_pipeline(1000, n_folds=6, n_test_groups=2, label_horizon=0, embargo_pct=0.0)
         # All indices should be covered
         for split in result["splits"]:
             total = len(split["train_idx"]) + len(split["test_idx"])
@@ -185,10 +182,17 @@ class TestCpcvPipeline:
 
     def test_integration_mock_bootstrap_ci(self, mocker):
         """Integration: oprim.bootstrap_ci called with backtest_fn."""
-        mock_ci = mocker.patch("oskill.validation.oprim.bootstrap_ci", return_value={
-            "point_estimate": 1.0, "ci_lower": 0.5, "ci_upper": 1.5,
-            "se": 0.2, "n_bootstrap": 100, "method": "percentile",
-        })
+        mock_ci = mocker.patch(
+            "oskill.validation.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 1.0,
+                "ci_lower": 0.5,
+                "ci_upper": 1.5,
+                "se": 0.2,
+                "n_bootstrap": 100,
+                "method": "percentile",
+            },
+        )
         mocker.patch("oskill.validation.oprim.distribution_summary", return_value={})
 
         def mock_bt(train_idx, test_idx):
@@ -199,10 +203,17 @@ class TestCpcvPipeline:
 
     def test_integration_mock_distribution_summary(self, mocker):
         """Integration: oprim.distribution_summary called."""
-        mocker.patch("oskill.validation.oprim.bootstrap_ci", return_value={
-            "point_estimate": 1.0, "ci_lower": 0.5, "ci_upper": 1.5,
-            "se": 0.2, "n_bootstrap": 100, "method": "percentile",
-        })
+        mocker.patch(
+            "oskill.validation.oprim.bootstrap_ci",
+            return_value={
+                "point_estimate": 1.0,
+                "ci_lower": 0.5,
+                "ci_upper": 1.5,
+                "se": 0.2,
+                "n_bootstrap": 100,
+                "method": "percentile",
+            },
+        )
         mock_ds = mocker.patch("oskill.validation.oprim.distribution_summary", return_value={})
 
         def mock_bt(train_idx, test_idx):
@@ -214,6 +225,7 @@ class TestCpcvPipeline:
     def test_academic_path_count(self):
         """Academic: verify path count formula per LdP Ch.12."""
         from math import comb
+
         result = cpcv_pipeline(1000, n_folds=6, n_test_groups=2)
         expected_combos = comb(6, 2)
         # LdP: n_paths = C(n_folds-1, n_test_groups-1)
@@ -223,6 +235,7 @@ class TestCpcvPipeline:
 
     def test_path_reconstruction_independent_combos(self):
         """LdP Ch.12: each path uses different combo per fold, no combo reuse within path."""
+
         def tracking_bt(train_idx, test_idx):
             rng = np.random.default_rng(len(train_idx))
             return rng.normal(0.001, 0.01, len(test_idx))
@@ -245,7 +258,7 @@ class TestCpcvPipeline:
             call_log.append(len(test_idx))
             return np.random.default_rng(42).normal(0.001, 0.01, len(test_idx))
 
-        result = cpcv_pipeline(n_total, n_folds=n_folds, n_test_groups=2, backtest_fn=logging_bt)
+        _result = cpcv_pipeline(n_total, n_folds=n_folds, n_test_groups=2, backtest_fn=logging_bt)
         # Each combo tests 2 folds, so test_idx length = 2 * fold_size = 200
         assert all(length == 2 * fold_size for length in call_log)
 
@@ -253,6 +266,7 @@ class TestCpcvPipeline:
 # ============================================================
 # regime_aware_rolling tests
 # ============================================================
+
 
 class TestRegimeAwareRolling:
     """Tests for regime_aware_rolling."""
@@ -277,10 +291,12 @@ class TestRegimeAwareRolling:
         """reset_on_regime_change=True vs False differ."""
         data = pd.Series(np.random.default_rng(42).normal(0, 1, 100))
         labels = pd.Series(["A"] * 50 + ["B"] * 50, index=data.index)
-        r_reset = regime_aware_rolling(data, labels, window=10, stat_fn=np.mean,
-                                       reset_on_regime_change=True)
-        r_carry = regime_aware_rolling(data, labels, window=10, stat_fn=np.mean,
-                                       reset_on_regime_change=False)
+        r_reset = regime_aware_rolling(
+            data, labels, window=10, stat_fn=np.mean, reset_on_regime_change=True
+        )
+        r_carry = regime_aware_rolling(
+            data, labels, window=10, stat_fn=np.mean, reset_on_regime_change=False
+        )
         # Carry-over should have more non-NaN values at regime boundary
         assert r_carry.iloc[55] is not np.nan or r_reset.iloc[50] is np.nan
 
@@ -334,10 +350,11 @@ class TestRegimeAwareRolling:
 
     def test_integration_mock_regime_filter(self, mocker):
         """Integration: oprim.regime_filter_data called per regime."""
-        mock_rf = mocker.patch("oskill.validation.oprim.regime_filter_data",
-                               return_value=pd.DataFrame({"value": [1, 2, 3]}))
-        mocker.patch("oskill.validation.oprim.rolling_window_split",
-                     return_value=[(0, 4), (1, 5)])
+        mock_rf = mocker.patch(
+            "oskill.validation.oprim.regime_filter_data",
+            return_value=pd.DataFrame({"value": [1, 2, 3]}),
+        )
+        mocker.patch("oskill.validation.oprim.rolling_window_split", return_value=[(0, 4), (1, 5)])
         data = pd.Series(np.ones(20))
         labels = pd.Series(["A"] * 10 + ["B"] * 10, index=data.index)
         regime_aware_rolling(data, labels, window=5, stat_fn=np.mean)
@@ -345,10 +362,13 @@ class TestRegimeAwareRolling:
 
     def test_integration_mock_rolling_window_split(self, mocker):
         """Integration: oprim.rolling_window_split called within regime."""
-        mock_rw = mocker.patch("oskill.validation.oprim.rolling_window_split",
-                               return_value=[(0, 4), (1, 5), (2, 6)])
-        mocker.patch("oskill.validation.oprim.regime_filter_data",
-                     return_value=pd.DataFrame({"value": [1, 2, 3]}))
+        mock_rw = mocker.patch(
+            "oskill.validation.oprim.rolling_window_split", return_value=[(0, 4), (1, 5), (2, 6)]
+        )
+        mocker.patch(
+            "oskill.validation.oprim.regime_filter_data",
+            return_value=pd.DataFrame({"value": [1, 2, 3]}),
+        )
         data = pd.Series(np.ones(20))
         labels = pd.Series(["A"] * 20, index=data.index)
         regime_aware_rolling(data, labels, window=5, stat_fn=np.mean)

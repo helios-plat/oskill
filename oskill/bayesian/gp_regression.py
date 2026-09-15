@@ -9,16 +9,16 @@ import pandas as pd
 from scipy.linalg import cho_factor, cho_solve, solve_triangular
 from scipy.optimize import minimize
 
-
 # ---------------------------------------------------------------------------
 # Kernel implementations
 # ---------------------------------------------------------------------------
 
+
 def _pairwise_sq_dist(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     """Compute pairwise squared Euclidean distances between rows of A and B."""
     # ||a - b||^2 = ||a||^2 + ||b||^2 - 2 a·b
-    A2 = (A ** 2).sum(axis=1, keepdims=True)
-    B2 = (B ** 2).sum(axis=1, keepdims=True)
+    A2 = (A**2).sum(axis=1, keepdims=True)
+    B2 = (B**2).sum(axis=1, keepdims=True)
     sq = A2 + B2.T - 2.0 * A @ B.T
     return np.maximum(sq, 0.0)
 
@@ -29,33 +29,33 @@ def _pairwise_dist(A: np.ndarray, B: np.ndarray) -> np.ndarray:
 
 def _rbf_kernel(A: np.ndarray, B: np.ndarray, params: dict) -> np.ndarray:
     sigma_f = params.get("sigma_f", 1.0)
-    l = params.get("length_scale", 1.0)
-    return sigma_f ** 2 * np.exp(-_pairwise_sq_dist(A, B) / (2.0 * l ** 2))
+    length_scale = params.get("length_scale", 1.0)
+    return sigma_f**2 * np.exp(-_pairwise_sq_dist(A, B) / (2.0 * length_scale**2))
 
 
 def _matern_kernel(A: np.ndarray, B: np.ndarray, params: dict) -> np.ndarray:
     """Matern nu=1.5 kernel."""
     sigma_f = params.get("sigma_f", 1.0)
-    l = params.get("length_scale", 1.0)
+    length_scale = params.get("length_scale", 1.0)
     r = _pairwise_dist(A, B)
-    sqrt3_r_l = np.sqrt(3.0) * r / l
-    return sigma_f ** 2 * (1.0 + sqrt3_r_l) * np.exp(-sqrt3_r_l)
+    sqrt3_r_l = np.sqrt(3.0) * r / length_scale
+    return sigma_f**2 * (1.0 + sqrt3_r_l) * np.exp(-sqrt3_r_l)
 
 
 def _rational_quadratic_kernel(A: np.ndarray, B: np.ndarray, params: dict) -> np.ndarray:
     sigma_f = params.get("sigma_f", 1.0)
-    l = params.get("length_scale", 1.0)
+    length_scale = params.get("length_scale", 1.0)
     alpha = params.get("alpha", 1.0)
     r2 = _pairwise_sq_dist(A, B)
-    return sigma_f ** 2 * (1.0 + r2 / (2.0 * alpha * l ** 2)) ** (-alpha)
+    return sigma_f**2 * (1.0 + r2 / (2.0 * alpha * length_scale**2)) ** (-alpha)
 
 
 def _periodic_kernel(A: np.ndarray, B: np.ndarray, params: dict) -> np.ndarray:
     sigma_f = params.get("sigma_f", 1.0)
-    l = params.get("length_scale", 1.0)
+    length_scale = params.get("length_scale", 1.0)
     period = params.get("period", 1.0)
     r = _pairwise_dist(A, B)
-    return sigma_f ** 2 * np.exp(-2.0 * np.sin(np.pi * r / period) ** 2 / l ** 2)
+    return sigma_f**2 * np.exp(-2.0 * np.sin(np.pi * r / period) ** 2 / length_scale**2)
 
 
 _KERNEL_FACTORIES = {
@@ -112,7 +112,6 @@ def _optimize_hyperparams(
     """Optimize kernel hyperparameters in log-space using L-BFGS-B."""
     kernel_fn = _KERNEL_FACTORIES[kernel]
     param_names = _PARAM_NAMES[kernel]
-    all_names = param_names + ["noise_variance"]
     all_vals = [kernel_params[k] for k in param_names] + [noise_variance]
 
     def neg_lml(log_theta: np.ndarray) -> float:

@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import minimize
-
 from oprim import hawkes_nll
+from scipy.optimize import minimize
 
 
 def fit_hawkes(
@@ -47,11 +46,13 @@ def fit_hawkes(
     best_nll = np.inf
 
     for _ in range(n_restarts):
-        x0 = np.array([
-            rng.uniform(-5, -1),
-            rng.uniform(-5, -1),
-            rng.uniform(-3, 1),
-        ])
+        x0 = np.array(
+            [
+                rng.uniform(-5, -1),
+                rng.uniform(-5, -1),
+                rng.uniform(-3, 1),
+            ]
+        )
         try:
             result = minimize(
                 hawkes_nll,

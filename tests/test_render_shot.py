@@ -1,12 +1,12 @@
 """Tests for render_shot."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from oprim._shot_types import ShotResult
+
 from oskill._render_shot import render_shot
 
 
@@ -15,7 +15,6 @@ def _clean_html():
 
 
 class TestRenderShot:
-
     @patch("oskill._render_shot.render_html_to_mp4", new_callable=AsyncMock)
     async def test_code_render_returns_shot_result(self, mock_r, tmp_path):
         out = tmp_path / "shot.mp4"
@@ -43,6 +42,7 @@ class TestRenderShot:
     @patch("oskill._render_shot.render_html_to_mp4", new_callable=AsyncMock)
     async def test_code_render_html_error_is_captured(self, mock_r, tmp_path):
         from oprim._render_html_to_mp4 import RenderHtmlError
+
         mock_r.side_effect = RenderHtmlError("Unsafe HTML: violations")
         out = tmp_path / "s.mp4"
         result = await render_shot(
@@ -81,6 +81,7 @@ class TestRenderShot:
     @patch("oskill._render_shot.video_generate", new_callable=AsyncMock)
     async def test_generative_error_captured_not_raised(self, mock_gen, tmp_path):
         from oprim._video_generate import VideoGenError
+
         mock_gen.side_effect = VideoGenError("provider offline")
         out = tmp_path / "gen.mp4"
         result = await render_shot(

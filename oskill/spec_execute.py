@@ -121,8 +121,12 @@ class SpecExecutor:
         spec = parse_spec(spec_text)
         check = validate_spec(spec)
         if not check["ok"]:
-            return {"ok": False, "status": "invalid_spec",
-                    "missing": check["missing"], "spec": spec}
+            return {
+                "ok": False,
+                "status": "invalid_spec",
+                "missing": check["missing"],
+                "spec": spec,
+            }
 
         # 任务拆解: 缺省按验收标准条目
         if splitter is not None:
@@ -136,9 +140,14 @@ class SpecExecutor:
                 r = await implementer(task, i)
             except Exception as e:  # noqa: BLE001
                 r = {"ok": False, "error": f"{type(e).__name__}: {e}"[:300]}
-            results.append({"task": task[:200], "ok": bool(r.get("ok")),
-                            "output": str(r.get("output", ""))[:500],
-                            "error": str(r.get("error", ""))[:300]})
+            results.append(
+                {
+                    "task": task[:200],
+                    "ok": bool(r.get("ok")),
+                    "output": str(r.get("output", ""))[:500],
+                    "error": str(r.get("error", ""))[:300],
+                }
+            )
 
         # 验收核对 (测试门)
         gate: dict[str, Any] = {"ok": None, "output": ""}

@@ -81,9 +81,7 @@ def merkle_batch_proof(event_hashes: list[bytes], target_index: int) -> dict:
     if not event_hashes:
         raise ValueError("event_hashes must not be empty")
     if not isinstance(target_index, int) or target_index < 0 or target_index >= len(event_hashes):
-        raise ValueError(
-            f"target_index {target_index!r} out of range [0, {len(event_hashes)})"
-        )
+        raise ValueError(f"target_index {target_index!r} out of range [0, {len(event_hashes)})")
 
     root = rfc6962_merkle_root(event_hashes)
     proof = rfc6962_inclusion_proof(event_hashes, target_index)

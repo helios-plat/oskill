@@ -1,4 +1,5 @@
 """Tests for epstein_zin_solver (Bansal-Yaron 2004)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -19,8 +20,12 @@ BY_PARAMS: dict = {
 def test_required_keys() -> None:
     result = epstein_zin_solver(BY_PARAMS, n_grid=20, max_iter=50)
     expected_keys = (
-        "value_function", "consumption_policy", "wealth_consumption_ratio",
-        "equity_premium_implied", "converged", "iterations",
+        "value_function",
+        "consumption_policy",
+        "wealth_consumption_ratio",
+        "equity_premium_implied",
+        "converged",
+        "iterations",
     )
     for key in expected_keys:
         assert key in result

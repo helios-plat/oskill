@@ -11,7 +11,8 @@ NL patterns.
 from __future__ import annotations
 
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def agent_form_synthesize(
@@ -41,8 +42,9 @@ def agent_form_synthesize(
                         "role": "system",
                         "content": (
                             "You are an agent form generator.  Output a JSON object with keys: "
-                            "name, description, tools (list of tool names), instructions (system prompt), "
-                            "model (optional, default 'claude-sonnet-4-6'), handoffs (optional dict)."
+                            "name, description, tools (list of tool names), instructions "
+                            "(system prompt), model (optional, default 'claude-sonnet-4-6'), "
+                            "handoffs (optional dict)."
                             "\nOutput ONLY valid JSON between ```json and ```."
                         ),
                     },
@@ -57,7 +59,11 @@ def agent_form_synthesize(
             m = re.search(r"```json\s*(.*?)\s*```", raw, re.DOTALL)
             if m:
                 return {**_default_form(user_request), **json.loads(m.group(1))}
-            return {**_default_form(user_request), **json.loads(raw)} if raw.strip().startswith("{") else _default_form(user_request)
+            return (
+                {**_default_form(user_request), **json.loads(raw)}
+                if raw.strip().startswith("{")
+                else _default_form(user_request)
+            )
         except Exception:
             return _default_form(user_request)
 

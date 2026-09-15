@@ -9,7 +9,8 @@ conflicts intelligently. Falls back to ``diff3`` markers when LLM unavailable.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def worktree_conflict_resolve(
@@ -39,23 +40,38 @@ def worktree_conflict_resolve(
     # detect conflict blocks (<<<<<<< / ======= / >>>>>>>)
     ours_lines = ours_content.splitlines()
     theirs_lines = theirs_content.splitlines()
-    base_lines = base_content.splitlines()
 
     conflicts = _detect_conflicts(ours_lines, theirs_lines)
     if not conflicts:
         # no conflicts — just prefer ours
-        return {"status": "resolved", "resolved_content": ours_content, "conflict_blocks": 0, "strategy": "clean_ours"}
+        return {
+            "status": "resolved",
+            "resolved_content": ours_content,
+            "conflict_blocks": 0,
+            "strategy": "clean_ours",
+        }
 
     # simple: ours wins on all non-overlapping changes
     if base_content == ours_content:
-        return {"status": "resolved", "resolved_content": theirs_content, "conflict_blocks": 0, "strategy": "clean_theirs"}
+        return {
+            "status": "resolved",
+            "resolved_content": theirs_content,
+            "conflict_blocks": 0,
+            "strategy": "clean_theirs",
+        }
     if base_content == theirs_content:
-        return {"status": "resolved", "resolved_content": ours_content, "conflict_blocks": 0, "strategy": "clean_ours"}
+        return {
+            "status": "resolved",
+            "resolved_content": ours_content,
+            "conflict_blocks": 0,
+            "strategy": "clean_ours",
+        }
 
     # LLM resolution
     if llm_caller is not None:
         try:
             import re as _re
+
             prompt = (
                 f"Resolve the following git merge conflict in file {file_path}.\n\n"
                 f"--- BASE ---\n{base_content[:3000]}\n\n"
@@ -65,9 +81,14 @@ def worktree_conflict_resolve(
             )
             out = llm_caller(messages=[{"role": "user", "content": prompt}], tools=None, config=ctx)
             raw = out.get("content", "") if isinstance(out, dict) else str(out)
-            m = _re.search(r"```(?:\w*)\n?(.*?)\n?```", raw, re.DOTALL)
+            m = _re.search(r"```(?:\w*)\n?(.*?)\n?```", raw, _re.DOTALL)
             if m:
-                return {"status": "resolved", "resolved_content": m.group(1), "conflict_blocks": len(conflicts), "strategy": "llm"}
+                return {
+                    "status": "resolved",
+                    "resolved_content": m.group(1),
+                    "conflict_blocks": len(conflicts),
+                    "strategy": "llm",
+                }
         except Exception:
             pass
 
@@ -77,17 +98,22 @@ def worktree_conflict_resolve(
     resolved_lines.append(f"# {len(conflicts)} conflicts — used 'ours' version")
     for start, mid, end in conflicts:
         resolved_lines.append(f"# --- theirs version (lines {mid}-{end}) ---")
-        resolved_lines.extend(f"# > {l}" for l in theirs_lines[mid:end])
+        resolved_lines.extend(f"# > {line}" for line in theirs_lines[mid:end])
 
-    return {"status": "partial", "resolved_content": "\n".join(resolved_lines), "conflict_blocks": len(conflicts), "strategy": "ours_with_comments"}
+    return {
+        "status": "partial",
+        "resolved_content": "\n".join(resolved_lines),
+        "conflict_blocks": len(conflicts),
+        "strategy": "ours_with_comments",
+    }
 
 
 def _detect_conflicts(ours: list[str], theirs: list[str]) -> list[tuple[int, int, int]]:
     """Find <<<<<<< / ======= / >>>>>>> markers in ours."""
     conflicts = []
     ours_text = "\n".join(ours)
-    theirs_text = "\n".join(theirs)
     import re
+
     for m in re.finditer(r"<<<<<<< .*?\n(.*?)=======\n(.*?)>>>>>>>", ours_text, re.DOTALL):
         conflicts.append((m.start(), 0, 0))  # simplified: just count markers
     return conflicts

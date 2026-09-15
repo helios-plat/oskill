@@ -44,13 +44,17 @@ async def shot_generator(
         raise ShotGeneratorError("storyboard has no shots")
 
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": (
-            "For each shot, generate an image_prompt and tts_text. "
-            "Return JSON array: [{\"shot_id\", \"image_prompt\", \"tts_text\", \"duration_s\"}]"
-        )},
-        {"role": "user", "content": json.dumps(
-            [s.model_dump() for s in storyboard.shots], ensure_ascii=False
-        )},
+        {
+            "role": "system",
+            "content": (
+                "For each shot, generate an image_prompt and tts_text. "
+                'Return JSON array: [{"shot_id", "image_prompt", "tts_text", "duration_s"}]'
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps([s.model_dump() for s in storyboard.shots], ensure_ascii=False),
+        },
     ]
 
     result = llm(messages=messages)

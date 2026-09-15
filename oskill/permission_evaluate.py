@@ -10,6 +10,7 @@ Also uses from oskill:
 
 Sync (pure algorithm). Stateless.
 """
+
 from __future__ import annotations
 
 from typing import Any

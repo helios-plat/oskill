@@ -1,12 +1,9 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import difflib
-import re
-from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
+from ._types import ApplyResult, EditBlock, EditOskillError
+
 
 def apply_edit_block(
     original: str,
@@ -59,7 +56,7 @@ def apply_edit_block(
 
         matched = None
         for i in range(len(lines) - len(search_lines) + 1):
-            window = [ln.rstrip('\n').strip() for ln in lines[i:i + len(search_lines)]]
+            window = [ln.rstrip("\n").strip() for ln in lines[i : i + len(search_lines)]]
             if window == [ln.strip() for ln in search_lines]:
                 matched = i  # pragma: no cover
                 break  # pragma: no cover
@@ -67,8 +64,8 @@ def apply_edit_block(
         if matched is not None:
             new_lines = (  # pragma: no cover
                 lines[:matched]  # pragma: no cover
-                + [replace if replace.endswith('\n') else replace + '\n']  # pragma: no cover
-                + lines[matched + len(search_lines):]  # pragma: no cover
+                + [replace if replace.endswith("\n") else replace + "\n"]  # pragma: no cover
+                + lines[matched + len(search_lines) :]  # pragma: no cover
             )  # pragma: no cover
             content = "".join(new_lines)  # pragma: no cover
             applied += 1  # pragma: no cover

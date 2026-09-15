@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.operational_risk.lda import operational_risk_lda
 
@@ -51,12 +50,16 @@ def test_lda_severity_params_dict():
 
 
 def test_lda_weibull_severity():
-    r = operational_risk_lda(_make_losses(), severity_distribution="weibull", seed=5, n_simulations=1000)
+    r = operational_risk_lda(
+        _make_losses(), severity_distribution="weibull", seed=5, n_simulations=1000
+    )
     assert r["var"] > 0
 
 
 def test_lda_nbinom_frequency():
-    r = operational_risk_lda(_make_losses(), frequency_distribution="negative_binomial", seed=6, n_simulations=1000)
+    r = operational_risk_lda(
+        _make_losses(), frequency_distribution="negative_binomial", seed=6, n_simulations=1000
+    )
     assert r["var"] > 0
 
 

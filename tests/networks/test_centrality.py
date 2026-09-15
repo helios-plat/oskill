@@ -1,4 +1,5 @@
 """Tests for financial network centrality metrics."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -10,12 +11,14 @@ from oskill.networks.centrality import financial_network_centrality
 @pytest.fixture
 def simple_4x4():
     """Simple 4-node exposure matrix."""
-    return np.array([
-        [0.0, 10.0, 5.0, 0.0],
-        [0.0, 0.0, 8.0, 2.0],
-        [3.0, 0.0, 0.0, 7.0],
-        [0.0, 4.0, 0.0, 0.0],
-    ])
+    return np.array(
+        [
+            [0.0, 10.0, 5.0, 0.0],
+            [0.0, 0.0, 8.0, 2.0],
+            [3.0, 0.0, 0.0, 7.0],
+            [0.0, 4.0, 0.0, 0.0],
+        ]
+    )
 
 
 def test_debt_rank_default(simple_4x4):

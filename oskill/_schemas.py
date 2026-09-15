@@ -142,9 +142,9 @@ class ShotFrame(BaseModel):
 class ReferenceSet(BaseModel):
     """Selected reference frames for a shot (output of select_reference)."""
 
-    character_refs: dict[str, Path]   # character_id → best reference frame
+    character_refs: dict[str, Path]  # character_id → best reference frame
     environment_refs: dict[str, Path]
-    selected_from: list[str]          # source shot_ids (traceability)
+    selected_from: list[str]  # source shot_ids (traceability)
 
 
 class FrameConsistencyResult(BaseModel):
@@ -152,7 +152,7 @@ class FrameConsistencyResult(BaseModel):
 
     best_frame: Path
     scores: dict[str, float]  # frame_path str → consistency score [0, 1]
-    passed: bool               # best score ≥ threshold in criteria
+    passed: bool  # best score ≥ threshold in criteria
 
 
 class Chapter(BaseModel):
@@ -160,7 +160,7 @@ class Chapter(BaseModel):
 
     chapter_id: str
     title: str
-    scenes: list[dict]              # scene descriptors (flexible for multi-genre)
+    scenes: list[dict]  # scene descriptors (flexible for multi-genre)
     dialogues: list[SpeakerLine]
 
 

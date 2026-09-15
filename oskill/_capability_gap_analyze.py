@@ -7,6 +7,7 @@ No LLM. Every gap fact is reproducible from the input data.
 from __future__ import annotations
 
 from oprim._aii_types import GapReport
+
 from oskill._query_cluster import query_cluster
 
 
@@ -42,6 +43,7 @@ def capability_gap_analyze(
 # ---------------------------------------------------------------------------
 # Sub-computations
 # ---------------------------------------------------------------------------
+
 
 def _compute_high_miss_topics(failure_stats: dict) -> list[dict]:
     """Cluster miss-topics and sum miss counts per cluster."""

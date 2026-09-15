@@ -57,7 +57,7 @@ def text_translate(
     # Handle long text by chunking
     max_chunk = 4000
     if len(text) > max_chunk:
-        chunks = [text[i:i + max_chunk] for i in range(0, len(text), max_chunk)]
+        chunks = [text[i : i + max_chunk] for i in range(0, len(text), max_chunk)]
         translated_parts = []
         for chunk in chunks:
             chunk_prompt = prompt.replace(text, chunk)

@@ -135,12 +135,14 @@ def order_book_state_hawkes(
     state_bins = _discretize_states(state_observations, n_bins)
 
     # Initial parameters: mu (K), alpha (K*K), beta (K), state_resp (n_bins*K)
-    x0 = np.concatenate([
-        np.full(K, 0.1),              # mu
-        0.1 * np.eye(K).ravel(),      # alpha
-        np.ones(K),                   # beta
-        np.ones(n_bins * K),          # state_response
-    ])
+    x0 = np.concatenate(
+        [
+            np.full(K, 0.1),  # mu
+            0.1 * np.eye(K).ravel(),  # alpha
+            np.ones(K),  # beta
+            np.ones(n_bins * K),  # state_response
+        ]
+    )
 
     # Bounds: mu >= 1e-6, alpha >= 0, beta >= 0.01, state_resp >= 1e-6
     bounds = (

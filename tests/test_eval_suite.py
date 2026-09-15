@@ -73,10 +73,8 @@ def test_cohens_d():
 
 
 def test_compare_runs_candidate_wins():
-    baseline = run_suite([EvalCase(f"c{i}", "x") for i in range(6)],
-                         lambda c: 0.5)
-    candidate = run_suite([EvalCase(f"c{i}", "x") for i in range(6)],
-                          lambda c: 0.85)
+    baseline = run_suite([EvalCase(f"c{i}", "x") for i in range(6)], lambda c: 0.5)
+    candidate = run_suite([EvalCase(f"c{i}", "x") for i in range(6)], lambda c: 0.85)
     report = compare_runs(baseline, candidate)
     assert report.candidate_wins is True
     assert report.effect_size > 0

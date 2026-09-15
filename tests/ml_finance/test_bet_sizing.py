@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.bet_sizing import bet_sizing
 
@@ -62,7 +61,7 @@ class TestBetSizing:
     def test_kelly_fractional_method(self):
         """Kelly fractional method should give smaller sizes than sigmoid near extremes."""
         p = np.array([0.9])
-        size_sigmoid = bet_sizing(p, method="sigmoid")[0]
+        _size_sigmoid = bet_sizing(p, method="sigmoid")[0]
         size_kelly = bet_sizing(p, method="kelly_fractional")[0]
         # Kelly should be positive for p > 0.5
         assert size_kelly > 0

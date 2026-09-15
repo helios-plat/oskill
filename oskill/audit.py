@@ -1,4 +1,5 @@
 """Audit chain utilities — Merkle proof helpers for decision_audit."""
+
 from __future__ import annotations
 
 from oprim.crypto import rfc6962_inclusion_proof

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from oskill.validation.haircut import haircut_sharpe
 
@@ -11,8 +10,12 @@ from oskill.validation.haircut import haircut_sharpe
 def test_haircut_basic():
     result = haircut_sharpe(2.0, 252, 10)
     expected_keys = {
-        "reported_sharpe", "haircut_pct", "adjusted_sharpe",
-        "corrected_p_value", "method", "is_significant_after_correction",
+        "reported_sharpe",
+        "haircut_pct",
+        "adjusted_sharpe",
+        "corrected_p_value",
+        "method",
+        "is_significant_after_correction",
     }
     assert set(result.keys()) == expected_keys
 

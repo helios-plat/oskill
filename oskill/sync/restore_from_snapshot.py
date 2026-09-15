@@ -1,4 +1,5 @@
 """oskill.sync.restore_from_snapshot — download a snapshot and restore local DB."""
+
 from __future__ import annotations
 
 from oprim._logging import log

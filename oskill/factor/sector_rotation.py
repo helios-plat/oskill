@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import oprim
-
 STABILITY = "experimental"
 
 
@@ -65,7 +63,7 @@ def sector_capital_rotation_detect(
     current_window = [d for d in sorted_data if d.get("date") == most_recent_date]
 
     all_dates = sorted({d.get("date") for d in sorted_data}, reverse=True)
-    prev_dates = set(list(all_dates)[1: prev_window_days + 1]) if len(all_dates) > 1 else set()
+    prev_dates = set(list(all_dates)[1 : prev_window_days + 1]) if len(all_dates) > 1 else set()
     prev_window = [d for d in sorted_data if d.get("date") in prev_dates]
 
     def _aggregate_sectors(data: list[dict]) -> dict[str, float]:
@@ -73,7 +71,9 @@ def sector_capital_rotation_detect(
         for item in data:
             sym = item.get("symbol", "")
             sector = classification.get(sym, "unknown")
-            sector_inflow[sector] = sector_inflow.get(sector, 0.0) + float(item.get("net_inflow", 0))
+            sector_inflow[sector] = sector_inflow.get(sector, 0.0) + float(
+                item.get("net_inflow", 0)
+            )
         return sector_inflow
 
     current_sectors = _aggregate_sectors(current_window)

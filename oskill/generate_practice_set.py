@@ -8,10 +8,10 @@ Version: oskill v3.21.0
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
 
-from oskill.interleave_select import QuestionItem, interleave_select, InterleaveResult
+from oskill.interleave_select import QuestionItem, interleave_select
 
 
 @dataclass(frozen=True)
@@ -103,7 +103,8 @@ def generate_practice_set(
     ]
 
     filtered = [
-        q for q in enriched
+        q
+        for q in enriched
         if (
             q.mastery <= cfg.mastery_threshold
             and cfg.min_difficulty <= q.difficulty <= cfg.max_difficulty
@@ -121,13 +122,13 @@ def generate_practice_set(
     # Balance across KCs if requested
     if cfg.balance_kcs:
         from collections import defaultdict
+
         by_kc: dict[str, list[QuestionItem]] = defaultdict(list)
         for q in filtered:
             by_kc[q.kc_id].append(q)
         # Round-robin selection
         balanced: list[QuestionItem] = []
         kc_queues = list(by_kc.values())
-        idx = 0
         while any(kc_queues) and len(balanced) < len(filtered):
             for queue in kc_queues:
                 if queue:

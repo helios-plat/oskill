@@ -1,4 +1,5 @@
 """Interbank contagion simulation (Furfine 2003 and Rogers-Veraart)."""
+
 from __future__ import annotations
 
 from typing import Any, Literal

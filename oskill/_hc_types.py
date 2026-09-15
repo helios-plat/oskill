@@ -13,6 +13,7 @@ class EditResult:
     reason: str = ""
     lsp_warnings: list[str] = field(default_factory=list)
 
+
 @dataclass
 class DecodedTurn:
     message: dict[str, Any] = field(default_factory=dict)
@@ -20,10 +21,12 @@ class DecodedTurn:
     stop_reason: str = "end_turn"
     usage: dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class Pos:
     line: int
     character: int
+
 
 @dataclass
 class IntelResult:
@@ -31,6 +34,7 @@ class IntelResult:
     definition: str = ""
     references_count: int = 0
     snippet: str = ""
+
 
 @dataclass
 class CallNode:
@@ -40,10 +44,12 @@ class CallNode:
     incoming: list[CallNode] = field(default_factory=list)
     outgoing: list[CallNode] = field(default_factory=list)
 
+
 @dataclass
 class CallTree:
     root: CallNode | None = None
     depth_reached: int = 0
+
 
 @dataclass
 class ProjectMap:
@@ -53,6 +59,7 @@ class ProjectMap:
     tree: list[str] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
 
+
 @dataclass
 class ResearchResult:
     query: str
@@ -60,11 +67,13 @@ class ResearchResult:
     summary: str = ""
     confidence: float = 0.0
 
+
 @dataclass
 class SubagentPlan:
     prompt: str
     tools: list[Any] = field(default_factory=list)
     summary_rule: str = ""
     persona_name: str = ""
+
 
 SnapshotId = str

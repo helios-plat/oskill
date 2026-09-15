@@ -1,13 +1,9 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
+
 from oprim import compute_diff
-import difflib
-import re
-from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
 
 def generate_patch_preview(
     old: str,
@@ -42,11 +38,11 @@ def generate_patch_preview(
 
     lines = []
     for line in raw.splitlines(keepends=True):
-        if line.startswith('+') and not line.startswith('+++'):
+        if line.startswith("+") and not line.startswith("+++"):
             lines.append(f"\033[32m{line}\033[0m")
-        elif line.startswith('-') and not line.startswith('---'):
+        elif line.startswith("-") and not line.startswith("---"):
             lines.append(f"\033[31m{line}\033[0m")
-        elif line.startswith('@@'):
+        elif line.startswith("@@"):
             lines.append(f"\033[36m{line}\033[0m")
         else:
             lines.append(line)

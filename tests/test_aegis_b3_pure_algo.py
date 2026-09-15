@@ -2,14 +2,11 @@
 circuit_breaker_check, compute_capacity_forecast (pure algorithm elements).
 """
 
-import pytest
-
-from oskill.diagnose_pattern_match import PatternMatchResult, diagnose_pattern_match
-from oskill.compute_severity_score import SeverityResult, compute_severity_score
+from oskill.circuit_breaker_check import circuit_breaker_check
 from oskill.classify_signal import SignalClassification, classify_signal
-from oskill.circuit_breaker_check import CircuitBreakerResult, circuit_breaker_check
 from oskill.compute_capacity_forecast import CapacityForecastResult, compute_capacity_forecast
-
+from oskill.compute_severity_score import compute_severity_score
+from oskill.diagnose_pattern_match import PatternMatchResult, diagnose_pattern_match
 
 # ─── diagnose_pattern_match ──────────────────────────────────────────────────
 

@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import pytest
-
 from oskill.feed_diff_pipeline import feed_diff_pipeline
 
 # ---------------------------------------------------------------------------

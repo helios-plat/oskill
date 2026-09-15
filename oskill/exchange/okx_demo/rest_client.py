@@ -3,9 +3,9 @@
 Endpoint base: https://www.okx.com/api/v5/
 Demo header: x-simulated-trading: 1
 """
+
 from __future__ import annotations
 
-import asyncio
 import json
 
 import aiohttp
@@ -99,7 +99,7 @@ class OKXDemoRestClient:
                         text = await r.text()
                         raise OKXClientError(f"HTTP {r.status}: {text[:200]}")
                     data = await r.json()
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise OKXClientError(f"timeout submitting order: {e}") from e
         except aiohttp.ClientError as e:
             raise OKXClientError(f"client error: {e}") from e
@@ -127,7 +127,7 @@ class OKXDemoRestClient:
                     if r.status != 200:
                         raise OKXClientError(f"HTTP {r.status}")
                     data = await r.json()
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise OKXClientError(f"timeout fetching balance: {e}") from e
         except aiohttp.ClientError as e:
             raise OKXClientError(f"client error: {e}") from e
@@ -138,10 +138,7 @@ class OKXDemoRestClient:
         try:
             account = data["data"][0]
             total_eq = float(account.get("totalEq", 0))
-            balances = {
-                d["ccy"]: float(d.get("availBal", 0))
-                for d in account.get("details", [])
-            }
+            balances = {d["ccy"]: float(d.get("availBal", 0)) for d in account.get("details", [])}
             update_time = int(account.get("uTime", 0))
         except (KeyError, IndexError, ValueError) as e:
             raise OKXAPIError("parse_error", str(e), data) from e

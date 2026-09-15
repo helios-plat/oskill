@@ -1,38 +1,50 @@
 """Tests for K-1 and K-2 of the video/audio ingestion batch."""
+
 from __future__ import annotations
 
-import asyncio
-from dataclasses import dataclass, field
-from typing import Any
-
 import pytest
-
 from oprim._media_types import FilterRules, TranscriptResult, VideoMeta
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _vm(video_id="v1", title="Python Tutorial", duration=300.0, upload_date="20240301", description="A tutorial") -> VideoMeta:
-    return VideoMeta(video_id=video_id, title=title, duration=duration, url=f"https://yt.be/{video_id}", upload_date=upload_date, description=description)
+
+def _vm(
+    video_id="v1",
+    title="Python Tutorial",
+    duration=300.0,
+    upload_date="20240301",
+    description="A tutorial",
+) -> VideoMeta:
+    return VideoMeta(
+        video_id=video_id,
+        title=title,
+        duration=duration,
+        url=f"https://yt.be/{video_id}",
+        upload_date=upload_date,
+        description=description,
+    )
 
 
 def _yes_llm():
     async def caller(*, messages, max_tokens=8, **kw):
         return {"content": [{"type": "text", "text": "YES"}]}
+
     return caller
 
 
 def _no_llm():
     async def caller(*, messages, max_tokens=8, **kw):
         return {"content": [{"type": "text", "text": "NO"}]}
+
     return caller
 
 
 def _md_llm(md: str = "# Title\n\n## Topic\n- Point [00:10](https://yt.be/v1?t=10)"):
     async def caller(*, messages, max_tokens=4096, **kw):
         return {"content": [{"type": "text", "text": md}]}
+
     return caller
 
 
@@ -47,6 +59,7 @@ _VIDEOS = [
 # ===========================================================================
 # K-1: video_filter_by_rules
 # ===========================================================================
+
 
 class TestVideoFilterByRules:
     async def test_pure_rules_no_llm(self):
@@ -101,6 +114,7 @@ class TestVideoFilterByRules:
         from oskill._video_filter_by_rules import video_filter_by_rules
 
         called_titles = []
+
         async def recording_llm(*, messages, **kw):
             for msg in messages:
                 if "Video title:" in msg.get("content", ""):
@@ -108,7 +122,7 @@ class TestVideoFilterByRules:
             return {"content": "YES"}
 
         rules = FilterRules(min_duration=200.0, llm_filter="relevant")
-        result = await video_filter_by_rules(_VIDEOS, rules=rules, llm=recording_llm)
+        _result = await video_filter_by_rules(_VIDEOS, rules=rules, llm=recording_llm)
         # Only videos with duration >= 200 should have been passed to LLM
         for title_ctx in called_titles:
             assert "广告推广" not in title_ctx  # duration 60 < 200, filtered before LLM
@@ -118,6 +132,7 @@ class TestVideoFilterByRules:
         from oskill._video_filter_by_rules import video_filter_by_rules
 
         seen_titles = []
+
         async def spy_yes_llm(*, messages, **kw):
             for msg in messages:
                 seen_titles.append(msg.get("content", ""))
@@ -192,6 +207,7 @@ class TestMediaToStructuredMd:
             llm=_md_llm(_MD_RESPONSE),
         )
         import re
+
         # Check for timestamp anchors in [MM:SS](url?t=N) format
         anchors = re.findall(r"\[\d{2}:\d{2}\]\(https://yt\.be/v1\?t=\d+\)", result)
         assert len(anchors) >= 1
@@ -239,7 +255,9 @@ class TestMediaToStructuredMd:
             language="zh",
             duration=5.0,
         )
-        zh_md = "# 人工智能讲座\n\n## 核心概念\n- 人工智能改变了世界 [00:00](https://yt.be/v3?t=0)\n"
+        zh_md = (
+            "# 人工智能讲座\n\n## 核心概念\n- 人工智能改变了世界 [00:00](https://yt.be/v3?t=0)\n"
+        )
         result = await media_to_structured_md(
             transcript=zh_tr,
             title="人工智能讲座",
@@ -274,4 +292,5 @@ class TestMediaToStructuredMd:
             llm=_md_llm(bare_md),
         )
         import re
+
         assert re.search(r"\[01:23\]\(https://yt\.be/v1\?t=83\)", result)

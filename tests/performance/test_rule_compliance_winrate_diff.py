@@ -1,9 +1,5 @@
 """Tests for oskill.performance.rule_compliance_winrate_diff (B8)."""
 
-import math
-
-import pytest
-
 from oskill.performance import rule_compliance_winrate_diff
 
 

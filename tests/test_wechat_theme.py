@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from oskill.wechat_publish import md_to_wechat_html
 from oskill.wechat_theme import (
     WechatTheme,
     apply_theme,
@@ -16,7 +17,6 @@ from oskill.wechat_theme import (
     render_layout_block,
     render_markdown_with_layout,
 )
-from oskill.wechat_publish import md_to_wechat_html
 
 
 def test_builtin_themes_routable():
@@ -42,9 +42,9 @@ def test_register_theme_override_and_restore():
 def test_apply_theme_injects_inline_styles():
     html = md_to_wechat_html("# 标题\n\n正文段落\n")
     themed = apply_theme(html, "tech")
-    assert 'style="font-size:22px' in themed          # h1 主题字号
-    assert "#5b21b6" in themed                        # tech 标题色
-    assert "line-height:1.8" in themed                # 正文行高
+    assert 'style="font-size:22px' in themed  # h1 主题字号
+    assert "#5b21b6" in themed  # tech 标题色
+    assert "line-height:1.8" in themed  # 正文行高
 
 
 def test_apply_theme_idempotent_and_skips_styled():
@@ -61,8 +61,8 @@ def test_apply_theme_idempotent_and_skips_styled():
 def test_apply_theme_accepts_theme_object():
     html = md_to_wechat_html("# 标题\n\n正文\n")
     themed = apply_theme(html, get_theme("elegant"))
-    assert "#8a6d1a" in themed                        # 优雅主题标题色
-    assert "text-align:center" in themed             # 居中标题
+    assert "#8a6d1a" in themed  # 优雅主题标题色
+    assert "text-align:center" in themed  # 居中标题
 
 
 def test_parse_layout_blocks_basic():
@@ -106,9 +106,9 @@ def test_render_markdown_with_layout_end_to_end():
     assert used == ["tip", "hero"]
     assert "记得按时" in html
     assert "深度" in html
-    assert "<li" in html                    # 普通 md 列表仍在
-    assert "#1f6f43" in html                # clean 主题标题色
-    assert "<!--LAYOUT" not in html         # 占位符全部替换
+    assert "<li" in html  # 普通 md 列表仍在
+    assert "#1f6f43" in html  # clean 主题标题色
+    assert "<!--LAYOUT" not in html  # 占位符全部替换
 
 
 def test_render_markdown_with_layout_unknown_module_fails():
@@ -130,6 +130,16 @@ def test_register_layout_module_custom():
 
 def test_layout_modules_lists_builtin():
     mods = layout_modules()
-    for expected in ("hero", "card", "tip", "warning", "danger",
-                     "quote", "divider", "table", "list", "steps"):
+    for expected in (
+        "hero",
+        "card",
+        "tip",
+        "warning",
+        "danger",
+        "quote",
+        "divider",
+        "table",
+        "list",
+        "steps",
+    ):
         assert expected in mods

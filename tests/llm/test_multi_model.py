@@ -6,10 +6,10 @@ import pytest
 
 from oskill.llm.multi_model import multi_model_ensemble
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_mock_client(returns: str):
     def client(messages, model, **kwargs):
@@ -19,6 +19,7 @@ def make_mock_client(returns: str):
             "input_tokens": 10,
             "output_tokens": 5,
         }
+
     return client
 
 
@@ -27,14 +28,20 @@ def make_configs(*model_ids: str) -> dict[str, dict]:
 
 
 REQUIRED_KEYS = {
-    "consensus_label", "agreement_score", "per_model_responses",
-    "aggregation_method", "is_unanimous", "has_consensus", "ensemble_fingerprint",
+    "consensus_label",
+    "agreement_score",
+    "per_model_responses",
+    "aggregation_method",
+    "is_unanimous",
+    "has_consensus",
+    "ensemble_fingerprint",
 }
 
 
 # ---------------------------------------------------------------------------
 # Tests: majority_vote
 # ---------------------------------------------------------------------------
+
 
 def test_multi_model_majority_vote_3_agree_1_disagree():
     client_fns = {
@@ -45,8 +52,10 @@ def test_multi_model_majority_vote_3_agree_1_disagree():
     }
     configs = {k: {"model": f"mock-{k}"} for k in client_fns}
     result = multi_model_ensemble(
-        "Classify: {text}", {"text": "great product"},
-        client_fns, model_configs=configs,
+        "Classify: {text}",
+        {"text": "great product"},
+        client_fns,
+        model_configs=configs,
         aggregation="majority_vote",
     )
     assert result["consensus_label"] == "positive"
@@ -62,8 +71,10 @@ def test_multi_model_majority_vote_tie_takes_first():
     }
     configs = {k: {"model": f"mock-{k}"} for k in client_fns}
     result = multi_model_ensemble(
-        "{q}", {"q": "binary"},
-        client_fns, model_configs=configs,
+        "{q}",
+        {"q": "binary"},
+        client_fns,
+        model_configs=configs,
         aggregation="majority_vote",
     )
     # Both have 1 vote, deterministic: should pick the one that comes first
@@ -78,7 +89,10 @@ def test_multi_model_per_model_traces_in_output():
     }
     configs = {k: {"model": f"mock-{k}"} for k in client_fns}
     result = multi_model_ensemble(
-        "{q}", {"q": "test"}, client_fns, model_configs=configs,
+        "{q}",
+        {"q": "test"},
+        client_fns,
+        model_configs=configs,
     )
     assert "gpt" in result["per_model_responses"]
     assert "claude" in result["per_model_responses"]
@@ -92,6 +106,7 @@ def test_multi_model_per_model_traces_in_output():
 # Tests: weighted_vote
 # ---------------------------------------------------------------------------
 
+
 def test_multi_model_weighted_vote_breaks_tie_by_weight():
     client_fns = {
         "high_confidence": make_mock_client("buy"),
@@ -100,9 +115,12 @@ def test_multi_model_weighted_vote_breaks_tie_by_weight():
     configs = {k: {"model": k} for k in client_fns}
     weights = {"high_confidence": 0.9, "low_confidence": 0.1}
     result = multi_model_ensemble(
-        "{q}", {"q": "stock decision"},
-        client_fns, model_configs=configs,
-        aggregation="weighted_vote", weights=weights,
+        "{q}",
+        {"q": "stock decision"},
+        client_fns,
+        model_configs=configs,
+        aggregation="weighted_vote",
+        weights=weights,
     )
     assert result["consensus_label"] == "buy"
     assert result["agreement_score"] > 0.5
@@ -112,6 +130,7 @@ def test_multi_model_weighted_vote_breaks_tie_by_weight():
 # Tests: score_averaging
 # ---------------------------------------------------------------------------
 
+
 def test_multi_model_score_averaging_returns_mean():
     client_fns = {
         "m1": make_mock_client("0.8"),
@@ -120,8 +139,10 @@ def test_multi_model_score_averaging_returns_mean():
     }
     configs = {k: {"model": k} for k in client_fns}
     result = multi_model_ensemble(
-        "{q}", {"q": "score this"},
-        client_fns, model_configs=configs,
+        "{q}",
+        {"q": "score this"},
+        client_fns,
+        model_configs=configs,
         aggregation="score_averaging",
     )
     mean = (0.8 + 0.6 + 0.4) / 3
@@ -132,12 +153,15 @@ def test_multi_model_score_averaging_returns_mean():
 # Tests: agreement_only
 # ---------------------------------------------------------------------------
 
+
 def test_multi_model_agreement_only_unanimous_returns_consensus():
     client_fns = {k: make_mock_client("approve") for k in ["a", "b", "c"]}
     configs = {k: {"model": k} for k in client_fns}
     result = multi_model_ensemble(
-        "{q}", {"q": "vote"},
-        client_fns, model_configs=configs,
+        "{q}",
+        {"q": "vote"},
+        client_fns,
+        model_configs=configs,
         aggregation="agreement_only",
     )
     assert result["consensus_label"] == "approve"
@@ -152,8 +176,10 @@ def test_multi_model_agreement_only_split_returns_no_consensus():
     }
     configs = {k: {"model": k} for k in client_fns}
     result = multi_model_ensemble(
-        "{q}", {"q": "split vote"},
-        client_fns, model_configs=configs,
+        "{q}",
+        {"q": "split vote"},
+        client_fns,
+        model_configs=configs,
         aggregation="agreement_only",
     )
     assert result["consensus_label"] == "no_consensus"
@@ -165,8 +191,10 @@ def test_multi_model_agreement_only_split_returns_no_consensus():
 # Tests: fingerprint
 # ---------------------------------------------------------------------------
 
+
 def test_multi_model_ensemble_fingerprint_deterministic():
     """Same inputs → same fingerprint."""
+
     def make_fns():
         return {k: make_mock_client("label") for k in ["m1", "m2"]}
 
@@ -182,6 +210,7 @@ def test_multi_model_ensemble_fingerprint_deterministic():
 # Tests: error cases
 # ---------------------------------------------------------------------------
 
+
 def test_multi_model_mismatched_client_fns_and_configs_raises():
     client_fns = {"m1": make_mock_client("a"), "m2": make_mock_client("b")}
     configs = {"m1": {"model": "m1"}}  # missing m2
@@ -194,7 +223,10 @@ def test_multi_model_invalid_aggregation_raises():
     configs = {"m1": {"model": "m1"}}
     with pytest.raises(ValueError, match="aggregation"):
         multi_model_ensemble(
-            "{q}", {"q": "x"}, client_fns, model_configs=configs,
+            "{q}",
+            {"q": "x"},
+            client_fns,
+            model_configs=configs,
             aggregation="invalid_method",  # type: ignore[arg-type]
         )
 
@@ -202,6 +234,7 @@ def test_multi_model_invalid_aggregation_raises():
 # ---------------------------------------------------------------------------
 # Academic reference test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.academic_reference
 def test_multi_model_trusttrade_framework_consensus():

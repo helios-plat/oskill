@@ -1,4 +1,5 @@
 """Signature methods submodule."""
+
 from __future__ import annotations
 
 from oskill.signature.kernel import signature_kernel

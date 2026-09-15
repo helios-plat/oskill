@@ -98,7 +98,7 @@ class TestFactorIC:
         T, N = 20, 5
         factor = rng.normal(0, 1, (T, N))
         idx = pd.date_range("2024-01-01", periods=T)
-        rets = pd.Series(rng.normal(0, 1, T), index=idx)
+        _rets = pd.Series(rng.normal(0, 1, T), index=idx)
         # rets must match shape; let's use ndarray
         rets_arr = rng.normal(0, 1, (T, N))
         result = factor_ic(factor, rets_arr, rolling_window=5)

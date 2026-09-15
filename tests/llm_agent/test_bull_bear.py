@@ -1,6 +1,8 @@
 """Mock DeepSeek, verify bull/bear agent parse + structure."""
-import pytest
+
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from oskill.llm_agent.bear_analyst import bear_analyst
 from oskill.llm_agent.bull_analyst import bull_analyst

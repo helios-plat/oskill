@@ -1,14 +1,14 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oskill import apply_unified_diff
-from oprim import compute_diff
+
 import difflib
-import re
 from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
+from oprim import compute_diff
+
+from oskill import apply_unified_diff
+
 
 def three_way_merge(
     base: str,
@@ -60,8 +60,10 @@ def three_way_merge(
     sm_theirs = difflib.SequenceMatcher(None, base_lines, theirs_lines)
 
     # 构建变更区间
-    ours_ops = {(t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_ours.get_opcodes() if t != 'equal'}
-    theirs_ops = {(t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_theirs.get_opcodes() if t != 'equal'}
+    ours_ops = {(t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_ours.get_opcodes() if t != "equal"}
+    theirs_ops = {
+        (t, i1, i2, j1, j2) for t, i1, i2, j1, j2 in sm_theirs.get_opcodes() if t != "equal"
+    }
 
     # 简化：找出 base 中双方都修改了的行范围
     ours_changed: set[int] = set()
@@ -77,7 +79,9 @@ def three_way_merge(
         # 无冲突：顺序应用两方变更
         # 先 apply ours diff，再 apply theirs diff
         r1 = apply_unified_diff(base, diff=compute_diff(base, ours, path=path))  # pragma: no cover
-        r2 = apply_unified_diff(r1.content, diff=compute_diff(base, theirs, path=path))  # pragma: no cover
+        r2 = apply_unified_diff(
+            r1.content, diff=compute_diff(base, theirs, path=path)
+        )  # pragma: no cover
         return {"merged": r2.content, "conflicts": 0, "ok": True}  # pragma: no cover
 
     # 有冲突：插入冲突标记

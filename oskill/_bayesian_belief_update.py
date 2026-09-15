@@ -49,9 +49,7 @@ def _bayesian_belief_update(
         raise ValueError(f"prior 必须是一维向量, 收到 shape {prior.shape}")
     if likelihood.ndim == 1:
         if likelihood.shape != prior.shape:
-            raise ValueError(
-                f"likelihood 形状 {likelihood.shape} 与 prior {prior.shape} 不匹配"
-            )
+            raise ValueError(f"likelihood 形状 {likelihood.shape} 与 prior {prior.shape} 不匹配")
         unnorm = prior * likelihood
     elif likelihood.ndim == 2:
         if likelihood.shape[1] != prior.shape[0]:

@@ -8,9 +8,8 @@ Version: oskill v3.21.0
 
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass, field
-from typing import Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -193,8 +192,7 @@ def longitudinal_pattern(
     forgetting = [kc for kc, t in trajectories.items() if t.is_forgetting]
 
     overall_trend = (
-        sum(t.trend for t in trajectories.values()) / len(trajectories)
-        if trajectories else 0.0
+        sum(t.trend for t in trajectories.values()) / len(trajectories) if trajectories else 0.0
     )
 
     # Count unique sessions (timestamps bucketed to same day)

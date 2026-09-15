@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from oskill.bayesian.posterior_diagnostics import posterior_diagnostics
 
-EXPECTED_KEYS = {"r_hat", "effective_sample_size", "autocorrelation", "mean", "std", "credible_intervals", "converged"}
+EXPECTED_KEYS = {
+    "r_hat",
+    "effective_sample_size",
+    "autocorrelation",
+    "mean",
+    "std",
+    "credible_intervals",
+    "converged",
+}
 
 
 def test_pd_basic_array_input():

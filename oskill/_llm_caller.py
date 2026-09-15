@@ -1,7 +1,9 @@
-from typing import Protocol, Any
+from typing import Any, Protocol
+
 
 class LLMCaller(Protocol):
     """LLM 调用接口. omodul 通过 obase.ProviderRegistry 获取实现, 传给 oskill."""
+
     def __call__(
         self,
         *,

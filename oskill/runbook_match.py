@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 
 class RunbookMatchResult(BaseModel):
-    matched_plugin: dict[str, Any] | None = None        # plugin metadata
-    match_score: float = 0.0                 # 0-1
-    alternative_plugins: list[dict[str, Any]] = []    # 次匹配
+    matched_plugin: dict[str, Any] | None = None  # plugin metadata
+    match_score: float = 0.0  # 0-1
+    alternative_plugins: list[dict[str, Any]] = []  # 次匹配
 
 
 def runbook_match(
@@ -36,7 +36,7 @@ def runbook_match(
             matcher = plugin.get("matcher", {})
             error_pattern = matcher.get("error_pattern")
             if error_pattern and re.search(error_pattern, rc_text, re.IGNORECASE):
-                score = 0.9 # High score for rule match
+                score = 0.9  # High score for rule match
 
             service_type = matcher.get("service_type")
             if service_type and service_type == root_cause.get("service_type"):
@@ -60,5 +60,5 @@ def runbook_match(
     return RunbookMatchResult(
         matched_plugin=matches[0][1],
         match_score=matches[0][0],
-        alternative_plugins=[m[1] for m in matches[1:]]
+        alternative_plugins=[m[1] for m in matches[1:]],
     )

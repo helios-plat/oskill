@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Callable, Literal
-
+from collections.abc import Callable
+from typing import Any, Literal
 
 _DEFAULT_REASONING_MARKERS = [
     "<thinking>",
@@ -65,9 +65,7 @@ def chain_of_thought_extractor(
         answer_markers = _DEFAULT_ANSWER_MARKERS
 
     if method == "marker_based":
-        return _extract_marker_based(
-            llm_response, reasoning_markers, answer_markers
-        )
+        return _extract_marker_based(llm_response, reasoning_markers, answer_markers)
     elif method == "pattern_based":
         return _extract_pattern_based(llm_response)
     elif method == "llm_assisted":
@@ -91,7 +89,7 @@ def _extract_marker_based(
     if thinking_match:
         reasoning_text = thinking_match.group(1).strip()
         # Answer is everything after </thinking>
-        after_thinking = response[thinking_match.end():].strip()
+        after_thinking = response[thinking_match.end() :].strip()
         final_answer = after_thinking if after_thinking else ""
         steps = _extract_steps_from_text(reasoning_text)
         return {
@@ -134,7 +132,7 @@ def _extract_marker_based(
         # Strip the leading answer marker from final_answer
         for marker in answer_markers:
             if final_answer.startswith(marker):
-                final_answer = final_answer[len(marker):].strip()
+                final_answer = final_answer[len(marker) :].strip()
                 break
     elif reasoning_start != -1:
         # Only reasoning, no answer marker
@@ -145,7 +143,7 @@ def _extract_marker_based(
         final_answer = response[answer_start:].strip()
         for marker in answer_markers:
             if final_answer.startswith(marker):
-                final_answer = final_answer[len(marker):].strip()
+                final_answer = final_answer[len(marker) :].strip()
                 break
 
     steps = _extract_steps_from_text(reasoning_text if reasoning_text else response)
@@ -195,17 +193,19 @@ def _extract_pattern_based(response: str) -> dict[str, Any]:
     if step_matches:
         # Collect step contents
         for i, m in enumerate(step_matches):
-            end = step_matches[i + 1].start() if i + 1 < len(step_matches) else (
-                answer_match.start() if answer_match else len(response)
+            end = (
+                step_matches[i + 1].start()
+                if i + 1 < len(step_matches)
+                else (answer_match.start() if answer_match else len(response))
             )
-            step_text = response[m.start():end].strip()
+            step_text = response[m.start() : end].strip()
             if step_text:
                 steps.append(step_text)
 
-        reasoning_text = response[:answer_match.start()].strip() if answer_match else response
+        reasoning_text = response[: answer_match.start()].strip() if answer_match else response
 
     if answer_match:
-        final_answer = response[answer_match.end():].strip()
+        final_answer = response[answer_match.end() :].strip()
 
     found = bool(step_matches) + bool(answer_match)
     confidence = 0.8 if found == 2 else (0.5 if found == 1 else 0.2)
@@ -230,7 +230,7 @@ def _extract_llm_assisted(
         "You are a chain-of-thought extractor. Analyze the following response and extract:\n"
         "1. The reasoning steps (as a list)\n"
         "2. The final answer\n"
-        "Output JSON: {\"reasoning\": \"...\", \"steps\": [...], \"final_answer\": \"...\"}\n\n"
+        'Output JSON: {"reasoning": "...", "steps": [...], "final_answer": "..."}\n\n'
         f"Response to analyze:\n{response}"
     )
 
@@ -240,6 +240,7 @@ def _extract_llm_assisted(
 
     # Try to parse JSON from response
     import json
+
     reasoning_text = ""
     final_answer = ""
     steps: list[str] = []
@@ -283,7 +284,7 @@ def _extract_steps_from_text(text: str) -> list[str]:
     steps = []
     for i, m in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        step_text = text[m.start():end].strip()
+        step_text = text[m.start() : end].strip()
         if step_text:
             steps.append(step_text)
     return steps

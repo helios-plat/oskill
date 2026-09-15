@@ -1,4 +1,5 @@
 """Multi-node health sweep oskill."""
+
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed

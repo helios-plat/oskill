@@ -157,8 +157,7 @@ def test_adapt_call_adapts_and_converts():
                 {
                     "message": {
                         "content": (
-                            "<function=get_weather>"
-                            "<parameter=city>beijing</parameter></function>"
+                            "<function=get_weather><parameter=city>beijing</parameter></function>"
                         )
                     }
                 }
@@ -176,8 +175,7 @@ def test_adapt_call_adapts_and_converts():
                 {
                     "message": {
                         "content": (
-                            "<function=get_weather>"
-                            "<parameter=city>beijing</parameter></function>"
+                            "<function=get_weather><parameter=city>beijing</parameter></function>"
                         )
                     }
                 }

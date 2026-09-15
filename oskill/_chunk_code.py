@@ -1,16 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import detect_language, count_tokens
-import ast
-import json
+
 import re
-import sys
-import os
-from pathlib import Path
-from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import count_tokens, detect_language
+
+from ._types import Chunk
+
 
 def chunk_code(
     content: str,
@@ -47,7 +44,7 @@ def chunk_code(
         # 按顶级函数/类边界切分
         boundaries = [0]
         for i, line in enumerate(lines):
-            if re.match(r'^(def |class |async def )', line):
+            if re.match(r"^(def |class |async def )", line):
                 if i > 0:
                     boundaries.append(i)
         boundaries.append(len(lines))
@@ -60,37 +57,48 @@ def chunk_code(
             if count_tokens(chunk_text, model=model) > max_tokens:
                 step = max(1, max_tokens * 4 // 80)  # ~80 chars/line
                 for j in range(0, len(chunk_lines), step):
-                    sub = "".join(chunk_lines[j:j + step])
+                    sub = "".join(chunk_lines[j : j + step])
                     if sub.strip():
-                        chunks.append(Chunk(
-                            content=sub,
-                            start_line=start + j,
-                            end_line=min(start + j + step, end),
-                            token_count=count_tokens(sub, model=model),
-                            path=path, language=lang,
-                            chunk_id=f"{path}:{start + j}",
-                        ))
+                        chunks.append(
+                            Chunk(
+                                content=sub,
+                                start_line=start + j,
+                                end_line=min(start + j + step, end),
+                                token_count=count_tokens(sub, model=model),
+                                path=path,
+                                language=lang,
+                                chunk_id=f"{path}:{start + j}",
+                            )
+                        )
             else:
                 if chunk_text.strip():
-                    chunks.append(Chunk(
-                        content=chunk_text,
-                        start_line=start, end_line=end,
-                        token_count=count_tokens(chunk_text, model=model),
-                        path=path, language=lang,
-                        chunk_id=f"{path}:{start}",
-                    ))
+                    chunks.append(
+                        Chunk(
+                            content=chunk_text,
+                            start_line=start,
+                            end_line=end,
+                            token_count=count_tokens(chunk_text, model=model),
+                            path=path,
+                            language=lang,
+                            chunk_id=f"{path}:{start}",
+                        )
+                    )
     else:
         # 通用：按 max_tokens 行数切
         step = max(1, max_tokens * 4 // 80)
         for i in range(0, len(lines), step):
-            sub = "".join(lines[i:i + step])
+            sub = "".join(lines[i : i + step])
             if sub.strip():
-                chunks.append(Chunk(
-                    content=sub,
-                    start_line=i, end_line=min(i + step, len(lines)),
-                    token_count=count_tokens(sub, model=model),
-                    path=path, language=lang,
-                    chunk_id=f"{path}:{i}",
-                ))
+                chunks.append(
+                    Chunk(
+                        content=sub,
+                        start_line=i,
+                        end_line=min(i + step, len(lines)),
+                        token_count=count_tokens(sub, model=model),
+                        path=path,
+                        language=lang,
+                        chunk_id=f"{path}:{i}",
+                    )
+                )
 
     return chunks

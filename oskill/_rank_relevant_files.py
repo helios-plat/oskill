@@ -1,12 +1,12 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import json
+
 import re
-import sys
-import os
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from ._types import RepoMap
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -16,7 +16,9 @@ class VectorStoreHandle(Protocol):
     生产实现由 obase.persistence.VectorStore 提供。
     """
 
-    async def search(self, *, vector: list[float], top_k: int=5, filter: dict | None=None) -> list[dict[str, Any]]:
+    async def search(
+        self, *, vector: list[float], top_k: int = 5, filter: dict | None = None
+    ) -> list[dict[str, Any]]:
         """
         向量相似度搜索。
 
@@ -24,6 +26,7 @@ class VectorStoreHandle(Protocol):
             list of {"chunk_id": str, "content": str, "score": float, "path": str}
         """
         ...
+
 
 async def rank_relevant_files(
     query: str,
@@ -52,16 +55,17 @@ async def rank_relevant_files(
         >>> ranked[0][1] > 0
         True
     """
-    query_words = set(re.findall(r'\w+', query.lower()))
+    query_words = set(re.findall(r"\w+", query.lower()))
 
     scored: list[tuple[str, float]] = []
     for rf in repo_map.files:
-        path_words = set(re.findall(r'\w+', rf.path.lower()))
+        path_words = set(re.findall(r"\w+", rf.path.lower()))
         sym_words = set(
-            w for sym in rf.symbols
-            for w in re.findall(r'\w+', (sym.name + " " + sym.signature).lower())
+            w
+            for sym in rf.symbols
+            for w in re.findall(r"\w+", (sym.name + " " + sym.signature).lower())
         )
-        head_words = set(re.findall(r'\w+', rf.head_lines.lower()))
+        head_words = set(re.findall(r"\w+", rf.head_lines.lower()))
         all_words = path_words | sym_words | head_words
 
         overlap = len(query_words & all_words)

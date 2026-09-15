@@ -1,35 +1,56 @@
 """Tests for video_cost_proposal."""
+
 from __future__ import annotations
 
 import pytest
-
 from obase.provider_contract import ProviderContract, ProviderContractRegistry
+
 from oskill._video_cost_proposal import CostProposal, video_cost_proposal
 
 
 def _reg() -> ProviderContractRegistry:
     reg = ProviderContractRegistry()
-    reg.register(ProviderContract(
-        name="wan_local", location="local", capability="video_gen",
-        unit_cost_usd=0.0, unit="per_second",
-    ))
-    reg.register(ProviderContract(
-        name="wan_cloud", location="cloud", capability="video_gen",
-        unit_cost_usd=0.08, unit="per_second",
-    ))
-    reg.register(ProviderContract(
-        name="ltx2_local", location="local", capability="video_gen",
-        unit_cost_usd=0.0, unit="per_second", alias_of="wan_local",
-    ))
-    reg.register(ProviderContract(
-        name="llm_cloud", location="cloud", capability="llm",
-        unit_cost_usd=0.005, unit="per_call",
-    ))
+    reg.register(
+        ProviderContract(
+            name="wan_local",
+            location="local",
+            capability="video_gen",
+            unit_cost_usd=0.0,
+            unit="per_second",
+        )
+    )
+    reg.register(
+        ProviderContract(
+            name="wan_cloud",
+            location="cloud",
+            capability="video_gen",
+            unit_cost_usd=0.08,
+            unit="per_second",
+        )
+    )
+    reg.register(
+        ProviderContract(
+            name="ltx2_local",
+            location="local",
+            capability="video_gen",
+            unit_cost_usd=0.0,
+            unit="per_second",
+            alias_of="wan_local",
+        )
+    )
+    reg.register(
+        ProviderContract(
+            name="llm_cloud",
+            location="cloud",
+            capability="llm",
+            unit_cost_usd=0.005,
+            unit="per_call",
+        )
+    )
     return reg
 
 
 class TestVideoCostProposal:
-
     def test_returns_cost_proposal(self):
         shots = [{"shot_type": "generative", "provider": "wan_local", "duration_s": 5.0}]
         result = video_cost_proposal(shots=shots, contract_registry=_reg())
@@ -58,7 +79,9 @@ class TestVideoCostProposal:
 
     def test_locked_runtime_in_proposal(self):
         shots = [{"shot_type": "generative", "provider": "wan_local", "duration_s": 5.0}]
-        result = video_cost_proposal(shots=shots, contract_registry=_reg(), render_runtime="generative")
+        result = video_cost_proposal(
+            shots=shots, contract_registry=_reg(), render_runtime="generative"
+        )
         assert result.locked_runtime == "generative"
 
     def test_per_shot_breakdown_correct(self):

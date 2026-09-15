@@ -6,13 +6,14 @@ import pytest
 
 from oskill.llm.consistency import llm_response_consistency
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_fixed_client(response_text: str):
     """Always returns the same response."""
+
     def client_fn(messages, model, **kwargs):
         return {
             "content": response_text,
@@ -20,6 +21,7 @@ def make_fixed_client(response_text: str):
             "input_tokens": 10,
             "output_tokens": 5,
         }
+
     return client_fn
 
 
@@ -36,13 +38,18 @@ def make_cycling_client(responses: list[str]):
             "input_tokens": 10,
             "output_tokens": 5,
         }
+
     return client_fn
 
 
 REQUIRED_KEYS = {
-    "responses", "unique_responses", "n_unique",
-    "mean_pairwise_similarity", "exact_match_rate",
-    "most_common_response", "most_common_frequency",
+    "responses",
+    "unique_responses",
+    "n_unique",
+    "mean_pairwise_similarity",
+    "exact_match_rate",
+    "most_common_response",
+    "most_common_frequency",
     "is_highly_consistent",
 }
 
@@ -50,6 +57,7 @@ REQUIRED_KEYS = {
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_consistency_all_same_response_high_score():
     client = make_fixed_client("The answer is 42.")
@@ -135,9 +143,7 @@ def test_consistency_exact_match_rate_calculation():
 def test_consistency_most_common_response_extraction():
     responses = ["alpha", "beta", "alpha", "alpha", "beta"]
     client = make_cycling_client(responses)
-    result = llm_response_consistency(
-        "{q}", {"q": "q"}, client, model="m", n_samples=5
-    )
+    result = llm_response_consistency("{q}", {"q": "q"}, client, model="m", n_samples=5)
     assert result["most_common_response"] == "alpha"
     assert result["most_common_frequency"] == 3
 
@@ -150,6 +156,7 @@ def test_consistency_invalid_n_samples_raises():
 
 def test_consistency_custom_response_extractor():
     """Test that custom response_extractor is called."""
+
     def client_fn(messages, model, **kwargs):
         return {"content": "ignored", "custom": "extracted_text"}
 
@@ -157,7 +164,8 @@ def test_consistency_custom_response_extractor():
         return result["custom"]
 
     result = llm_response_consistency(
-        "{q}", {"q": "q"},
+        "{q}",
+        {"q": "q"},
         client_fn,
         model="m",
         n_samples=3,
@@ -169,6 +177,7 @@ def test_consistency_custom_response_extractor():
 # ---------------------------------------------------------------------------
 # Academic reference test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.academic_reference
 def test_consistency_self_consistency_paper_pattern():
@@ -184,8 +193,16 @@ def test_consistency_self_consistency_paper_pattern():
     in the self-consistency voting procedure.
     """
     # Simulate 8 samples where 5/8 agree on "positive"
-    responses = ["positive", "positive", "negative", "positive",
-                 "neutral", "positive", "positive", "negative"]
+    responses = [
+        "positive",
+        "positive",
+        "negative",
+        "positive",
+        "neutral",
+        "positive",
+        "positive",
+        "negative",
+    ]
     client = make_cycling_client(responses)
 
     result = llm_response_consistency(

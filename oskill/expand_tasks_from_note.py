@@ -4,9 +4,8 @@ import hashlib
 import unicodedata
 from datetime import date
 
-from pydantic import BaseModel, Field
-
 from oprim.parse_obsidian_tasks import parse_obsidian_tasks
+from pydantic import BaseModel, Field
 
 
 class NormalizedTask(BaseModel):
@@ -47,7 +46,7 @@ def expand_tasks_from_note(note_content: str) -> list[NormalizedTask]:
     for t in raw_tasks:
         # Normalize text: NFKC + strip
         norm_text = unicodedata.normalize("NFKC", t.text).strip()
-        
+
         # Canonical representation for fingerprint
         parts = [
             norm_text.lower(),
@@ -57,9 +56,9 @@ def expand_tasks_from_note(note_content: str) -> list[NormalizedTask]:
             ",".join(sorted(t.tags)),
         ]
         canonical = "|".join(parts)
-        
+
         fp = hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
-        
+
         normalized.append(
             NormalizedTask(
                 text=norm_text,

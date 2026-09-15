@@ -151,7 +151,7 @@ def particle_filter_pipeline(
         particles_history[t] = particles
 
         # --- ESS ---
-        ess = 1.0 / np.sum(weights ** 2)
+        ess = 1.0 / np.sum(weights**2)
         ess_history[t] = ess
 
         # --- Resample if ESS < N/2 ---

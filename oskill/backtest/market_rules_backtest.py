@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Callable
 
 import oprim
 
@@ -144,9 +143,15 @@ def market_rules_backtest_run(
 
         if side == "buy":
             trade_amount = cash * size_fraction
-            fee = oprim.commission(trade_amount, commission_rules["rate"], commission_rules.get("min_fee", 0.0))
+            fee = oprim.commission(
+                trade_amount, commission_rules["rate"], commission_rules.get("min_fee", 0.0)
+            )
             tax_dir = stamp_tax_rules.get("direction", "sell")
-            tax = oprim.stamp_tax(trade_amount, stamp_tax_rules["rate"], tax_dir) if tax_dir in ("buy", "both") else 0.0
+            tax = (
+                oprim.stamp_tax(trade_amount, stamp_tax_rules["rate"], tax_dir)
+                if tax_dir in ("buy", "both")
+                else 0.0
+            )
             total_cost = trade_amount + fee + tax
             qty = trade_amount / exec_price if exec_price > 0 else 0
 
@@ -162,25 +167,33 @@ def market_rules_backtest_run(
             pos = positions[symbol]
             qty = pos["qty"]
             trade_amount = qty * exec_price
-            fee = oprim.commission(trade_amount, commission_rules["rate"], commission_rules.get("min_fee", 0.0))
+            fee = oprim.commission(
+                trade_amount, commission_rules["rate"], commission_rules.get("min_fee", 0.0)
+            )
             tax_dir = stamp_tax_rules.get("direction", "sell")
-            tax = oprim.stamp_tax(trade_amount, stamp_tax_rules["rate"], tax_dir) if tax_dir in ("sell", "both") else 0.0
+            tax = (
+                oprim.stamp_tax(trade_amount, stamp_tax_rules["rate"], tax_dir)
+                if tax_dir in ("sell", "both")
+                else 0.0
+            )
             net_proceeds = trade_amount - fee - tax
             pnl = net_proceeds - (qty * pos["entry_price"]) - pos.get("entry_cost", 0.0)
             pnl_pct = pnl / (qty * pos["entry_price"]) if pos["entry_price"] > 0 else 0.0
 
             cash += net_proceeds
-            trades.append({
-                "symbol": symbol,
-                "entry_date": pos["entry_date"],
-                "exit_date": exec_date,
-                "entry_price": pos["entry_price"],
-                "exit_price": exec_price,
-                "qty": qty,
-                "pnl": pnl,
-                "pnl_pct": pnl_pct,
-                "fees": fee + tax,
-            })
+            trades.append(
+                {
+                    "symbol": symbol,
+                    "entry_date": pos["entry_date"],
+                    "exit_date": exec_date,
+                    "entry_price": pos["entry_price"],
+                    "exit_price": exec_price,
+                    "qty": qty,
+                    "pnl": pnl,
+                    "pnl_pct": pnl_pct,
+                    "fees": fee + tax,
+                }
+            )
             del positions[symbol]
 
         if exec_date not in processed_dates:

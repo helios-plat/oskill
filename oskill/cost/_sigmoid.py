@@ -5,6 +5,7 @@ Smooth derivative (no kink at p=0 like sqrt law).
 Vol-adjusted: high-vol assets have a lower half-saturation point
 (they attract more impact per unit participation).
 """
+
 from __future__ import annotations
 
 import math

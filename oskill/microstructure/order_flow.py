@@ -51,9 +51,7 @@ def order_flow_imbalance(
         if window is not None:
             # Rolling sum of raw imbalance (un-normalized)
             raw = bid_volumes - ask_volumes
-            ofi = np.array(
-                [raw[max(0, i - window + 1) : i + 1].sum() for i in range(len(raw))]
-            )
+            ofi = np.array([raw[max(0, i - window + 1) : i + 1].sum() for i in range(len(raw))])
         return ofi
 
     elif method == "price_weighted":
@@ -87,9 +85,7 @@ def order_flow_imbalance(
             ofi[t] = bid_contrib - ask_contrib
 
         if window is not None:
-            ofi = np.array(
-                [ofi[max(0, i - window + 1) : i + 1].sum() for i in range(len(ofi))]
-            )
+            ofi = np.array([ofi[max(0, i - window + 1) : i + 1].sum() for i in range(len(ofi))])
         return ofi
 
     else:

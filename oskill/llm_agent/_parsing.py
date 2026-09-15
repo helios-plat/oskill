@@ -1,4 +1,5 @@
 """JSON extraction from LLM response (LLMs sometimes wrap in markdown)."""
+
 from __future__ import annotations
 
 import json

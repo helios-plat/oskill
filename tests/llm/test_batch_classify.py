@@ -1,6 +1,5 @@
 """Tests for oskill.llm.batch_classify (B7)."""
 
-import json
 from unittest.mock import MagicMock
 
 from oskill.llm.batch_classify import llm_batch_classify
@@ -15,13 +14,17 @@ def _mock_llm(response: str) -> MagicMock:
 class TestLLMBatchClassify:
     def test_mock_llm_json(self) -> None:
         llm = _mock_llm('[{"item_idx": 1, "labels": ["tech"]}]')
-        result = llm_batch_classify(items=[{"text": "AI startup"}], labels=["tech", "finance"], llm=llm)
+        result = llm_batch_classify(
+            items=[{"text": "AI startup"}], labels=["tech", "finance"], llm=llm
+        )
         assert len(result["results"]) >= 1
         assert result["errors"] == []
 
     def test_multi_label(self) -> None:
         llm = _mock_llm('[{"item_idx": 1, "labels": ["tech", "finance"]}]')
-        result = llm_batch_classify(items=[{"text": "fintech"}], labels=["tech", "finance"], llm=llm, multi_label=True)
+        result = llm_batch_classify(
+            items=[{"text": "fintech"}], labels=["tech", "finance"], llm=llm, multi_label=True
+        )
         assert len(result["results"]) >= 1
 
     def test_parse_output_fallback(self) -> None:
@@ -45,7 +48,9 @@ class TestLLMBatchClassify:
 
     def test_cost_accumulates(self) -> None:
         llm = _mock_llm('[{"item_idx": 1, "labels": ["a"]}]')
-        result = llm_batch_classify(items=[{"text": f"item{i}"} for i in range(5)], labels=["a"], llm=llm, batch_size=2)
+        result = llm_batch_classify(
+            items=[{"text": f"item{i}"} for i in range(5)], labels=["a"], llm=llm, batch_size=2
+        )
         assert result["cost_usd"] > 0
 
     def test_empty_items(self) -> None:

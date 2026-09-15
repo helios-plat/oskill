@@ -7,8 +7,8 @@ import pytest
 
 from oskill.conformal.split_cp import conformal_prediction_interval
 
-
 # ─── helpers ──────────────────────────────────────────────────────────────────
+
 
 def _make_synthetic(n_cal=200, n_test=100, noise_std=1.0, seed=42):
     rng = np.random.default_rng(seed)
@@ -21,11 +21,19 @@ def _make_synthetic(n_cal=200, n_test=100, noise_std=1.0, seed=42):
 
 # ─── API / return keys ────────────────────────────────────────────────────────
 
+
 def test_returns_expected_keys():
     cal_p, cal_a, test_p, _ = _make_synthetic()
     result = conformal_prediction_interval(cal_p, cal_a, test_p)
-    expected = {"lower", "upper", "point_predictions", "quantile_used", "alpha",
-                "expected_coverage", "fingerprint"}
+    expected = {
+        "lower",
+        "upper",
+        "point_predictions",
+        "quantile_used",
+        "alpha",
+        "expected_coverage",
+        "fingerprint",
+    }
     assert expected == set(result.keys())
 
 
@@ -43,9 +51,7 @@ def test_lower_leq_upper():
 
 
 def test_expected_coverage_value():
-    result = conformal_prediction_interval(
-        np.zeros(100), np.zeros(100), np.zeros(10), alpha=0.1
-    )
+    result = conformal_prediction_interval(np.zeros(100), np.zeros(100), np.zeros(10), alpha=0.1)
     assert abs(result["expected_coverage"] - 0.9) < 1e-9
     assert abs(result["alpha"] - 0.1) < 1e-9
 
@@ -126,7 +132,9 @@ def test_normalized_score_function():
     test_p = rng.normal(0, 1, n_test)
     sigma = np.abs(rng.normal(1, 0.1, n_cal))
     result = conformal_prediction_interval(
-        cal_p, cal_a, test_p,
+        cal_p,
+        cal_a,
+        test_p,
         score_function="normalized",
         score_normalizer=sigma,
     )
@@ -137,9 +145,7 @@ def test_normalized_score_function():
 def test_normalized_missing_normalizer_raises():
     cal_p, cal_a, test_p, _ = _make_synthetic()
     with pytest.raises(ValueError, match="score_normalizer"):
-        conformal_prediction_interval(
-            cal_p, cal_a, test_p, score_function="normalized"
-        )
+        conformal_prediction_interval(cal_p, cal_a, test_p, score_function="normalized")
 
 
 def test_signed_score_function():
@@ -151,6 +157,7 @@ def test_signed_score_function():
 
 def test_accepts_pandas_series():
     import pandas as pd
+
     rng = np.random.default_rng(1)
     cal_p = pd.Series(rng.normal(0, 1, 100))
     cal_a = pd.Series(rng.normal(0, 1, 100))

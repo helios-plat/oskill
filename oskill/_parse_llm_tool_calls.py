@@ -1,13 +1,17 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import fnmatch
+
 import json
-import re
 import uuid
 from dataclasses import dataclass
 from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
+from ._types import (
+    ParseOskillError,
+    ToolCall,
+)
+
 
 @dataclass
 class ToolScore:
@@ -15,11 +19,13 @@ class ToolScore:
     score: float
     reason: str
 
+
 @dataclass
 class HookCmd:
     event: str
     command: str
     matcher: str | None
+
 
 def parse_llm_tool_calls(
     response: dict[str, Any],

@@ -70,8 +70,9 @@ def test_ofi_price_weighted_basic():
     ask_v = rng.uniform(50, 150, n)
     bid_p = 100 + np.cumsum(rng.normal(0, 0.05, n))
     ask_p = bid_p + 0.01
-    ofi = order_flow_imbalance(bid_v, ask_v, bid_prices=bid_p, ask_prices=ask_p,
-                                method="price_weighted")
+    ofi = order_flow_imbalance(
+        bid_v, ask_v, bid_prices=bid_p, ask_prices=ask_p, method="price_weighted"
+    )
     assert ofi.shape == (n,)
 
 

@@ -1,7 +1,7 @@
 """Tests for oskill.data.point_in_time_join (B5)."""
 
 import pandas as pd
-import pytest
+
 from oskill.data import point_in_time_join
 
 
@@ -45,10 +45,12 @@ class TestPointInTimeJoin:
 
     def test_duplicate_as_of_takes_latest(self) -> None:
         left = pd.DataFrame({"date": pd.date_range("2024-01-01", periods=10)})
-        right = pd.DataFrame({
-            "announce_date": ["2024-01-03", "2024-01-05"],
-            "eps": [1.0, 2.0],
-        })
+        right = pd.DataFrame(
+            {
+                "announce_date": ["2024-01-03", "2024-01-05"],
+                "eps": [1.0, 2.0],
+            }
+        )
         result = point_in_time_join(left=left, right=right)
         # After Jan 5, should use latest (2.0)
         assert result.iloc[5]["eps_pit"] == 2.0
@@ -56,10 +58,12 @@ class TestPointInTimeJoin:
     def test_quarterly_eps_pit_pe_fixture(self) -> None:
         """Tide business fixture: quarterly EPS with PIT semantics."""
         left = pd.DataFrame({"date": pd.date_range("2024-01-01", "2024-12-31", freq="D")})
-        right = pd.DataFrame({
-            "announce_date": ["2024-04-20", "2024-08-15", "2024-10-30"],
-            "eps": [5.0, 6.0, 7.0],  # Q1, Q2, Q3
-        })
+        right = pd.DataFrame(
+            {
+                "announce_date": ["2024-04-20", "2024-08-15", "2024-10-30"],
+                "eps": [5.0, 6.0, 7.0],  # Q1, Q2, Q3
+            }
+        )
         result = point_in_time_join(left=left, right=right)
         # Before Apr 20: NaN
         jan_rows = result[result["date"] < "2024-04-20"]
@@ -74,10 +78,12 @@ class TestPointInTimeJoin:
     def test_no_lookahead_bias(self) -> None:
         """Strict: 2024-08-14 must NOT see Q2 EPS announced 2024-08-15."""
         left = pd.DataFrame({"date": ["2024-08-14", "2024-08-15"]})
-        right = pd.DataFrame({
-            "announce_date": ["2024-04-20", "2024-08-15"],
-            "eps": [5.0, 6.0],
-        })
+        right = pd.DataFrame(
+            {
+                "announce_date": ["2024-04-20", "2024-08-15"],
+                "eps": [5.0, 6.0],
+            }
+        )
         result = point_in_time_join(left=left, right=right)
         # Aug 14 should use Q1 EPS (5.0), NOT Q2 (6.0)
         assert result.iloc[0]["eps_pit"] == 5.0

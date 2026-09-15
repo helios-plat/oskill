@@ -4,21 +4,25 @@
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any, List, Dict
+from typing import Any
+
 
 @dataclass(frozen=True)
 class EssayGuideInput:
     title: str
     content: str
-    requirements: str = "" # 写作要求
-    conversation_history: List[dict] = field(default_factory=list)
+    requirements: str = ""  # 写作要求
+    conversation_history: list[dict] = field(default_factory=list)
+
 
 @dataclass(frozen=True)
 class EssayGuideResult:
-    feedback: Dict[str, str] # 维度 -> 反馈文本
-    suggested_questions: List[str] # 引导学生思考的问题
+    feedback: dict[str, str]  # 维度 -> 反馈文本
+    suggested_questions: list[str]  # 引导学生思考的问题
     is_completed: bool = False
+
 
 _ESSAY_SYSTEM = (
     "你是一个专业的语文老师。你的任务是对学生的作文进行引导式批改。\n"
@@ -26,49 +30,40 @@ _ESSAY_SYSTEM = (
     "维度包括：结构、论证/内容、表达/修辞。\n"
     "输出 JSON：\n"
     "{\n"
-    "  \"feedback\": {\"结构\": \"...\", \"论证\": \"...\", \"表达\": \"...\"},\n"
-    "  \"suggested_questions\": [\"你觉得这里如果换一个角度写会怎样？\", ...],\n"
-    "  \"is_completed\": false\n"
+    '  "feedback": {"结构": "...", "论证": "...", "表达": "..."},\n'
+    '  "suggested_questions": ["你觉得这里如果换一个角度写会怎样？", ...],\n'
+    '  "is_completed": false\n'
     "}"
 )
 
+
 async def essay_guide(
-    inp: EssayGuideInput,
-    *,
-    caller: Any,
-    model: str = "claude-sonnet-4-6"
+    inp: EssayGuideInput, *, caller: Any, model: str = "claude-sonnet-4-6"
 ) -> EssayGuideResult:
     """作文引导批改。"""
     import json
+
     from oprim.llm._llm_complete import llm_complete
 
-    user_msg = (
-        f"作文题目: {inp.title}\n"
-        f"写作要求: {inp.requirements}\n"
-        f"学生作文正文: {inp.content}\n"
-    )
-    
+    user_msg = f"作文题目: {inp.title}\n写作要求: {inp.requirements}\n学生作文正文: {inp.content}\n"
+
     messages = list(inp.conversation_history)
     messages.append({"role": "user", "content": user_msg})
-    
-    response = await llm_complete(
-        messages,
-        caller=caller,
-        system=_ESSAY_SYSTEM,
-        model=model
-    )
-    
+
+    response = await llm_complete(messages, caller=caller, system=_ESSAY_SYSTEM, model=model)
+
     raw = response.text.strip()
     if "```" in raw:
         raw = raw.split("```")[1]
         if raw.startswith("json"):
             raw = raw[4:]
-    
+
     data = json.loads(raw)
     return EssayGuideResult(
         feedback=data.get("feedback", {}),
         suggested_questions=data.get("suggested_questions", []),
-        is_completed=data.get("is_completed", False)
+        is_completed=data.get("is_completed", False),
     )
+
 
 __version__ = "0.1.0"

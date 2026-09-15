@@ -8,9 +8,8 @@ from math import comb
 from typing import Any
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 
 def probability_of_backtest_overfitting(

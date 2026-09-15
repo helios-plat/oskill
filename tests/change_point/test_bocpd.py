@@ -2,13 +2,18 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.change_point.bayesian_online import bocpd_bayesian
 
 
-def _make_mean_shift_series(rng: np.random.Generator, n1: int = 50, n2: int = 50,
-                             mu1: float = 0.0, mu2: float = 5.0, sigma: float = 0.5):
+def _make_mean_shift_series(
+    rng: np.random.Generator,
+    n1: int = 50,
+    n2: int = 50,
+    mu1: float = 0.0,
+    mu2: float = 5.0,
+    sigma: float = 0.5,
+):
     """Generate series with one mean shift."""
     seg1 = rng.normal(mu1, sigma, n1)
     seg2 = rng.normal(mu2, sigma, n2)

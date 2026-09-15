@@ -1,4 +1,5 @@
 """Bear-biased analyst — single LLM call (mirrors bull_analyst, SYSTEM_BEAR)."""
+
 from __future__ import annotations
 
 import structlog

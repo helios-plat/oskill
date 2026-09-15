@@ -15,8 +15,8 @@ def _autocorrelation(x: np.ndarray, max_lag: int) -> np.ndarray:
     if var < 1e-14:
         return np.zeros(max_lag)
     full = np.correlate(xc, xc, mode="full")
-    acf = full[n - 1:] / (var * n)
-    return acf[1: max_lag + 1]
+    acf = full[n - 1 :] / (var * n)
+    return acf[1 : max_lag + 1]
 
 
 def _ess(x: np.ndarray) -> float:
@@ -38,11 +38,10 @@ def _rhat(x: np.ndarray, n_chains: int) -> float:
         return 1.0
     n_total = len(x)
     chain_len = n_total // n_chains
-    chains = [x[i * chain_len: (i + 1) * chain_len] for i in range(n_chains)]
+    chains = [x[i * chain_len : (i + 1) * chain_len] for i in range(n_chains)]
     chain_means = np.array([c.mean() for c in chains])
     chain_vars = np.array([np.var(c, ddof=1) if len(c) > 1 else 0.0 for c in chains])
     W = float(chain_vars.mean())
-    grand_mean = float(chain_means.mean())
     B = float(chain_len * np.var(chain_means, ddof=1)) if n_chains > 1 else 0.0
     if W < 1e-14:
         return 1.0
@@ -100,7 +99,10 @@ def posterior_diagnostics(
     """
     if isinstance(posterior_samples, dict):
         keys = list(posterior_samples.keys())
-        per_param = {k: _diagnostics_1d(np.asarray(v, dtype=np.float64), n_chains) for k, v in posterior_samples.items()}
+        per_param = {
+            k: _diagnostics_1d(np.asarray(v, dtype=np.float64), n_chains)
+            for k, v in posterior_samples.items()
+        }
         return {
             "r_hat": {k: per_param[k]["r_hat"] for k in keys},
             "effective_sample_size": {k: per_param[k]["effective_sample_size"] for k in keys},

@@ -31,7 +31,6 @@ def skills_dynamic_inject(
     Returns:
         {injected, system_prompt_additions, tools_added, config_updates}
     """
-    ctx = context or {}
     injected: dict[str, Any] = {
         "system_prompt_additions": [],
         "tools_added": [],
@@ -69,9 +68,7 @@ def skills_dynamic_inject(
                 fm = s.get("frontmatter", {})
                 if fm.get("id") == f"skill/{skill_id}" or fm.get("id") == skill_id:
                     body = s.get("body", "")
-                    injected["system_prompt_additions"].append(
-                        f"[Skill: {skill_id}]\n{body[:500]}"
-                    )
+                    injected["system_prompt_additions"].append(f"[Skill: {skill_id}]\n{body[:500]}")
                     # extract tools from markdown body
                     for line in body.splitlines():
                         if line.strip().startswith("- ") and "tool" in line.lower():
@@ -89,16 +86,16 @@ def skills_dynamic_inject(
                 sid = fm.get("id", "")
                 body = s.get("body", "")
                 if body:
-                    injected["system_prompt_additions"].append(
-                        f"[Skill: {sid}]\n{body[:300]}"
-                    )
+                    injected["system_prompt_additions"].append(f"[Skill: {sid}]\n{body[:300]}")
         except Exception:
             pass
 
     # apply to agent context
     sys_prompt = agent_context.get("system_prompt", "")
     if injected["system_prompt_additions"]:
-        sys_prompt += "\n\n## Dynamic Skills & Plugins\n" + "\n".join(injected["system_prompt_additions"])
+        sys_prompt += "\n\n## Dynamic Skills & Plugins\n" + "\n".join(
+            injected["system_prompt_additions"]
+        )
     agent_context["system_prompt"] = sys_prompt
     agent_context.setdefault("tools", []).extend(injected["tools_added"])
     agent_context.setdefault("config", {}).update(injected["config_updates"])

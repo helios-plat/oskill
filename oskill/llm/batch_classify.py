@@ -42,7 +42,7 @@ def llm_batch_classify(
         return {"results": [], "errors": [], "cost_usd": 0.0}
 
     for i in range(0, len(items), batch_size):
-        batch = items[i:i + batch_size]
+        batch = items[i : i + batch_size]
         prompt = _build_prompt(batch, labels, multi_label, system_prompt)
 
         try:
@@ -64,7 +64,7 @@ def _build_prompt(
     system_prompt: str | None,
 ) -> str:
     items_text = "\n".join(
-        f"{i+1}. {item.get('text', item.get('content', str(item)))}"
+        f"{i + 1}. {item.get('text', item.get('content', str(item)))}"
         for i, item in enumerate(batch)
     )
     label_str = ", ".join(labels)
@@ -97,7 +97,10 @@ def _parse_response(
             parsed = json.loads(response)
     except (json.JSONDecodeError, ValueError):
         # Fallback: assign first label to all
-        return [{"item": item, "labels": [labels[0]] if labels else [], "confidence": 0.0} for item in batch]
+        return [
+            {"item": item, "labels": [labels[0]] if labels else [], "confidence": 0.0}
+            for item in batch
+        ]
 
     results = []
     for entry in parsed:
@@ -109,10 +112,13 @@ def _parse_response(
             results.append({"item": batch[idx], "labels": item_labels, "confidence": 0.8})
 
     # Fill missing items
-    classified_indices = {r.get("item", {}).get("_idx") for r in results}
     for i, item in enumerate(batch):
-        if i not in {entry.get("item_idx", 0) - 1 for entry in (parsed if isinstance(parsed, list) else [])}: 
+        if i not in {
+            entry.get("item_idx", 0) - 1 for entry in (parsed if isinstance(parsed, list) else [])
+        }:
             if len(results) < len(batch):
-                results.append({"item": item, "labels": [labels[0]] if labels else [], "confidence": 0.0})
+                results.append(
+                    {"item": item, "labels": [labels[0]] if labels else [], "confidence": 0.0}
+                )
 
-    return results[:len(batch)]
+    return results[: len(batch)]

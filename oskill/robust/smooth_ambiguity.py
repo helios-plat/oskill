@@ -1,4 +1,5 @@
 """Smooth ambiguity portfolio optimization (Klibanoff-Marinacci-Mukerji 2005)."""
+
 from __future__ import annotations
 
 from typing import Any, Literal
@@ -86,9 +87,7 @@ def smooth_ambiguity_portfolio(
     if prior.shape != (K,):
         raise ValueError(f"prior_over_models must have shape ({K},), got {prior.shape}")
     if abs(prior.sum() - 1.0) > 1e-8:
-        raise ValueError(
-            f"prior_over_models must sum to 1, got {prior.sum():.6f}"
-        )
+        raise ValueError(f"prior_over_models must sum to 1, got {prior.sum():.6f}")
     if ambiguity_aversion <= 0:
         raise ValueError(f"ambiguity_aversion must be > 0, got {ambiguity_aversion!r}")
 
@@ -97,9 +96,7 @@ def smooth_ambiguity_portfolio(
         raise ValueError("Each model_returns array must be 2D (T, N)")
     for k, mr in enumerate(model_returns):
         if mr.shape != ref_shape:
-            raise ValueError(
-                f"model_returns[{k}] has shape {mr.shape}, expected {ref_shape}"
-            )
+            raise ValueError(f"model_returns[{k}] has shape {mr.shape}, expected {ref_shape}")
 
     T, N = ref_shape
 
@@ -141,9 +138,7 @@ def smooth_ambiguity_portfolio(
     ambiguity_premium = smooth_utility - neutral_utility
 
     # --- Model belief distortion (implied posterior) ---
-    phi_primes = np.array(
-        [_phi_deriv(eu_per_model[k], phi, ambiguity_aversion) for k in range(K)]
-    )
+    phi_primes = np.array([_phi_deriv(eu_per_model[k], phi, ambiguity_aversion) for k in range(K)])
     weighted = phi_primes * prior
     denom = weighted.sum()
     model_belief_distortion = weighted / denom if denom > 1e-15 else prior.copy()

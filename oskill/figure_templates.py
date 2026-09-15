@@ -110,8 +110,7 @@ def resolve_template(value: str) -> str:
         if hint.lower() in lowered:
             return template_id
     raise ValueError(
-        f"Unknown template: {value!r}. "
-        f"Available ids: {', '.join(sorted(FIGURE_TEMPLATES))}"
+        f"Unknown template: {value!r}. Available ids: {', '.join(sorted(FIGURE_TEMPLATES))}"
     )
 
 
@@ -213,9 +212,9 @@ python3 {script_path.as_posix()}
 
 Outputs:
 
-- `{output_stem.with_suffix('.png').as_posix()}`
-- `{output_stem.with_suffix('.pdf').as_posix()}`
-- `{output_stem.with_suffix('.svg').as_posix()}`
+- `{output_stem.with_suffix(".png").as_posix()}`
+- `{output_stem.with_suffix(".pdf").as_posix()}`
+- `{output_stem.with_suffix(".svg").as_posix()}`
 """.strip()
     marker = f"## {template_id}"
     if readme.exists():

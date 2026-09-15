@@ -6,7 +6,6 @@ import pytest
 
 from oskill.dsl.evaluator import dsl_rule_evaluate, dsl_rule_validate
 
-
 # ─── Minimal valid schema for testing ────────────────────────────────────────
 
 SIMPLE_SCHEMA = {
@@ -88,7 +87,9 @@ class TestDslRuleEvaluate:
             "trigger": {"type": "price_breakout", "conditions": {}},
             "action": {"type": "send_alert"},
         }
-        result = await dsl_rule_evaluate(rule_spec, {}, {"price_breakout": trigger_handler}, {}, {"send_alert": action_handler})
+        result = await dsl_rule_evaluate(
+            rule_spec, {}, {"price_breakout": trigger_handler}, {}, {"send_alert": action_handler}
+        )
         assert result["triggered"] is True
         assert result["action_executed"] is True
         assert len(executed) == 1
@@ -148,7 +149,9 @@ class TestDslRuleEvaluate:
             "trigger": {"type": "t1", "conditions": {}},
             "action": {"type": "a1"},
         }
-        result = await dsl_rule_evaluate(rule_spec, {}, {"t1": trigger_handler}, {}, {"a1": action_handler})
+        result = await dsl_rule_evaluate(
+            rule_spec, {}, {"t1": trigger_handler}, {}, {"a1": action_handler}
+        )
         stages = {t["stage"] for t in result["trace"]}
         assert "trigger" in stages
         assert "action" in stages
@@ -176,7 +179,9 @@ class TestDslRuleEvaluate:
             "filter": {"scope_type": "no_such_filter"},
             "action": {"type": "a1"},
         }
-        result = await dsl_rule_evaluate(rule_spec, {}, {"t1": trigger_handler}, {}, {"a1": action_handler})
+        result = await dsl_rule_evaluate(
+            rule_spec, {}, {"t1": trigger_handler}, {}, {"a1": action_handler}
+        )
         assert result["filter_passed"] is True
         assert result["action_executed"] is True
 
@@ -211,7 +216,11 @@ class TestDslRuleEvaluate:
             "action": {"type": "a1"},
         }
         result = await dsl_rule_evaluate(
-            rule_spec, {}, {"t1": trigger_handler}, {"bad_filter": bad_filter}, {"a1": action_handler}
+            rule_spec,
+            {},
+            {"t1": trigger_handler},
+            {"bad_filter": bad_filter},
+            {"a1": action_handler},
         )
         assert result["filter_passed"] is False
         assert result["action_executed"] is False
@@ -263,7 +272,11 @@ class TestDslRuleEvaluate:
             "action": {"type": "fire"},
         }
         result = await dsl_rule_evaluate(
-            rule_spec, {}, {"match": trigger_handler}, {"scope": filter_handler}, {"fire": action_handler}
+            rule_spec,
+            {},
+            {"match": trigger_handler},
+            {"scope": filter_handler},
+            {"fire": action_handler},
         )
         assert log == ["trigger", "filter", "action"]
         assert result["triggered"] is True

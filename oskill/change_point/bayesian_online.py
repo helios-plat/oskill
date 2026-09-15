@@ -79,8 +79,9 @@ def bocpd_bayesian(
 
     map_run_length = np.zeros(T, dtype=np.int32)
 
-    def _student_t_predictive(x_t: float, mu: np.ndarray, kappa: np.ndarray,
-                               alpha: np.ndarray, beta: np.ndarray) -> np.ndarray:
+    def _student_t_predictive(
+        x_t: float, mu: np.ndarray, kappa: np.ndarray, alpha: np.ndarray, beta: np.ndarray
+    ) -> np.ndarray:
         """Student-T predictive distribution under Normal-Gamma prior."""
         # P(x | mu, kappa, alpha, beta) = Student-T(2*alpha, mu, beta*(kappa+1)/(kappa*alpha))
         df = 2.0 * alpha
@@ -88,12 +89,14 @@ def bocpd_bayesian(
         scale = np.sqrt(beta * (kappa + 1.0) / (kappa * alpha))
         # Use log-pdf for numerical stability
         from scipy.stats import t as student_t
+
         # Evaluate PDF at x_t
         log_pred = student_t.logpdf(x_t, df=df, loc=loc, scale=scale)
         return np.exp(log_pred)
 
-    def _gaussian_predictive(x_t: float, mu: np.ndarray, kappa: np.ndarray,
-                              alpha: np.ndarray, beta: np.ndarray) -> np.ndarray:
+    def _gaussian_predictive(
+        x_t: float, mu: np.ndarray, kappa: np.ndarray, alpha: np.ndarray, beta: np.ndarray
+    ) -> np.ndarray:
         """Gaussian predictive (via marginalizing Normal-Gamma)."""
         # This is also Student-T when marginalizing over unknown mean and variance
         return _student_t_predictive(x_t, mu, kappa, alpha, beta)
@@ -107,11 +110,11 @@ def bocpd_bayesian(
 
         # Current valid run lengths are 0..t-1
         valid_r = t  # indices 0..t-1
-        r_vec = np.arange(valid_r)
 
         # Predictive probabilities P(x_t | r_{t-1} = r, data)
-        pred_probs = pred_fn(x_t, mu_r[:valid_r], kappa_r[:valid_r],
-                             alpha_r[:valid_r], beta_r[:valid_r])
+        pred_probs = pred_fn(
+            x_t, mu_r[:valid_r], kappa_r[:valid_r], alpha_r[:valid_r], beta_r[:valid_r]
+        )
 
         # Growth: r_{t-1} -> r_t = r_{t-1} + 1 (no change point)
         growth = run_lengths[t - 1, :valid_r] * pred_probs * (1.0 - h)
@@ -152,7 +155,9 @@ def bocpd_bayesian(
         new_kappa = kappa_r[:valid_r] + 1.0
         new_mu = (kappa_r[:valid_r] * mu_r[:valid_r] + x_t) / new_kappa
         new_alpha = alpha_r[:valid_r] + 0.5
-        new_beta = beta_r[:valid_r] + (kappa_r[:valid_r] * (x_t - mu_r[:valid_r]) ** 2) / (2.0 * new_kappa)
+        new_beta = beta_r[:valid_r] + (kappa_r[:valid_r] * (x_t - mu_r[:valid_r]) ** 2) / (
+            2.0 * new_kappa
+        )
 
         # Shift right: slot r+1 gets what was r
         kappa_r[1 : valid_r + 1] = new_kappa

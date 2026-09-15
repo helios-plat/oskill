@@ -7,7 +7,6 @@ import pytest
 
 from oskill.llm.prompt_fingerprint import prompt_fingerprint
 
-
 # ── Happy path ──────────────────────────────────────────────────────────────
 
 
@@ -80,6 +79,7 @@ def test_prompt_fingerprint_template_only():
 def test_prompt_fingerprint_canonical_string_is_json():
     """full_payload_canonical is valid JSON containing the template."""
     import json
+
     result = prompt_fingerprint("My {template}", {"k": "v"}, model="m")
     payload = json.loads(result["full_payload_canonical"])
     assert payload["template"] == "My {template}"
@@ -105,9 +105,7 @@ def test_prompt_fingerprint_cross_process_determinism():
     seed = 42
 
     # Compute fingerprint in this process
-    result = prompt_fingerprint(
-        template, variables, model=model, temperature=0.0, seed=seed
-    )
+    result = prompt_fingerprint(template, variables, model=model, temperature=0.0, seed=seed)
     expected_fp = result["fingerprint"]
 
     # Compute fingerprint in a subprocess

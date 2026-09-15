@@ -47,16 +47,17 @@ async def reference_generator(
 
     system = (
         "For each shot, generate a detailed image prompt with style tags. "
-        "Return JSON array: [{\"shot_id\", \"detailed_prompt\", \"style_tags\": []}]"
+        'Return JSON array: [{"shot_id", "detailed_prompt", "style_tags": []}]'
     )
     if style_prompt:
         system += f"\nGlobal style: {style_prompt}"
 
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": system},
-        {"role": "user", "content": json.dumps(
-            [s.model_dump() for s in shots], ensure_ascii=False
-        )},
+        {
+            "role": "user",
+            "content": json.dumps([s.model_dump() for s in shots], ensure_ascii=False),
+        },
     ]
 
     result = llm(messages=messages)
@@ -68,9 +69,7 @@ async def reference_generator(
         raise ReferenceGeneratorError(f"LLM returned invalid JSON: {content[:200]}") from exc
 
     if len(data) != len(shots):
-        raise ReferenceGeneratorError(
-            f"Count mismatch: got {len(data)}, expected {len(shots)}"
-        )
+        raise ReferenceGeneratorError(f"Count mismatch: got {len(data)}, expected {len(shots)}")
 
     try:
         return [ReferenceDescription.model_validate(item) for item in data]

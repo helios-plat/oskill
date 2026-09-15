@@ -21,12 +21,40 @@ from typing import Any
 
 # 主观/不可观察信号词 (用于反噪声检查)
 _SUBJECTIVE_WORDS = (
-    "好", "美", "优雅", "自然", "生动", "高级", "简洁", "易读", "专业",
-    "nice", "beautiful", "elegant", "polished", "professional", "great",
-    "高质量", "优质", "awesome", "clean",
+    "好",
+    "美",
+    "优雅",
+    "自然",
+    "生动",
+    "高级",
+    "简洁",
+    "易读",
+    "专业",
+    "nice",
+    "beautiful",
+    "elegant",
+    "polished",
+    "professional",
+    "great",
+    "高质量",
+    "优质",
+    "awesome",
+    "clean",
 )
-_ACTION_WORDS = ("写入", "发布", "上传", "删除", "发送", "write", "publish",
-                 "upload", "delete", "send", "commit", "push")
+_ACTION_WORDS = (
+    "写入",
+    "发布",
+    "上传",
+    "删除",
+    "发送",
+    "write",
+    "publish",
+    "upload",
+    "delete",
+    "send",
+    "commit",
+    "push",
+)
 
 
 @dataclass(frozen=True)
@@ -46,8 +74,12 @@ class Resource:
     loadable: bool = True
 
     def to_dict(self) -> dict[str, Any]:
-        return {"name": self.name, "kind": self.kind,
-                "description": self.description, "loadable": self.loadable}
+        return {
+            "name": self.name,
+            "kind": self.kind,
+            "description": self.description,
+            "loadable": self.loadable,
+        }
 
 
 class ResourceCatalog:
@@ -80,10 +112,7 @@ class ResourceCatalog:
         Returns:
             资源列表 (kind, name 排序)。
         """
-        items = [
-            r for (k, _), r in self._resources.items()
-            if kind is None or k == kind
-        ]
+        items = [r for (k, _), r in self._resources.items() if kind is None or k == kind]
         items.sort(key=lambda r: (r.kind, r.name))
         return items
 
@@ -95,8 +124,10 @@ class ResourceCatalog:
         """取资源; 不存在抛 KeyError。"""
         key = (kind, name)
         if key not in self._resources:
-            raise KeyError(f"unknown resource {kind}:{name!r}; "
-                           f"available: {[r.name for r in self.discover(kind)]}")
+            raise KeyError(
+                f"unknown resource {kind}:{name!r}; "
+                f"available: {[r.name for r in self.discover(kind)]}"
+            )
         return self._resources[key]
 
     def detail(self, kind: str, name: str) -> Any:
@@ -114,6 +145,7 @@ class ResourceCatalog:
 
 # ── 2. Anti-Noise 决策验证器 ─────────────────────────────────────────
 
+
 @dataclass
 class DecisionVerdict:
     """一次决策验证的结论。"""
@@ -127,8 +159,12 @@ class DecisionVerdict:
         return not self.failures
 
     def to_dict(self) -> dict[str, Any]:
-        return {"decision": self.decision, "checks": self.checks,
-                "failures": self.failures, "ok": self.ok}
+        return {
+            "decision": self.decision,
+            "checks": self.checks,
+            "failures": self.failures,
+            "ok": self.ok,
+        }
 
 
 class AntiNoiseValidator:
@@ -187,7 +223,11 @@ class AntiNoiseValidator:
             return True
         # 有证据说明确实存在障碍/风险 → 防真实错误; 无实质证据 → 锦上添花
         return any(
-            re.search(r"(fail|block|error|missing|invalid|limit|"
-                      r"超限|缺失|失败|越界|超过|超出)", item, re.I)
+            re.search(
+                r"(fail|block|error|missing|invalid|limit|"
+                r"超限|缺失|失败|越界|超过|超出)",
+                item,
+                re.I,
+            )
             for item in evidence
         )

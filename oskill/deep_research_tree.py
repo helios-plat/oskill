@@ -11,7 +11,8 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def deep_research_tree(
@@ -28,13 +29,13 @@ def deep_research_tree(
         context: {max_depth, max_branches, max_citations, ...}
 
     Returns:
-        {status, findings: [{hypothesis, evidence, citations, confidence}], report, tree_depth, total_steps}
+        {status, findings: [{hypothesis, evidence, citations, confidence}], report,
+        tree_depth, total_steps}
     """
     ctx = context or {}
     max_depth = int(ctx.get("max_depth", 3))
     max_branches = int(ctx.get("max_branches", 5))
 
-    findings: list[dict[str, Any]] = []
     visited: set[str] = set()
 
     def _branch(question: str, depth: int) -> list[dict[str, Any]]:
@@ -47,11 +48,20 @@ def deep_research_tree(
         if llm_caller is not None:
             try:
                 out = llm_caller(
-                    messages=[{"role": "system", "content": (
-                        "You are a deep research agent. For the given question, output JSON: "
-                        '{"answer": "...", "citations": ["source1", ...], "confidence": 0.0-1.0, "sub_questions": ["q1", ...]}'
-                    )}, {"role": "user", "content": question}],
-                    tools=None, config=ctx,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a deep research agent. For the given question, "
+                                "output JSON: "
+                                '{"answer": "...", "citations": ["source1", ...], "confidence": '
+                                '0.0-1.0, "sub_questions": ["q1", ...]}'
+                            ),
+                        },
+                        {"role": "user", "content": question},
+                    ],
+                    tools=None,
+                    config=ctx,
                 )
                 raw = out.get("content", "") if isinstance(out, dict) else str(out)
                 m = re.search(r"```json\s*(.*?)\s*```", raw, re.DOTALL)
@@ -61,12 +71,17 @@ def deep_research_tree(
         else:
             parsed = _deterministic_research(question)
 
-        results.append({
-            "hypothesis": question, "evidence": parsed.get("answer", ""),
-            "citations": parsed.get("citations", [])[:max(int(ctx.get("max_citations", 10)), 1)],
-            "confidence": float(parsed.get("confidence", 0.5)),
-            "depth": depth,
-        })
+        results.append(
+            {
+                "hypothesis": question,
+                "evidence": parsed.get("answer", ""),
+                "citations": parsed.get("citations", [])[
+                    : max(int(ctx.get("max_citations", 10)), 1)
+                ],
+                "confidence": float(parsed.get("confidence", 0.5)),
+                "depth": depth,
+            }
+        )
 
         # branch: recursively explore sub-questions
         subs = parsed.get("sub_questions", [])[:max_branches]
@@ -78,7 +93,10 @@ def deep_research_tree(
     all_findings = _branch(query, 1)
 
     # synthesize report
-    report_lines = [f"# Deep Research: {query}", f"Depth: {max_depth}, Findings: {len(all_findings)}"]
+    report_lines = [
+        f"# Deep Research: {query}",
+        f"Depth: {max_depth}, Findings: {len(all_findings)}",
+    ]
     for f in all_findings:
         report_lines.append(f"\n## {f['hypothesis']} (confidence: {f['confidence']:.2f})")
         report_lines.append(f["evidence"][:500])
@@ -108,4 +126,9 @@ def _deterministic_research(question: str) -> dict[str, Any]:
     for kw in ["定义", "实现", "对比", "未来", "风险"]:
         if kw in question or len(question) > 30:
             subs.append(f"{question} 的{kw}")
-    return {"answer": f"关于 '{question}' 的研究", "citations": [], "confidence": 0.5, "sub_questions": subs[:3]}
+    return {
+        "answer": f"关于 '{question}' 的研究",
+        "citations": [],
+        "confidence": 0.5,
+        "sub_questions": subs[:3],
+    }

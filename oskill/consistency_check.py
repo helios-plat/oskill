@@ -44,14 +44,18 @@ async def consistency_check(
         raise ConsistencyCheckError("shots must not be empty")
 
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": (
-            "Check consistency of characters, scenes, and style across shots. "
-            "Return JSON: {\"issues\": [{\"shot_id\", \"description\", \"severity\"}], "
-            "\"overall_score\": 0.0-1.0}"
-        )},
-        {"role": "user", "content": json.dumps(
-            [s.model_dump() for s in shots], ensure_ascii=False
-        )},
+        {
+            "role": "system",
+            "content": (
+                "Check consistency of characters, scenes, and style across shots. "
+                'Return JSON: {"issues": [{"shot_id", "description", "severity"}], '
+                '"overall_score": 0.0-1.0}'
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps([s.model_dump() for s in shots], ensure_ascii=False),
+        },
     ]
 
     result = llm(messages=messages)

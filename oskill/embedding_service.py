@@ -73,13 +73,12 @@ class EmbeddingService:
         if provider_id is not None:
             if provider_id not in self.providers:
                 raise ValueError(
-                    f"provider not found: {provider_id!r}; "
-                    f"registered: {list(self.providers)}")
+                    f"provider not found: {provider_id!r}; registered: {list(self.providers)}"
+                )
             return self.providers[provider_id]
         if len(self.providers) == 1:
             return next(iter(self.providers.values()))
-        raise ValueError(
-            f"no provider specified; registered: {list(self.providers)}")
+        raise ValueError(f"no provider specified; registered: {list(self.providers)}")
 
 
 # ── 常见提供者工厂 (嵌入函数由调用方注入) ──────────────────────────
@@ -94,9 +93,14 @@ def openai_provider(
     endpoint = (base_url or "https://api.openai.com/v1") + "/embeddings"
 
     def embed(text: str) -> list[float]:
-        body = '{"model": "' + model + '", "input": ' + (
-            model,
-            __import__("json").dumps(text, ensure_ascii=False),
+        body = (
+            '{"model": "'
+            + model
+            + '", "input": '
+            + (
+                model,
+                __import__("json").dumps(text, ensure_ascii=False),
+            )
         )
         req = urllib.request.Request(
             endpoint,

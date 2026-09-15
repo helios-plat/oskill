@@ -8,13 +8,14 @@ Mandate (CI-checked):
   - grade field in ConflictPair is hardcoded "unverified"; LLM cannot raise it
   - Returns [] when no conflicts found; never fabricates conflicts
 """
+
 from __future__ import annotations
 
 import json
 import re
 
-from oprim._ku_conflict_detect import ku_conflict_detect
 from oprim._aii_graph_types import ConflictPair
+from oprim._ku_conflict_detect import ku_conflict_detect
 
 _SYSTEM = (
     "You are a knowledge consistency expert. Analyze whether two statements conflict. "
@@ -84,14 +85,16 @@ async def conflict_resolution(
             if verdict is None:
                 continue
 
-            pairs.append(ConflictPair(
-                new_ku_idx=i,
-                existing_ku_id=exist_id,
-                conflict_type=verdict["conflict_type"],
-                description=verdict["description"],
-                severity=verdict.get("severity", "low"),
-                # grade is set by __post_init__ to "unverified" — not from LLM
-            ))
+            pairs.append(
+                ConflictPair(
+                    new_ku_idx=i,
+                    existing_ku_id=exist_id,
+                    conflict_type=verdict["conflict_type"],
+                    description=verdict["description"],
+                    severity=verdict.get("severity", "low"),
+                    # grade is set by __post_init__ to "unverified" — not from LLM
+                )
+            )
 
     return pairs
 

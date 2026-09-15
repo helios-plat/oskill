@@ -6,6 +6,7 @@ Costs $0.001-0.01 per run. Run manually, not in CI.
 Usage:
     DEEPSEEK_TEST_API_KEY=sk-... pytest tests/integration/test_deepseek_real.py -v -s
 """
+
 from __future__ import annotations
 
 import os
@@ -43,7 +44,7 @@ async def test_real_simple_call():
     assert result["elapsed_ms"] > 0
     assert len(result["prompt_hash_hex"]) == 64
 
-    print(f"\nReal API result:")
+    print("\nReal API result:")
     print(f"  content:      {result['content']!r}")
     print(f"  tokens in/out: {result['input_tokens']}/{result['output_tokens']}")
     print(f"  cost:          ${result['cost_usd']:.6f}")

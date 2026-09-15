@@ -10,13 +10,13 @@ from oskill.formal_proof_verify import formal_proof_verify
 def test_formal_proof_proven():
     # Mock lookup function
     mock_lookup_fn = MagicMock()
-    
+
     # Mock a hit
     mock_hit = MagicMock()
     mock_hit.name = "Nat.add_comm"
     mock_hit.module = "Mathlib.Algebra.Group.Nat"
     mock_hit.dict.return_value = {"name": "Nat.add_comm", "module": "Mathlib.Algebra.Group.Nat"}
-    
+
     mock_res = MagicMock()
     mock_res.count = 1
     mock_res.hits = [mock_hit]
@@ -24,9 +24,7 @@ def test_formal_proof_proven():
 
     name_dict = {"加法交换律": "Nat.add_comm"}
     result = formal_proof_verify(
-        theorem_name="加法交换律",
-        name_dict=name_dict,
-        mathlib_lookup_fn=mock_lookup_fn
+        theorem_name="加法交换律", name_dict=name_dict, mathlib_lookup_fn=mock_lookup_fn
     )
 
     assert result.verdict == "proven"
@@ -35,16 +33,14 @@ def test_formal_proof_proven():
     assert result.evidence == "established_proof:mathlib:Nat.add_comm:Mathlib.Algebra.Group.Nat"
     assert len(result.decision_trail) == 3
     assert result.decision_trail[2]["status"] == "proven"
-    
+
     mock_lookup_fn.assert_called_once_with(identifier="Nat.add_comm")
 
 
 def test_formal_proof_not_in_dict():
     mock_lookup_fn = MagicMock()
     result = formal_proof_verify(
-        theorem_name="未知定理",
-        name_dict={},
-        mathlib_lookup_fn=mock_lookup_fn
+        theorem_name="未知定理", name_dict={}, mathlib_lookup_fn=mock_lookup_fn
     )
     assert result.verdict == "not_elevated"
     assert result.decision_trail[0]["status"] == "failed"
@@ -59,9 +55,7 @@ def test_formal_proof_no_hits():
     mock_lookup_fn.return_value = mock_res
 
     result = formal_proof_verify(
-        theorem_name="定理",
-        name_dict={"定理": "Lemma.none"},
-        mathlib_lookup_fn=mock_lookup_fn
+        theorem_name="定理", name_dict={"定理": "Lemma.none"}, mathlib_lookup_fn=mock_lookup_fn
     )
     assert result.verdict == "not_elevated"
     assert result.decision_trail[2]["reason"] == "not_found"
@@ -74,9 +68,7 @@ def test_formal_proof_ambiguous():
     mock_lookup_fn.return_value = mock_res
 
     result = formal_proof_verify(
-        theorem_name="定理",
-        name_dict={"定理": "Lemma.many"},
-        mathlib_lookup_fn=mock_lookup_fn
+        theorem_name="定理", name_dict={"定理": "Lemma.many"}, mathlib_lookup_fn=mock_lookup_fn
     )
     assert result.verdict == "not_elevated"
     assert result.decision_trail[2]["reason"] == "ambiguous"
@@ -87,9 +79,7 @@ def test_formal_proof_lookup_error():
     mock_lookup_fn.side_effect = Exception("API fail")
 
     result = formal_proof_verify(
-        theorem_name="定理",
-        name_dict={"定理": "Lemma.fail"},
-        mathlib_lookup_fn=mock_lookup_fn
+        theorem_name="定理", name_dict={"定理": "Lemma.fail"}, mathlib_lookup_fn=mock_lookup_fn
     )
     assert result.verdict == "not_elevated"
     assert result.decision_trail[1]["status"] == "error"
@@ -112,9 +102,7 @@ def test_formal_proof_trail_completeness():
     mock_lookup_fn.return_value = mock_res
 
     result = formal_proof_verify(
-        theorem_name="A",
-        name_dict={"A": "B"},
-        mathlib_lookup_fn=mock_lookup_fn
+        theorem_name="A", name_dict={"A": "B"}, mathlib_lookup_fn=mock_lookup_fn
     )
     # 映射 -> 查询 -> 判定
     steps = [t["step"] for t in result.decision_trail]

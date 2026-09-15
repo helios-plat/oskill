@@ -1,17 +1,16 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oskill import apply_edit_block, syntax_check
-from oprim import detect_language
-import ast
-import json
-import re
-import sys
-import os
-from pathlib import Path
+
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
+
+from oprim import detect_language
+
+from oskill import syntax_check
+
+from ._types import EditBlock
 from .edit import apply_edit_block
+
 
 def validate_edit(
     original: str,
@@ -51,8 +50,7 @@ def validate_edit(
         new_content = edit["full_content"]
     elif "blocks" in edit:
         blocks = [
-            EditBlock(b["search"], b["replace"])
-            if isinstance(b, dict) else b
+            EditBlock(b["search"], b["replace"]) if isinstance(b, dict) else b
             for b in edit["blocks"]
         ]
         result = apply_edit_block(original, blocks=blocks)

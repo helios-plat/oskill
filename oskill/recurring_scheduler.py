@@ -12,9 +12,10 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass
@@ -46,8 +47,25 @@ class RecurringScheduler:
         self._load()
 
     # -- CRUD ---------------------------------------------------------------
-    def create(self, id_: str, name: str, prompt: str = "", cron: str = "", interval_ms: int = 0, template_id: str = "", max_runs: int = 0) -> Schedule:
-        s = Schedule(id=id_, name=name, prompt=prompt, cron_expr=cron, interval_ms=interval_ms, template_id=template_id, max_runs=max_runs)
+    def create(
+        self,
+        id_: str,
+        name: str,
+        prompt: str = "",
+        cron: str = "",
+        interval_ms: int = 0,
+        template_id: str = "",
+        max_runs: int = 0,
+    ) -> Schedule:
+        s = Schedule(
+            id=id_,
+            name=name,
+            prompt=prompt,
+            cron_expr=cron,
+            interval_ms=interval_ms,
+            template_id=template_id,
+            max_runs=max_runs,
+        )
         self._schedules[id_] = s
         self._save()
         return s
@@ -117,7 +135,9 @@ class RecurringScheduler:
             next_fire = self._next_fire(s, now)
             if next_fire <= now:
                 await self._fire(s)
-            await asyncio.sleep(min(60, max(1, next_fire - time.time() if next_fire > time.time() else 60)))
+            await asyncio.sleep(
+                min(60, max(1, next_fire - time.time() if next_fire > time.time() else 60))
+            )
 
     async def _fire(self, s: Schedule) -> None:
         if self._hook is not None:
@@ -162,12 +182,26 @@ class RecurringScheduler:
     # -- persistence --------------------------------------------------------
     def _save(self) -> None:
         path = self._base / "schedules.json"
-        data = [{"id": s.id, "name": s.name, "prompt": s.prompt, "cron_expr": s.cron_expr,
-                  "interval_ms": s.interval_ms, "enabled": s.enabled, "phase": s.phase,
-                  "last_run_at": s.last_run_at, "last_status": s.last_status,
-                  "run_count": s.run_count, "max_runs": s.max_runs, "template_id": s.template_id}
-                for s in self._schedules.values()]
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+        data = [
+            {
+                "id": s.id,
+                "name": s.name,
+                "prompt": s.prompt,
+                "cron_expr": s.cron_expr,
+                "interval_ms": s.interval_ms,
+                "enabled": s.enabled,
+                "phase": s.phase,
+                "last_run_at": s.last_run_at,
+                "last_status": s.last_status,
+                "run_count": s.run_count,
+                "max_runs": s.max_runs,
+                "template_id": s.template_id,
+            }
+            for s in self._schedules.values()
+        ]
+        path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2, default=str), encoding="utf-8"
+        )
 
     def _load(self) -> None:
         path = self._base / "schedules.json"
@@ -175,6 +209,8 @@ class RecurringScheduler:
             return
         try:
             for d in json.loads(path.read_text(encoding="utf-8")):
-                self._schedules[d["id"]] = Schedule(**{k: d.get(k) for k in Schedule.__dataclass_fields__})
+                self._schedules[d["id"]] = Schedule(
+                    **{k: d.get(k) for k in Schedule.__dataclass_fields__}
+                )
         except Exception:
             pass

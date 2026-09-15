@@ -146,9 +146,7 @@ class ExperienceStore:
         task_tokens = set(_triggers_from_task(task))
         scored: list[tuple[int, Experience]] = []
         for exp in self.experiences.values():
-            trigger_tokens = set(
-                _triggers_from_task(" ".join(exp.triggers))
-            )
+            trigger_tokens = set(_triggers_from_task(" ".join(exp.triggers)))
             score = len(task_tokens & trigger_tokens)
             if score > 0:
                 scored.append((score, exp))

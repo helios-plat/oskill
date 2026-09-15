@@ -1,4 +1,5 @@
 """Eisenberg-Noe interbank clearing model."""
+
 from __future__ import annotations
 
 from typing import Any, Literal

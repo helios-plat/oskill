@@ -1,15 +1,10 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import ast
-import json
+
 import re
-import sys
-import os
-from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
 
 def select_skill(
     task: str,
@@ -35,13 +30,13 @@ def select_skill(
         >>> skills[0]["name"]
         'refactor_python'
     """
-    task_words = set(re.findall(r'\w+', task.lower()))
+    task_words = set(re.findall(r"\w+", task.lower()))
     scored: list[tuple[float, dict]] = []
 
     for meta in skill_index:
-        name_words = set(re.findall(r'\w+', meta.get("name", "").lower()))
-        desc_words = set(re.findall(r'\w+', meta.get("description", "").lower()))
-        tag_words = set(re.findall(r'\w+', " ".join(meta.get("tags", [])).lower()))
+        name_words = set(re.findall(r"\w+", meta.get("name", "").lower()))
+        desc_words = set(re.findall(r"\w+", meta.get("description", "").lower()))
+        tag_words = set(re.findall(r"\w+", " ".join(meta.get("tags", [])).lower()))
         all_words = name_words | desc_words | tag_words
         score = len(task_words & all_words) / max(len(task_words), 1)
         # 名称直接匹配加权

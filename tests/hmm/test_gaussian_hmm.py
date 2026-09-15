@@ -7,8 +7,8 @@ import pytest
 
 from oskill.hmm import gaussian_hmm
 
-
 # ─── fixtures ────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def bimodal_series():
@@ -31,11 +31,19 @@ def helivex_series():
 
 # ─── basic API ───────────────────────────────────────────────────────────────
 
+
 def test_gaussian_hmm_returns_correct_keys(bimodal_series):
     """Result must contain exactly the documented keys."""
     result = gaussian_hmm(bimodal_series, n_states=2, random_state=0)
-    expected = {"means", "stds", "transition_matrix", "state_probs",
-                "viterbi_path", "log_likelihood", "converged"}
+    expected = {
+        "means",
+        "stds",
+        "transition_matrix",
+        "state_probs",
+        "viterbi_path",
+        "log_likelihood",
+        "converged",
+    }
     assert set(result.keys()) == expected
 
 
@@ -65,11 +73,13 @@ def test_gaussian_hmm_viterbi_path_valid_states(bimodal_series):
 def test_gaussian_hmm_three_state_convergence():
     """Bimodal + flat mix → n_states=3 runs without error (converged may be True or False)."""
     rng = np.random.default_rng(7)
-    x = np.concatenate([
-        rng.normal(-3, 0.5, 80),
-        rng.normal(0, 0.3, 40),
-        rng.normal(3, 0.5, 80),
-    ])
+    x = np.concatenate(
+        [
+            rng.normal(-3, 0.5, 80),
+            rng.normal(0, 0.3, 40),
+            rng.normal(3, 0.5, 80),
+        ]
+    )
     result = gaussian_hmm(x, n_states=3, n_iter=50, random_state=7)
     assert result["viterbi_path"].shape == (200,)
     assert isinstance(result["converged"], bool)

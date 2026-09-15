@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
-
 import json
-import pytest
+from unittest.mock import patch
 
 from oskill.web_search_augmented import web_search_augmented
 

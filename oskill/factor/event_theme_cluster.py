@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-import statistics
-from typing import Optional
-
-import oprim
-
 STABILITY = "experimental"
 
 
 def event_theme_cluster(
     events: list[dict],
     classification: dict[str, list[str]],
-    history_window: Optional[list[dict]] = None,
+    history_window: list[dict] | None = None,
     top_n: int = 3,
 ) -> list[dict]:
     """Cluster event-bearing stocks into themes, rank by strength.
@@ -79,9 +74,7 @@ def event_theme_cluster(
 
     result = []
     for theme_name, data in theme_data.items():
-        syms_by_strength = sorted(
-            data["symbols"].items(), key=lambda x: x[1], reverse=True
-        )
+        syms_by_strength = sorted(data["symbols"].items(), key=lambda x: x[1], reverse=True)
         leader_symbols = [s for s, _ in syms_by_strength[:5]]
         n_stocks = len(data["symbols"])
         total_strength = data["total_strength"]
@@ -100,14 +93,16 @@ def event_theme_cluster(
         else:
             stage = "developing"
 
-        result.append({
-            "theme_name": theme_name,
-            "n_stocks": n_stocks,
-            "total_strength": total_strength,
-            "leader_symbols": leader_symbols,
-            "continuation_prob": continuation_prob,
-            "stage": stage,
-        })
+        result.append(
+            {
+                "theme_name": theme_name,
+                "n_stocks": n_stocks,
+                "total_strength": total_strength,
+                "leader_symbols": leader_symbols,
+                "continuation_prob": continuation_prob,
+                "stage": stage,
+            }
+        )
 
     result.sort(key=lambda x: x["total_strength"], reverse=True)
     return result[:top_n]

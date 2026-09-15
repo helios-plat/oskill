@@ -1,17 +1,18 @@
 """Tests for flush_outbox skill."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
-
 from oprim.changefeed.schema import EventType
 from oprim.changefeed.writer import ChangefeedWriter
 from oprim.storage.protocol import UploadResult
+
 from oskill.sync.errors import FlushError
-from oskill.sync.flush_outbox import FlushResult, flush_outbox, _state_path, _load_state
+from oskill.sync.flush_outbox import _load_state, _state_path, flush_outbox
 
 USER = "u1"
 DEVICE = "device_A"

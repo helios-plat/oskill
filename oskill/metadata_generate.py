@@ -50,19 +50,27 @@ async def metadata_generate(
         raise MetadataGenerateError("script has no scenes")
 
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": (
-            f"Generate video metadata. Style: {style_prompt}. "
-            f"Constraints: title≤{constraints.title_max_chars} chars, "
-            f"description≤{constraints.description_max_chars} chars, "
-            f"≤{constraints.tags_max_count} tags (each ≤{constraints.tag_max_chars} chars). "
-            "Return JSON: {\"title\", \"description\", \"tags\": [], \"topics\": []}"
-        )},
-        {"role": "user", "content": json.dumps({
-            "script_title": script.title,
-            "script_description": script.description,
-            "scenes_count": len(script.scenes),
-            "shots_count": len(storyboard.shots),
-        })},
+        {
+            "role": "system",
+            "content": (
+                f"Generate video metadata. Style: {style_prompt}. "
+                f"Constraints: title≤{constraints.title_max_chars} chars, "
+                f"description≤{constraints.description_max_chars} chars, "
+                f"≤{constraints.tags_max_count} tags (each ≤{constraints.tag_max_chars} chars). "
+                'Return JSON: {"title", "description", "tags": [], "topics": []}'
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                {
+                    "script_title": script.title,
+                    "script_description": script.description,
+                    "scenes_count": len(script.scenes),
+                    "shots_count": len(storyboard.shots),
+                }
+            ),
+        },
     ]
 
     result = llm(messages=messages)
@@ -79,8 +87,8 @@ async def metadata_generate(
         raise MetadataGenerateError(f"Metadata validation failed: {exc}") from exc
 
     # Enforce constraints with truncation fallback
-    meta.title = meta.title[:constraints.title_max_chars]
-    meta.description = meta.description[:constraints.description_max_chars]
-    meta.tags = [t[:constraints.tag_max_chars] for t in meta.tags[:constraints.tags_max_count]]
+    meta.title = meta.title[: constraints.title_max_chars]
+    meta.description = meta.description[: constraints.description_max_chars]
+    meta.tags = [t[: constraints.tag_max_chars] for t in meta.tags[: constraints.tags_max_count]]
 
     return meta

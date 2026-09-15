@@ -1,7 +1,6 @@
 """Tests for kalman_filter_pipeline and kalman_smoother."""
 
 import numpy as np
-import pytest
 
 from oskill.state_space.kalman import kalman_filter_pipeline, kalman_smoother
 
@@ -11,9 +10,14 @@ class TestKalmanFilterPipeline:
         obs = np.random.default_rng(0).normal(5.0, 1.0, 50)
         r = kalman_filter_pipeline(obs, process_noise=1e-5, observation_noise=1.0)
         required = {
-            "filtered_states", "filtered_covariances", "predicted_states",
-            "predicted_covariances", "log_likelihood", "process_noise",
-            "observation_noise", "n_iter",
+            "filtered_states",
+            "filtered_covariances",
+            "predicted_states",
+            "predicted_covariances",
+            "log_likelihood",
+            "process_noise",
+            "observation_noise",
+            "n_iter",
         }
         assert required.issubset(set(r.keys()))
 
@@ -86,8 +90,13 @@ class TestKalmanSmoother:
     def test_returns_all_keys(self):
         obs = np.random.default_rng(0).normal(3, 1, 40)
         r = kalman_smoother(obs, process_noise=1e-5, observation_noise=1.0)
-        required = {"smoothed_states", "smoothed_covariances", "filtered_states",
-                    "filtered_covariances", "log_likelihood"}
+        required = {
+            "smoothed_states",
+            "smoothed_covariances",
+            "filtered_states",
+            "filtered_covariances",
+            "log_likelihood",
+        }
         assert required.issubset(set(r.keys()))
 
     def test_shapes_match_filter(self):
@@ -125,18 +134,18 @@ class TestKalmanSmoother:
         """H1 compliance: kalman_smoother must not import kalman_filter_pipeline."""
         import ast
         import inspect
+
         from oskill.state_space import kalman
+
         src = inspect.getsource(kalman.kalman_smoother)
         tree = ast.parse(src)
         # Check for any import of kalman_filter_pipeline
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
-                names = [
-                    n.name if isinstance(node, ast.Import) else n.name
-                    for n in node.names
-                ]
-                assert "kalman_filter_pipeline" not in names, \
+                names = [n.name if isinstance(node, ast.Import) else n.name for n in node.names]
+                assert "kalman_filter_pipeline" not in names, (
                     "kalman_smoother must not import kalman_filter_pipeline (H1 violation)"
+                )
 
     def test_smoothed_covariances_smaller_than_filtered(self):
         """Smoother covariances should be <= filtered (more information)."""

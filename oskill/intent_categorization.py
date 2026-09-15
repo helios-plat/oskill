@@ -20,7 +20,7 @@ async def categorize_diff_intent(
         return heuristic
     prompt = (
         "Classify this code diff as NEW_KNOWLEDGE or LOGIC_CORRECTION. "
-        "Reply with JSON {\"category\": \"...\"}.\n"
+        'Reply with JSON {"category": "..."}.\n'
         f"diff={diff_struct}"
     )
     rec = await llm_caller(
