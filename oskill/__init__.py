@@ -168,3 +168,35 @@ from oskill._compute_tax_lines import compute_tax_lines
 from oskill._compute_line_item_totals import compute_line_item_totals
 from oskill._select_region_currency import select_region_currency
 from oskill._evaluate_tax_inclusive_pricing import evaluate_tax_inclusive_pricing
+
+
+__manifest__ = {
+    "package": 'oskill',
+    "version": __version__,
+    "elements": [
+        {
+            "name": 'storyboard_planner',
+            "kind": 'oskill',
+            "module": 'oskill.storyboard_planner',
+            "signature": '(config, request, llm) -> dict',
+            "depends_on": ['oprim.style_marker_prompt', 'oprim.lighting_control_prompt'],
+            "pillars": ['cost', 'fingerprint', 'trail', 'report'],
+        },
+        {
+            "name": 'resolve_display_batch',
+            "kind": 'oskill',
+            "module": 'oskill._resolve_display_batch',
+            "signature": '(batch) -> dict',
+            "depends_on": ['oskill._compute_cart_subtotal', 'oskill._evaluate_discount_eligibility'],
+            "pillars": ['fingerprint', 'trail'],
+        },
+        {
+            "name": 'two_step_ingest',
+            "kind": 'oskill',
+            "module": 'oskill._two_step_ingest',
+            "signature": '(*, text, llm) -> dict',
+            "depends_on": ['oskill._relevance_compute', 'oskill._conflict_resolution'],
+            "pillars": ['cost', 'fingerprint', 'trail', 'report'],
+        },
+    ],
+}
