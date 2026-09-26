@@ -20,7 +20,7 @@ DEVICE = "device_A"
 
 async def _write_event(db, device_id=DEVICE, user_id=USER):
     writer = ChangefeedWriter(db, user_id, device_id)
-    return await writer.append(EventType.SUBSTRATE_CREATED, "sub_1", {"title": "doc"})
+    return await writer.append(EventType.substrate_created, "sub_1", {"title": "doc"})
 
 
 class TestFlushOutboxNothingToFlush:
@@ -35,7 +35,7 @@ class TestFlushOutboxNothingToFlush:
     async def test_only_remote_events_not_uploaded(self, db, storage, tmp_path):
         # Write event from a different device
         writer = ChangefeedWriter(db, USER, "device_B")
-        await writer.append(EventType.SUBSTRATE_CREATED, "sub_1", {"title": "doc"})
+        await writer.append(EventType.substrate_created, "sub_1", {"title": "doc"})
 
         result = await flush_outbox(USER, DEVICE, db, storage, state_dir=tmp_path)
         assert result.flushed_count == 0
@@ -99,9 +99,9 @@ class TestFlushOutboxUploads:
 
     async def test_multiple_events_in_one_flush(self, db, storage, tmp_path):
         writer = ChangefeedWriter(db, USER, DEVICE)
-        await writer.append(EventType.SUBSTRATE_CREATED, "sub_1", {"title": "A"})
-        await writer.append(EventType.SUBSTRATE_UPDATED, "sub_1", {"title": "A2"})
-        await writer.append(EventType.NOTE_CREATED, "note_1", {"title": "N"})
+        await writer.append(EventType.substrate_created, "sub_1", {"title": "A"})
+        await writer.append(EventType.substrate_updated, "sub_1", {"title": "A2"})
+        await writer.append(EventType.note_created, "note_1", {"title": "N"})
 
         result = await flush_outbox(USER, DEVICE, db, storage, state_dir=tmp_path)
         assert result.flushed_count == 3
@@ -109,8 +109,8 @@ class TestFlushOutboxUploads:
 
     async def test_remote_path_contains_seq_range(self, db, storage, tmp_path):
         writer = ChangefeedWriter(db, USER, DEVICE)
-        await writer.append(EventType.SUBSTRATE_CREATED, "sub_1", {"title": "A"})
-        await writer.append(EventType.SUBSTRATE_UPDATED, "sub_1", {"title": "B"})
+        await writer.append(EventType.substrate_created, "sub_1", {"title": "A"})
+        await writer.append(EventType.substrate_updated, "sub_1", {"title": "B"})
 
         result = await flush_outbox(USER, DEVICE, db, storage, state_dir=tmp_path)
         assert len(result.uploaded_files) == 1

@@ -177,19 +177,19 @@ def _apply_concept_unlink(db: MetaDB, event: ChangefeedEvent) -> None:
 
 
 _HANDLERS: dict[str, object] = {
-    EventType.SUBSTRATE_CREATED.value: _apply_substrate_upsert,
-    EventType.SUBSTRATE_UPDATED.value: _apply_substrate_upsert,
-    EventType.SUBSTRATE_DELETED.value: _apply_substrate_delete,
-    EventType.SUBSTRATE_PINNED.value: _apply_substrate_pin,
-    EventType.SUBSTRATE_UNPINNED.value: _apply_substrate_unpin,
-    EventType.DERIVATIVE_CREATED.value: _apply_concept_upsert,
-    EventType.DERIVATIVE_DELETED.value: _apply_concept_delete,
-    EventType.NOTE_CREATED.value: _apply_note_upsert,
-    EventType.NOTE_UPDATED.value: _apply_note_upsert,
-    EventType.NOTE_DELETED.value: _apply_note_delete,
-    EventType.CONCEPT_CREATED.value: _apply_concept_upsert,
-    EventType.CONCEPT_LINKED.value: _apply_concept_link,
-    EventType.CONCEPT_UNLINKED.value: _apply_concept_unlink,
+    EventType.substrate_created.value: _apply_substrate_upsert,
+    EventType.substrate_updated.value: _apply_substrate_upsert,
+    EventType.substrate_deleted.value: _apply_substrate_delete,
+    EventType.substrate_pinned.value: _apply_substrate_pin,
+    EventType.substrate_unpinned.value: _apply_substrate_unpin,
+    EventType.derivative_created.value: _apply_concept_upsert,
+    EventType.derivative_deleted.value: _apply_concept_delete,
+    EventType.note_created.value: _apply_note_upsert,
+    EventType.note_updated.value: _apply_note_upsert,
+    EventType.note_deleted.value: _apply_note_delete,
+    EventType.concept_created.value: _apply_concept_upsert,
+    EventType.concept_linked.value: _apply_concept_link,
+    EventType.concept_unlinked.value: _apply_concept_unlink,
 }
 
 

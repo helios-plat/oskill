@@ -21,7 +21,7 @@ from oprim import (
     match_wildcard_pattern,  # noqa: F401
     resolve_agent_permissions,
 )
-from oprim._hicode_types import Decision, Persona, Rule, ToolCall
+from oprim._hicode_types import Persona, Rule, ToolCall, decision
 
 from oskill._match_permission_rule import match_permission_rule
 
@@ -31,8 +31,8 @@ def permission_evaluate(
     *,
     rules: list[Rule],
     persona: Persona,
-) -> Decision:
-    """Evaluate a ToolCall against rules and persona to produce a Decision.
+) -> decision:
+    """Evaluate a ToolCall against rules and persona to produce a decision.
 
     Composes: resolve_agent_permissions, match_permission_rule (oskill),
               match_wildcard_pattern, match_bash_command_rule, classify_risk.
@@ -43,7 +43,7 @@ def permission_evaluate(
         persona: Agent persona defining default permissions.
 
     Returns:
-        Decision: 'allow', 'ask', or 'deny'.
+        decision: 'allow', 'ask', or 'deny'.
     """
     # 1. classify risk level
     risk = classify_risk(call)
@@ -51,7 +51,7 @@ def permission_evaluate(
     # 2. resolve persona base permissions
     all_tools_mock: list[Any] = [type("T", (), {"name": call.name})()]
     perm_set = resolve_agent_permissions(persona, all_tools=all_tools_mock)
-    persona_action: Decision = perm_set.tool_actions.get(call.name, "ask")
+    persona_action: decision = perm_set.tool_actions.get(call.name, "ask")
 
     # 3. match against rules (oskill existing)
     rule_action_raw = match_permission_rule(
@@ -59,14 +59,14 @@ def permission_evaluate(
         allowed_tools=[r.pattern for r in rules if r.action == "allow"],
         denied_tools=[r.pattern for r in rules if r.action == "deny"],
     )
-    # normalize to Decision
+    # normalize to decision
     if rule_action_raw in ("allow", "ask", "deny"):
-        rule_action: Decision = rule_action_raw  # type: ignore[assignment]
+        rule_action: decision = rule_action_raw  # type: ignore[assignment]
     else:
         rule_action = "ask"
 
     # 4. bash-level check
-    bash_action: Decision = "ask"
+    bash_action: decision = "ask"
     if call.name == "bash":
         cmd = call.args.get("command", "")
         if cmd:

@@ -25,8 +25,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from oprim.lighting_control_prompt import LightingType, lighting_control_prompt
-from oprim.style_marker_prompt import StyleType, style_marker_prompt
+from oprim.lighting_control_prompt import lighting_control_prompt, lightingtype
+from oprim.style_marker_prompt import style_marker_prompt, styletype
 from pydantic import BaseModel  # needed for MultiShotStoryboard
 
 from oskill._llm_caller import LLMCaller
@@ -53,8 +53,8 @@ async def multi_shot_storyboard_workflow(
     image_provider: str,
     output_dir: Path,
     grid_size: Literal[9, 25] | None = 9,
-    style: StyleType | None = None,
-    lighting: LightingType | None = None,
+    style: styletype | None = None,
+    lighting: lightingtype | None = None,
 ) -> MultiShotStoryboard:
     """Generate per-shot storyboard images + optional grid preview with style/lighting injection.
 
