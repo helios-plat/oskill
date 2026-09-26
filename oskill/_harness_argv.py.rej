@@ -1,0 +1,10 @@
+--- _harness_argv.py
++++ _harness_argv.py
+@@ -101,6 +101,7 @@
+         "--yolo",
+         "--dangerously-skip-permissions",
+         "--dir", str(workspace_dir),
++        "--auto"
+     ]
+     if argv:
+         cmd.extend(["--", *argv])

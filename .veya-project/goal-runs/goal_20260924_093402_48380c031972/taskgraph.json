@@ -1,0 +1,110 @@
+{
+  "version": 2,
+  "goal_id": "goal_20260924_093402_48380c031972",
+  "bot_id": "veya-default",
+  "status": "completed",
+  "started_at": "2026-09-24T09:34:02.422786+00:00",
+  "finished_at": "2026-09-24T09:34:02.618142+00:00",
+  "default_assignee": "hicode",
+  "budget": {
+    "max_wall_s": 7200,
+    "max_leaf_tasks": 40
+  },
+  "constitution": "",
+  "plan_review": {
+    "skipped": "typed durable adapter"
+  },
+  "finalization_started": false,
+  "finalization_reserve_s": 900.0,
+  "unfinished_work": [],
+  "last_stop_reason": null,
+  "runtime_checkpoint": {
+    "event_cursor": "2026-09-24T09:34:02.618145+00:00",
+    "scheduler_snapshot": {
+      "goal_id": "goal_20260924_093402_48380c031972",
+      "status": "completed",
+      "running_ids": []
+    },
+    "running_delegate_ids": [],
+    "completed_task_ids": [
+      "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656"
+    ],
+    "pending_task_ids": [],
+    "artifact_manifest_ref": "/data/soffy/projects/veya/platform/3O/oskill/.veya/runs/goal_20260924_093402_48380c031972/artifact_manifest.json",
+    "finalization_started": false,
+    "lineage_id": "goal_20260924_093402_48380c031972",
+    "verified": true,
+    "schema_version": 1
+  },
+  "playbook_id": null,
+  "playbook_steps": {},
+  "current_playbook_step": null,
+  "playbook_entry_at": null,
+  "active_skill_id": null,
+  "active_skill_version": null,
+  "active_playbook_version": null,
+  "agent_definition_id": null,
+  "agent_definition_version": null,
+  "agent_deployment_id": null,
+  "agent_deployment_revision": null,
+  "agent_runtime_id": null,
+  "agent_session_id": null,
+  "agent_instance_id": null,
+  "routines": {},
+  "delegate_states": {},
+  "fanin_states": {},
+  "playbook_states": {},
+  "routine_states": {},
+  "tasks": [
+    {
+      "id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656",
+      "title": "Remote execution direct_2f72f1d8147c4fe5b7b8f1fcb166d656",
+      "instruction": "git -C /data/soffy/projects/veya/platform/3O/oskill rev-parse HEAD",
+      "acceptance": [
+        "remote provider returned a successful result"
+      ],
+      "depends_on": [],
+      "assignee": "builtin",
+      "status": "completed",
+      "retries": 0,
+      "leaf_task_id": null,
+      "verify_summary": null,
+      "block_reason": null,
+      "artifacts": [],
+      "execute_result": "direct command passed (exit_code=0)",
+      "session_tree_sid": null,
+      "session_tree_leaf": null,
+      "review_findings": null,
+      "parallel": false,
+      "stop_reason": "completed",
+      "evidence": [],
+      "assertions": [],
+      "unfinished_work": [],
+      "delegate_result": {
+        "delegate_id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656",
+        "status": "complete",
+        "stop_reason": "completed",
+        "summary": "direct command passed (exit_code=0)",
+        "evidence": [],
+        "assertions": [],
+        "artifacts": [],
+        "acceptance_results": [],
+        "completed_work": [],
+        "unfinished_work": [],
+        "cost_usd": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "duration_ms": 0,
+        "child_trace_id": "goal_20260924_093402_48380c031972",
+        "error_class": null,
+        "error_message": null,
+        "source_bot_id": "veya-default",
+        "target_bot_id": "veya-default",
+        "goal_run_id": "goal_20260924_093402_48380c031972",
+        "evidence_refs": [],
+        "proposed_actions": [],
+        "side_effect_intents": []
+      }
+    }
+  ]
+}

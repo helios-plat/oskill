@@ -1,0 +1,9 @@
+{"type": "plan_created", "goal_id": "goal_20260924_093402_48380c031972", "goal_text": "Remote execution direct_2f72f1d8147c4fe5b7b8f1fcb166d656: shell.exec", "task_count": 1, "generated_at": "2026-09-24T09:34:02.422748+00:00"}
+{"type": "scheduler.task_ready", "goal_id": "goal_20260924_093402_48380c031972", "task_id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656", "timestamp": "2026-09-24T09:34:02.428045+00:00"}
+{"type": "scheduler.task_started", "goal_id": "goal_20260924_093402_48380c031972", "task_id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656", "timestamp": "2026-09-24T09:34:02.429203+00:00"}
+{"type": "scheduler.slot_acquired", "goal_id": "goal_20260924_093402_48380c031972", "task_id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656", "timestamp": "2026-09-24T09:34:02.430339+00:00"}
+{"type": "scheduler.slot_released", "goal_id": "goal_20260924_093402_48380c031972", "task_id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656", "timestamp": "2026-09-24T09:34:02.613318+00:00"}
+{"type": "delegate.completed", "goal_id": "goal_20260924_093402_48380c031972", "task_id": "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656", "timestamp": "2026-09-24T09:34:02.614090+00:00"}
+{"type": "fanin.started", "goal_id": "goal_20260924_093402_48380c031972", "timestamp": "2026-09-24T09:34:02.615924+00:00"}
+{"type": "fanin.completed", "goal_id": "goal_20260924_093402_48380c031972", "complete_count": 1, "partial_count": 0, "failed_count": 0, "evidence_count": 0, "artifact_count": 0, "timestamp": "2026-09-24T09:34:02.616498+00:00"}
+{"type": "finalization.completed", "goal_id": "goal_20260924_093402_48380c031972", "status": "completed", "artifact_count": 1, "timestamp": "2026-09-24T09:34:02.618892+00:00"}

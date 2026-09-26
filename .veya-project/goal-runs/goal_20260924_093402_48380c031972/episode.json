@@ -1,0 +1,25 @@
+{
+  "episode_id": "episode_af1f72968aff",
+  "goal_id": "goal_20260924_093402_48380c031972",
+  "goal_text": "Remote execution direct_2f72f1d8147c4fe5b7b8f1fcb166d656: shell.exec",
+  "task_ids": [
+    "remote:direct_2f72f1d8147c4fe5b7b8f1fcb166d656"
+  ],
+  "claim_ids": [
+    "claim_39122780d6d2"
+  ],
+  "evidence_ids": [
+    "evidence_c11cb2ca09dc",
+    "evidence_43be31b468c8"
+  ],
+  "evaluation_ids": [
+    "eval_e5864a0d8093"
+  ],
+  "verified_state_ids": [
+    "state_00b078aa096b"
+  ],
+  "outcome": "completed",
+  "started_at": "2026-09-24T09:34:02.422786+00:00",
+  "completed_at": "2026-09-24T09:34:02.619287+00:00",
+  "schema_version": 1
+}
