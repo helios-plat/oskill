@@ -15,6 +15,10 @@ def harness_argv(
     streaming: bool = False,
     bin: str | None = None,
     extra: list[str] | None = None,
+    workspace: str | None = None,
+    agent: str | None = None,
+    coding_mode: bool = False,
+    execution_worktree_verified: bool = False,
 ) -> dict[str, Any]:
     """Build a no-shell argv for a coding harness.
 
@@ -66,7 +70,27 @@ def harness_argv(
         if model:
             argv += ["--model", model]
     else:
-        argv = [exe, "run", prompt, "--model", model or "opencode-go/deepseek-v4-flash"]
+        argv = [exe, "run", prompt, "--model", model or "opencode-go/deepseek-v4-flash", "--format", "json"]
+        if coding_mode:
+            if not workspace:
+                return {
+                    "ok": False,
+                    "engine": name,
+                    "argv": [],
+                    "error": "opencode coding mode requires an execution worktree",
+                }
+            if not execution_worktree_verified:
+                return {
+                    "ok": False,
+                    "engine": name,
+                    "argv": [],
+                    "error": "opencode coding mode requires a verified ExecutionWorktreeBinding",
+                }
+            argv.extend(["--dir", workspace, "--auto"])
+            if agent:
+                argv.extend(["--agent", agent])
+        elif workspace:
+            argv.extend(["--dir", workspace])
     if extra:
         argv.extend(extra)
     return {"ok": True, "engine": name, "argv": argv, "error": ""}
