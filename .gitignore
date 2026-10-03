@@ -13,3 +13,6 @@ htmlcov/
 .ruff_cache/
 .venv/
 venv/
+/.veya-project/goal-runs/
+/.veya/runs/
+/.veya/execution-events/
