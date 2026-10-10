@@ -174,7 +174,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
     names = list(three)
     center = [sum(three[n][i] for n in names) / len(names) for i in range(3)]
     radius = max(max(abs(three[n][i] - center[i]) for i in range(3)) for n in names) + 1.0
-    cams = [_cam(center, radius * 2.2, k) for k in ((1.0, 0.8, 1.1), (1.2, 0.6, 0.9), (0.8, 1.1, 1.2), (1.1, 0.9, 1.0))]
+    cams = [_cam(center, radius * 1.6, k) for k in ((1.0, 0.8, 1.1), (1.2, 0.6, 0.9), (0.8, 1.1, 1.2), (1.1, 0.9, 1.0))]
 
     elements: dict[str, dict[str, Any]] = {"Axis": {"type": "axes", "size": round(radius * 1.3, 3)}}
     for g in spec.givens:
