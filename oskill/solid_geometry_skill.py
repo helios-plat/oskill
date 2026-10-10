@@ -144,7 +144,10 @@ def _question_zh(q: Any) -> tuple[str, str]:
 
 
 def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> SolidGeometrySolution:
-    """把一道结构化立体几何题解成精确答案 + 分步解析 + 3D 模型。"""
+    """把一道结构化立体几何题解成精确答案 + 分步解析 + 3D 模型。
+
+    纯算法、stateless、不持久化，故为同步函数。参数非法或构型退化时抛 ``ValueError``。
+    """
     q = spec.query
     for key in QUERY_ARITY[q.type]:
         q.operand(key)  # 元数校验，失败抛 ValueError
@@ -155,8 +158,8 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
         raise ValueError(f"{spec.body} needs dims {list(need)}")
     dims = {k: parse_dimension(spec.dims[k]) for k in need}
 
-    pts = build_body_points(spec.body, dims)
-    pts = derive_given_points(pts, spec.givens)
+    pts = build_body_points(spec.body, dims=dims)
+    pts = derive_given_points(pts, givens=spec.givens)
 
     used: list[str] = []
     for key in QUERY_ARITY[q.type]:
@@ -214,7 +217,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
 
     if q.type in ("line_plane_angle", "point_plane_distance"):
         pl = q.operand("plane")
-        raw, n = plane_normal(pts[pl[0]], pts[pl[1]], pts[pl[2]])
+        raw, n = plane_normal((pts[pl[0]], pts[pl[1]], pts[pl[2]]))
         plane_key = f"Plane_{''.join(pl)}"
         elements[plane_key] = {"type": "plane", "pts": pl}
         n_three = [float(n[0]), float(n[2]), float(n[1])]
@@ -239,7 +242,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
             v = pts[ln[1]] - pts[ln[0]]
             line_key = f"Line_{''.join(ln)}"
             elements[line_key] = {"type": "line", "a": ln[0], "b": ln[1], "color": "emphasis", "depthTest": False}
-            ans = line_plane_angle_sin(v, n)
+            ans = line_plane_angle_sin(v, normal=n)
             steps.append(SolidStep(
                 title=f"求直线 {_join(ln)} 的方向向量",
                 content=f"$${vec_tex(ln[0], ln[1])}={latex_point_name(ln[1])}-{latex_point_name(ln[0])}={latex_vector(v)}$$",
@@ -261,7 +264,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
             w = pts[x] - pts[pl[0]]
             seg_key = f"Line_{pl[0]}{x}"
             elements[seg_key] = {"type": "line", "a": pl[0], "b": x, "color": "emphasis", "depthTest": False}
-            ans = point_plane_distance(pts[x], pts[pl[0]], n)
+            ans = point_plane_distance(pts[x], plane_point=pts[pl[0]], normal=n)
             steps.append(normal_step)
             steps.append(SolidStep(
                 title="代入点面距离公式",
@@ -277,7 +280,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
         k1, k2 = f"Line_{''.join(l1)}", f"Line_{''.join(l2)}"
         elements[k1] = {"type": "line", "a": l1[0], "b": l1[1], "color": "emphasis", "depthTest": False}
         elements[k2] = {"type": "line", "a": l2[0], "b": l2[1], "color": "normal", "depthTest": False}
-        ans = line_line_angle_cos(d1, d2)
+        ans = line_line_angle_cos(d1, other=d2)
         steps.append(SolidStep(
             title="求两直线的方向向量",
             content=f"$${vec_tex(*l1)}={latex_vector(d1)},\\quad {vec_tex(*l2)}={latex_vector(d2)}$$",
@@ -298,9 +301,9 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
         elements[k1] = {"type": "plane", "pts": [ed[0], ed[1], fc[0]]}
         elements[k2] = {"type": "plane", "pts": [ed[0], ed[1], fc[1]]}
         elements[ek] = {"type": "line", "a": ed[0], "b": ed[1], "color": "emphasis", "depthTest": False}
-        _, n1 = plane_normal(pts[ed[0]], pts[ed[1]], pts[fc[0]])
-        _, n2 = plane_normal(pts[ed[0]], pts[ed[1]], pts[fc[1]])
-        ans = dihedral_angle_cos(pts[ed[0]], pts[ed[1]], pts[fc[0]], pts[fc[1]])
+        _, n1 = plane_normal((pts[ed[0]], pts[ed[1]], pts[fc[0]]))
+        _, n2 = plane_normal((pts[ed[0]], pts[ed[1]], pts[fc[1]]))
+        ans = dihedral_angle_cos((pts[ed[0]], pts[ed[1]]), faces=(pts[fc[0]], pts[fc[1]]))
         steps.append(SolidStep(
             title="求两个半平面的法向量",
             content=f"<p>平面 {_join([ed[0], ed[1], fc[0]])} 的一个法向量 $\\vec{{n_1}}={latex_vector(n1)}$，平面 {_join([ed[0], ed[1], fc[1]])} 的一个法向量 $\\vec{{n_2}}={latex_vector(n2)}$。</p>",
@@ -321,7 +324,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
         names4 = q.operand("points")
         for i, j in ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)):
             elements[f"Line_{names4[i]}{names4[j]}"] = {"type": "line", "a": names4[i], "b": names4[j], "color": "emphasis", "depthTest": False}
-        ans = tetra_volume(a, b, c, d)
+        ans = tetra_volume((a, b, c, d))
         cr = (b - a).cross(c - a)
         steps.append(SolidStep(
             title="用向量混合积求体积",
@@ -336,7 +339,7 @@ def solve_solid_geometry(spec: SolidGeometrySpec, *, scale: float = 1.5) -> Soli
         a, b = q.operand("points")
         k = f"Line_{a}{b}"
         elements[k] = {"type": "line", "a": a, "b": b, "color": "emphasis", "depthTest": False}
-        ans = segment_length(pts[a], pts[b])
+        ans = segment_length((pts[a], pts[b]))
         steps.append(SolidStep(
             title="用两点间距离公式",
             content=f"$$|{_tex_join([a, b])}|=|{vec_tex(a, b)}|=\\left|{latex_vector(pts[b] - pts[a])}\\right|={latex_expr(ans)}$$",
