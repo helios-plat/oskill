@@ -364,6 +364,10 @@ ELEMENTS: list[str] = [
     "TrainPipeline",
     "FrameworkRegistry",
     "dsl_to_framework",
+    # --- Education: K-12 exact kernels (derived from wy51ai/edulab, Apache-2.0; consumer: Mneme) ---
+    "solve_solid_geometry",
+    "solve_conic_chord",
+    "balance_equation",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -656,6 +660,12 @@ CATEGORIES: dict[str, list[str]] = {
         "TrainPipeline",
         "FrameworkRegistry",
         "dsl_to_framework",
+    ],
+    # --- Education: K-12 exact kernels (derived from wy51ai/edulab, Apache-2.0; consumer: Mneme) ---
+    "edu_k12": [
+        "solve_solid_geometry",
+        "solve_conic_chord",
+        "balance_equation",
     ],
 }
 
@@ -958,4 +968,8 @@ STABILITY: dict[str, str] = {
     "TrainPipeline": "experimental",
     "FrameworkRegistry": "experimental",
     "dsl_to_framework": "experimental",
+    # --- Education: K-12 exact kernels (derived from wy51ai/edulab, Apache-2.0; consumer: Mneme) ---
+    "solve_solid_geometry": "experimental",
+    "solve_conic_chord": "experimental",
+    "balance_equation": "experimental",
 }
