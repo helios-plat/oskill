@@ -368,6 +368,8 @@ ELEMENTS: list[str] = [
     "solve_solid_geometry",
     "solve_conic_chord",
     "balance_equation",
+    # --- Education: Echo Loop listening practice (consumer: Mneme) ---
+    "run_complete_echo_loop",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -666,6 +668,7 @@ CATEGORIES: dict[str, list[str]] = {
         "solve_solid_geometry",
         "solve_conic_chord",
         "balance_equation",
+        "run_complete_echo_loop",
     ],
 }
 
@@ -972,4 +975,6 @@ STABILITY: dict[str, str] = {
     "solve_solid_geometry": "experimental",
     "solve_conic_chord": "experimental",
     "balance_equation": "experimental",
+    # --- Education: Echo Loop listening practice (consumer: Mneme) ---
+    "run_complete_echo_loop": "experimental",
 }
