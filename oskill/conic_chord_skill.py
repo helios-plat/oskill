@@ -9,7 +9,7 @@
 依赖 oprim 原语（oprim.conic_analysis）：
 - parse_exact_number / build_conic / chord_vieta / horizontal_line_meets_twice
 - line_param_through / dot_product_expr / chord_length_sq_expr / triangle_area_sq_expr
-- constant_in_m / range_over_m / sqrt_range / latex_expr
+- constant_in_m / range_over_m / sqrt_range / conic_latex_expr
 
 输出的 ``board_data`` 与 edulab ``template/board.html`` 的数据岛兼容：模板中
 ``<script id="lesson-data" type="application/json">__LESSON_DATA__</script>``，
@@ -47,7 +47,7 @@ from oprim.conic_analysis import (
     constant_in_m,
     dot_product_expr,
     horizontal_line_meets_twice,
-    latex_expr,
+    conic_latex_expr,
     line_param_through,
     parse_exact_number,
     range_over_m,
@@ -122,7 +122,7 @@ def _pt_plain(name: str, xy: tuple[sp.Expr, sp.Expr]) -> str:
 
 
 def _pt_tex(name: str, xy: tuple[sp.Expr, sp.Expr]) -> str:
-    return rf"{name}\left({latex_expr(xy[0])},\ {latex_expr(xy[1])}\right)"
+    return rf"{name}\left({conic_latex_expr(xy[0])},\ {conic_latex_expr(xy[1])}\right)"
 
 
 def _f(expr: sp.Expr) -> float:
@@ -151,7 +151,7 @@ def _shift_prod(var: str, val: sp.Expr) -> str:
     if val == 0:
         return f"{var}_1{var}_2"
     sign = "-" if val > 0 else "+"
-    a = latex_expr(abs(val))
+    a = conic_latex_expr(abs(val))
     return f"({var}_1{sign}{a})({var}_2{sign}{a})"
 
 
@@ -320,15 +320,15 @@ def solve_conic_chord(spec: AnalyticGeometrySpec) -> ConicChordSolution:
 
     # ── 步骤 ──
     x0, y0 = through
-    c_tex = latex_expr(chord.c)
+    c_tex = conic_latex_expr(chord.c)
     line_tex = rf"x=my{'' if c_tex.startswith('-') else '+'}{c_tex}" if chord.c != 0 else "x=my"
     if y0 != 0:
-        x0_tex = "" if x0 == 0 else (latex_expr(x0) if x0 < 0 else "+" + latex_expr(x0))
-        line_tex = rf"x=m\left(y{'-' if y0 > 0 else '+'}{latex_expr(abs(y0))}\right){x0_tex}"
+        x0_tex = "" if x0 == 0 else (conic_latex_expr(x0) if x0 < 0 else "+" + conic_latex_expr(x0))
+        line_tex = rf"x=m\left(y{'-' if y0 > 0 else '+'}{conic_latex_expr(abs(y0))}\right){x0_tex}"
     if horizontal_ok:
-        h_note = f"水平线 $y={latex_expr(y0)}$ 与 $C$ 交于两点，是合法的弦（对应 $m\\to\\infty$）。"
+        h_note = f"水平线 $y={conic_latex_expr(y0)}$ 与 $C$ 交于两点，是合法的弦（对应 $m\\to\\infty$）。"
     else:
-        h_note = f"水平线 $y={latex_expr(y0)}$（对应 $m\\to\\infty$）：{horizontal_reason}，应排除。"
+        h_note = f"水平线 $y={conic_latex_expr(y0)}$（对应 $m\\to\\infty$）：{horizontal_reason}，应排除。"
     steps: list[ConicStep] = [ConicStep(
         title="设直线",
         content=(f"<p>设直线 $l:\\,{line_tex}$，其中 $m=\\cot\\theta$（$\\theta$ 为倾斜角）。"
@@ -338,7 +338,7 @@ def solve_conic_chord(spec: AnalyticGeometrySpec) -> ConicChordSolution:
 
     excl_note = ""
     if excluded:
-        excl_note = f"另外直线不能经过点 ${v_name}$（否则三点共线），即 $m\\ne {latex_expr(excluded[0])}$。"
+        excl_note = f"另外直线不能经过点 ${v_name}$（否则三点共线），即 $m\\ne {conic_latex_expr(excluded[0])}$。"
     steps.append(ConicStep(
         title="联立方程",
         content=(f"<p>代入 $C:\\,{conic.eq_latex}$，消去 $x$ 整理得</p>"
@@ -348,15 +348,15 @@ def solve_conic_chord(spec: AnalyticGeometrySpec) -> ConicChordSolution:
                  f"<p>{excl_note}合法直线对应 ${rng.valid_m_latex}$。</p>"),
     ))
 
-    vieta = (f"$$ y_1+y_2={latex_expr(chord.y_sum)},\\qquad y_1y_2={latex_expr(chord.y_prod)} $$")
+    vieta = (f"$$ y_1+y_2={conic_latex_expr(chord.y_sum)},\\qquad y_1y_2={conic_latex_expr(chord.y_prod)} $$")
     if q.target in ("dot_product", "fixed_value_dot"):
         xi_tex = line_tex.replace("x=", "x_i=", 1).replace("y", "y_i")
         vieta += (f"<p>由 ${xi_tex}$ 得</p>"
-                  f"$$ x_1+x_2={latex_expr(chord.x_sum)},\\qquad x_1x_2={latex_expr(chord.x_prod)} $$")
+                  f"$$ x_1+x_2={conic_latex_expr(chord.x_sum)},\\qquad x_1x_2={conic_latex_expr(chord.x_prod)} $$")
     steps.append(ConicStep(title="韦达定理", content=f"<p>设 $A(x_1,y_1),\\ B(x_2,y_2)$，由韦达定理</p>{vieta}"))
 
     nice = _nice(expr, prefer_apart=q.target in ("dot_product", "fixed_value_dot"))
-    expr_tex = latex_expr(nice) if is_constant else sp.latex(nice)
+    expr_tex = conic_latex_expr(nice) if is_constant else sp.latex(nice)
     if q.target in ("dot_product", "fixed_value_dot"):
         assert vertex is not None
         formula = f"{vec}={_shift_prod('x', vertex[0])}+{_shift_prod('y', vertex[1])}"
@@ -367,7 +367,7 @@ def solve_conic_chord(spec: AnalyticGeometrySpec) -> ConicChordSolution:
     else:
         assert vertex is not None
         d_lin = sp.expand(vertex[0] - m * vertex[1] - chord.c)
-        d_num = latex_expr(abs(d_lin) if not d_lin.free_symbols else d_lin)
+        d_num = conic_latex_expr(abs(d_lin) if not d_lin.free_symbols else d_lin)
         content = (f"<p>$S=\\dfrac12|AB|\\cdot d$，点 ${v_name}$ 到 $l$ 的距离 "
                    f"$d=\\dfrac{{\\left|{d_num}\\right|}}{{\\sqrt{{1+m^2}}}}$，$1+m^2$ 约去得</p>"
                    f"$$ {sq_tex}=\\dfrac14\\left[(y_1+y_2)^2-4y_1y_2\\right]\\left({d_num}\\right)^2={expr_tex} $$")
@@ -386,9 +386,9 @@ def solve_conic_chord(spec: AnalyticGeometrySpec) -> ConicChordSolution:
         for piece in rng.pieces:
             for label, val, at in (("下端", piece.lo, piece.lo_at), ("上端", piece.hi, piece.hi_at)):
                 if val in (sp.oo, -sp.oo):
-                    lines.append(f"<li>{label}：${latex_expr(val)}$（无界）</li>")
+                    lines.append(f"<li>{label}：${conic_latex_expr(val)}$（无界）</li>")
                 else:
-                    lines.append(f"<li>{label} ${latex_expr(val)}$：{_where_zh(at, horizontal_reason=horizontal_reason)}</li>")
+                    lines.append(f"<li>{label} ${conic_latex_expr(val)}$：{_where_zh(at, horizontal_reason=horizontal_reason)}</li>")
         sq_line = ""
         if q.target in ("chord_length", "triangle_area"):
             sq_line = f"<p>于是 ${sq_tex}\\in {rng.latex}$，开方（单调）得：</p>"
@@ -513,7 +513,7 @@ def solve_conic_chord(spec: AnalyticGeometrySpec) -> ConicChordSolution:
         constant_value=_f(final.constant) if is_constant else None,
         title=title,
         problem_html=problem_html,
-        expression_latex=latex_expr(expr),
+        expression_latex=conic_latex_expr(expr),
         valid_m_latex=rng.valid_m_latex,
         conic_floats=floats,
         conic_kind=conic.kind,
