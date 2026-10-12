@@ -370,6 +370,8 @@ ELEMENTS: list[str] = [
     "balance_equation",
     # --- Education: Echo Loop listening practice (consumer: Mneme) ---
     "run_complete_echo_loop",
+    # --- Education: deterministic English grading (from recepyagmur/EnglishPractice, MIT) ---
+    "check_english_answer",
 ]
 
 CATEGORIES: dict[str, list[str]] = {
@@ -669,6 +671,7 @@ CATEGORIES: dict[str, list[str]] = {
         "solve_conic_chord",
         "balance_equation",
         "run_complete_echo_loop",
+        "check_english_answer",
     ],
 }
 
