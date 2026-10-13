@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.cusum_filter import cusum_filter
 
@@ -52,7 +51,7 @@ class TestCusumFilter:
         x = np.zeros(20)
         x[5] = 0.5   # upward jump
         x[15] = -0.5  # downward jump (same magnitude)
-        sym_result = cusum_filter(x, threshold=0.1, method="symmetric")
+        cusum_filter(x, threshold=0.1, method="symmetric")
         asym_result = cusum_filter(x, threshold=0.1, method="asymmetric")
         # Symmetric detects both; asymmetric detects only upward
         assert 5 in asym_result["event_indices"]

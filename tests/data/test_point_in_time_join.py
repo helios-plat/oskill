@@ -1,7 +1,7 @@
 """Tests for oskill.data.point_in_time_join (B5)."""
 
 import pandas as pd
-import pytest
+
 from oskill.data import point_in_time_join
 
 

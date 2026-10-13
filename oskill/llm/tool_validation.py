@@ -6,7 +6,6 @@ from typing import Any
 
 from oprim import canonical_json
 
-
 _TYPE_MAP: dict[str, type | tuple[type, ...]] = {
     "string": str,
     "number": (int, float),

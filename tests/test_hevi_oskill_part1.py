@@ -7,12 +7,11 @@ from typing import Any
 
 import pytest
 
+from oskill._schemas import Scene, Script, Shot, ShotPlan, Storyboard
 from oskill.consistency_check import ConsistencyCheckError, consistency_check
-from oskill._schemas import Script, Scene, Shot, ShotPlan, Storyboard
 from oskill.script_writer import ScriptWriterError, script_writer
 from oskill.shot_generator import ShotGeneratorError, shot_generator
 from oskill.storyboard_planner import StoryboardPlannerError, storyboard_planner
-
 
 # --- Fixtures ---
 

@@ -1,5 +1,6 @@
-from datetime import date
-from oskill.expand_tasks_from_note import expand_tasks_from_note, NormalizedTask
+
+from oskill.expand_tasks_from_note import expand_tasks_from_note
+
 
 def test_expand_tasks_from_note_empty():
     assert expand_tasks_from_note("") == []

@@ -9,7 +9,8 @@ workers with role-specific tool access and git worktree isolation.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def leader_worker_dispatch(
@@ -36,7 +37,8 @@ def leader_worker_dispatch(
     # LLM path
     if llm_caller is not None and ctx.get("use_llm", True):
         try:
-            import json, re
+            import json
+            import re
             out = llm_caller(
                 messages=[{"role": "system", "content": (
                     "You are a team leader. Decompose the goal into specialized worker roles. "

@@ -7,7 +7,6 @@ import pytest
 
 from oskill.point_process import fit_hawkes
 
-
 # ─── fixtures ────────────────────────────────────────────────────────────────
 
 def _make_hawkes_events(mu: float, alpha: float, beta: float,

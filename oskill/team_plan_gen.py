@@ -9,7 +9,8 @@ when mounted; deterministic fallback splits by delimiter keywords.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def team_plan_gen(
@@ -46,7 +47,8 @@ def team_plan_gen(
                 ],
                 tools=None, config=ctx,
             )
-            import json, re
+            import json
+            import re
             raw = out.get("content") or "" if isinstance(out, dict) else str(out)
             m = re.search(r"```json\s*(.*?)\s*```", raw, re.DOTALL)
             if m:

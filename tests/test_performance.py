@@ -12,7 +12,6 @@ from oskill.performance import (
     regime_aware_performance,
 )
 
-
 # ============================================================
 # bootstrap_sharpe tests
 # ============================================================
@@ -533,6 +532,7 @@ class TestRegimeAwarePerformance:
 # ============================================================
 
 from datetime import date as _date
+
 from oskill.performance import portfolio_metrics_summary, trade_pnl_statistics
 
 

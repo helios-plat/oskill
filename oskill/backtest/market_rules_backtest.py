@@ -2,12 +2,33 @@
 
 from __future__ import annotations
 
-from datetime import date
-from typing import Any, Callable
+from datetime import date, timedelta
 
 import oprim
 
 STABILITY = "experimental"
+
+
+# oprim main exposes keyword-only daily-limit / commission atoms; the positional
+# ``oprim.markets.rules`` helpers this engine was written against never landed on
+# main. These two are trivial, so they live here with the original semantics.
+def _stamp_tax(amount: float, rate: float) -> float:
+    if rate < 0:
+        raise ValueError(f"rate must be non-negative, got {rate}")
+    return amount * rate if amount > 0 else 0.0
+
+
+def _t_plus_n_blocked(buy_date: date, sell_date: date, n: int) -> bool:
+    """True when fewer than ``n`` weekday business days elapsed after ``buy_date``."""
+    if n < 0:
+        raise ValueError(f"n must be non-negative, got {n}")
+    elapsed = 0
+    d = buy_date + timedelta(days=1)
+    while d <= sell_date:
+        if d.weekday() < 5:
+            elapsed += 1
+        d += timedelta(days=1)
+    return elapsed < n
 
 
 def market_rules_backtest_run(
@@ -46,10 +67,10 @@ def market_rules_backtest_run(
     Methodology
     -----------
     For each signal, check market rule constraints (T+N, daily limit, etc.)
-    using oprim.markets.* primitives. Execute valid signals at next-bar open.
+    using oprim daily-limit / commission atoms. Execute valid signals at next-bar open.
     Track full PnL with fees and tax.
 
-    Uses: oprim.markets.limits, oprim.markets.rules,
+    Uses: oprim.detect_daily_limit_up/down, oprim.compute_commission,
           oskill.performance.portfolio_metrics_summary
 
     Reference
@@ -124,29 +145,33 @@ def market_rules_backtest_run(
 
         if side == "buy" and limit_block_buy:
             if prev_close > 0 and oprim.detect_daily_limit_up(
-                current_bar.get("close", 0.0), prev_close, limit_pct
+                close_price=current_bar.get("close", 0.0), prev_close=prev_close, limit_pct=limit_pct
             ):
                 blocked_signals.append({**sig, "reason": "limit_up_block_buy"})
                 continue
 
         if side == "sell" and limit_block_sell:
             if prev_close > 0 and oprim.detect_daily_limit_down(
-                current_bar.get("close", 0.0), prev_close, limit_pct
+                close_price=current_bar.get("close", 0.0), prev_close=prev_close, limit_pct=limit_pct
             ):
                 blocked_signals.append({**sig, "reason": "limit_down_block_sell"})
                 continue
 
         if side == "sell" and symbol in positions:
             pos = positions[symbol]
-            if oprim.t_plus_n_blocked(pos["entry_date"], exec_date, t_plus_n):
+            if _t_plus_n_blocked(pos["entry_date"], exec_date, t_plus_n):
                 blocked_signals.append({**sig, "reason": f"t_plus_{t_plus_n}_blocked"})
                 continue
 
         if side == "buy":
             trade_amount = cash * size_fraction
-            fee = oprim.commission(trade_amount, commission_rules["rate"], commission_rules.get("min_fee", 0.0))
+            fee = oprim.compute_commission(
+                trade_amount=trade_amount,
+                rate=commission_rules["rate"],
+                min_fee=commission_rules.get("min_fee", 0.0),
+            )
             tax_dir = stamp_tax_rules.get("direction", "sell")
-            tax = oprim.stamp_tax(trade_amount, stamp_tax_rules["rate"], tax_dir) if tax_dir in ("buy", "both") else 0.0
+            tax = _stamp_tax(trade_amount, stamp_tax_rules["rate"]) if tax_dir in ("buy", "both") else 0.0
             total_cost = trade_amount + fee + tax
             qty = trade_amount / exec_price if exec_price > 0 else 0
 
@@ -162,9 +187,13 @@ def market_rules_backtest_run(
             pos = positions[symbol]
             qty = pos["qty"]
             trade_amount = qty * exec_price
-            fee = oprim.commission(trade_amount, commission_rules["rate"], commission_rules.get("min_fee", 0.0))
+            fee = oprim.compute_commission(
+                trade_amount=trade_amount,
+                rate=commission_rules["rate"],
+                min_fee=commission_rules.get("min_fee", 0.0),
+            )
             tax_dir = stamp_tax_rules.get("direction", "sell")
-            tax = oprim.stamp_tax(trade_amount, stamp_tax_rules["rate"], tax_dir) if tax_dir in ("sell", "both") else 0.0
+            tax = _stamp_tax(trade_amount, stamp_tax_rules["rate"]) if tax_dir in ("sell", "both") else 0.0
             net_proceeds = trade_amount - fee - tax
             pnl = net_proceeds - (qty * pos["entry_price"]) - pos.get("entry_cost", 0.0)
             pnl_pct = pnl / (qty * pos["entry_price"]) if pos["entry_price"] > 0 else 0.0

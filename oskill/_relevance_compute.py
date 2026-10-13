@@ -10,9 +10,9 @@ Pure computation, no LLM. Weights injectable.
 """
 from __future__ import annotations
 
+from oprim._adamic_adar_score import adamic_adar_score
 from oprim._direct_link_score import direct_link_score
 from oprim._source_overlap_score import source_overlap_score
-from oprim._adamic_adar_score import adamic_adar_score
 from oprim._type_affinity_score import type_affinity_score
 
 _DEFAULT_WEIGHTS: dict[str, float] = {

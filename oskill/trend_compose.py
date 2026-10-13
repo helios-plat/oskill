@@ -9,7 +9,6 @@ ohlcv keys expected: 'high', 'low', 'close', 'volume' (np.ndarray, same length).
 from __future__ import annotations
 
 import numpy as np
-
 from oprim.technical import adx_series, ema, macd, supertrend
 
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.causal_discovery import pcmci_causal_discovery
 

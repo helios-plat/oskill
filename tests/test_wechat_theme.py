@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from oskill.wechat_publish import md_to_wechat_html
 from oskill.wechat_theme import (
     WechatTheme,
     apply_theme,
@@ -16,7 +17,6 @@ from oskill.wechat_theme import (
     render_layout_block,
     render_markdown_with_layout,
 )
-from oskill.wechat_publish import md_to_wechat_html
 
 
 def test_builtin_themes_routable():

@@ -73,12 +73,15 @@ def text_translate(
     # Detect source language (heuristic)
     detected_lang = source_lang
     if source_lang == "auto":
-        if any("\u4e00" <= c <= "\u9fff" for c in text[:100]):
-            detected_lang = "zh"
-        elif any("\uac00" <= c <= "\ud7af" for c in text[:100]):
-            detected_lang = "ko"
-        elif any("\u3040" <= c <= "\u30ff" for c in text[:100]):
+        head = text[:100]
+        # Kana / Hangul are script-unique; check them before CJK ideographs, which
+        # Japanese (kanji) and Korean (hanja) text also contains.
+        if any("\u3040" <= c <= "\u30ff" for c in head):
             detected_lang = "ja"
+        elif any("\uac00" <= c <= "\ud7af" for c in head):
+            detected_lang = "ko"
+        elif any("\u4e00" <= c <= "\u9fff" for c in head):
+            detected_lang = "zh"
         else:
             detected_lang = "en"
 

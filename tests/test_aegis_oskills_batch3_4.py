@@ -1,20 +1,27 @@
 import sys
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
-import pytest
+
 from oskill import (
+    RetrievedDoc,
+    Signal,
     agentic_investigate_loop,
+    restart_and_verify,
     retrieve_and_synthesize,
     runbook_match,
-    restart_and_verify,
-    LLMCaller,
-    RetrievedDoc,
-    Signal
 )
 
 # === agentic_investigate_loop tests ===
+
+
+def _inspect(state: str, health: str | None = None) -> SimpleNamespace:
+    """Shape of obase.docker.docker_container_inspect's ContainerInfo (the parts used)."""
+    return SimpleNamespace(state=state, health=health)
+
 
 def test_agentic_investigate_loop_simple():
     mock_llm = MagicMock()
@@ -23,14 +30,14 @@ def test_agentic_investigate_loop_simple():
         "stop_reason": "end_turn",
         "tool_calls": []
     }
-    
+
     signal = Signal(source="test", severity="warning")
     result = agentic_investigate_loop(
         signal=signal,
         available_tool_names=[],
         llm=mock_llm
     )
-    
+
     assert result.stopped_reason == "llm_decided_stop"
     assert result.final_conclusion["confidence"] == 0.9
     assert result.final_conclusion["root_cause_hypothesis"] == "Network timeout."
@@ -40,17 +47,17 @@ def test_agentic_investigate_loop_simple():
 def test_retrieve_and_synthesize_basic():
     mock_llm = MagicMock()
     mock_llm.return_value = {"content": "The answer is here. Confidence: 0.8"}
-    
+
     def mock_search(q, c, k):
         return [RetrievedDoc(doc_id="1", content="Fact 1", score=1.0)]
-        
+
     result = retrieve_and_synthesize(
         query="test query",
         corpus_id="test_corpus",
         llm=mock_llm,
         vector_search_fn=mock_search
     )
-    
+
     assert result.confidence == 0.8
     assert len(result.retrieved_docs) == 1
 
@@ -61,7 +68,7 @@ def test_runbook_match_rule_based():
     plugins = [
         {"name": "db_fix", "matcher": {"error_pattern": "Database connection"}}
     ]
-    
+
     result = runbook_match(root_cause=root_cause, available_plugins=plugins)
     assert result.matched_plugin["name"] == "db_fix"
     assert result.match_score == 0.9
@@ -70,9 +77,9 @@ def test_runbook_match_rule_based():
 
 def test_restart_and_verify_success():
     with patch("oskill.restart_and_verify.docker_container_inspect") as mock_inspect:
-        with patch("oskill.restart_and_verify.docker_container_restart") as mock_restart:
-            mock_inspect.return_value = {"State": {"Running": True}}
-            
+        with patch("oskill.restart_and_verify.docker_container_restart"):
+            mock_inspect.return_value = _inspect("running")
+
             result = restart_and_verify(container_id="test", health_check_interval_sec=1)
-            assert result.restarted == True
-            assert result.verified_healthy == True
+            assert result.restarted
+            assert result.verified_healthy

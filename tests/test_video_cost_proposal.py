@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import pytest
-
 from obase.provider_contract import ProviderContract, ProviderContractRegistry
+
 from oskill._video_cost_proposal import CostProposal, video_cost_proposal
 
 

@@ -4,20 +4,22 @@
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any, List, Dict
+from typing import Any
+
 
 @dataclass(frozen=True)
 class EssayGuideInput:
     title: str
     content: str
     requirements: str = "" # 写作要求
-    conversation_history: List[dict] = field(default_factory=list)
+    conversation_history: list[dict] = field(default_factory=list)
 
 @dataclass(frozen=True)
 class EssayGuideResult:
-    feedback: Dict[str, str] # 维度 -> 反馈文本
-    suggested_questions: List[str] # 引导学生思考的问题
+    feedback: dict[str, str] # 维度 -> 反馈文本
+    suggested_questions: list[str] # 引导学生思考的问题
     is_completed: bool = False
 
 _ESSAY_SYSTEM = (
@@ -40,6 +42,7 @@ async def essay_guide(
 ) -> EssayGuideResult:
     """作文引导批改。"""
     import json
+
     from oprim.llm._llm_complete import llm_complete
 
     user_msg = (
@@ -47,23 +50,23 @@ async def essay_guide(
         f"写作要求: {inp.requirements}\n"
         f"学生作文正文: {inp.content}\n"
     )
-    
+
     messages = list(inp.conversation_history)
     messages.append({"role": "user", "content": user_msg})
-    
+
     response = await llm_complete(
         messages,
         caller=caller,
         system=_ESSAY_SYSTEM,
         model=model
     )
-    
+
     raw = response.text.strip()
     if "```" in raw:
         raw = raw.split("```")[1]
         if raw.startswith("json"):
             raw = raw[4:]
-    
+
     data = json.loads(raw)
     return EssayGuideResult(
         feedback=data.get("feedback", {}),

@@ -138,7 +138,6 @@ def draw_taylor_grid(ax: plt.Axes, ref_std: float = 1.0, rmax: float = 1.75) -> 
 
 
 def draw_panel(ax: plt.Axes, points: list[TaylorPoint], letter: str) -> None:
-    color_map = dict(MODELS)
     draw_taylor_grid(ax)
 
     handles = []

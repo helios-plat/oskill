@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from oprim._animation_types import AnimationResult
+
 from oskill._regenerate_animation import regenerate_animation
 
 _GOOD = AnimationResult(

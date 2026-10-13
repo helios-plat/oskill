@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("obase.veya_workspace", reason="needs obase veya_workspace (not yet on obase main)")
+
+from oskill.constitutional_violation import detect_constitution_violation
 from oskill.dag_compiler import (
     compile_spec_to_dag,
     pick_ready_task_ids,
     validate_taskgraph_dag,
 )
-from oskill.constitutional_violation import detect_constitution_violation
 
 TASKS = """
 # Tasks

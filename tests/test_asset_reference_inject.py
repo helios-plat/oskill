@@ -1,8 +1,6 @@
 """Tests for asset_reference_inject."""
 from __future__ import annotations
 
-import pytest
-
 from oskill._asset_reference_inject import asset_reference_inject
 
 

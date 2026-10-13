@@ -7,7 +7,6 @@ import pytest
 
 from oskill.conformal.split_cp import conformal_prediction_interval
 
-
 # ─── helpers ──────────────────────────────────────────────────────────────────
 
 def _make_synthetic(n_cal=200, n_test=100, noise_std=1.0, seed=42):

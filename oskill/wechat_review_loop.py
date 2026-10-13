@@ -18,8 +18,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from typing import Any
 
 # 触发全文重写的审核准则 (集中配置; 或 section 为 None/""/"__all__")
 FULL_REWRITE_CRITERIA = ("topic_match",)

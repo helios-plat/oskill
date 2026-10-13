@@ -6,10 +6,9 @@ import warnings
 from typing import Literal
 
 import numpy as np
+import oprim
 import pandas as pd
 from scipy import stats as scipy_stats
-
-import oprim
 
 
 def bootstrap_sharpe(
@@ -517,8 +516,6 @@ def portfolio_metrics_summary(
     ---------
     Bailey & Lopez de Prado (2014). The Deflated Sharpe Ratio.
     """
-    import math
-    from datetime import date as date_type
 
     n_trades = len(trades)
 

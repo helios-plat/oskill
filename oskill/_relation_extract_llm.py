@@ -15,7 +15,6 @@ import re
 
 from oprim._aii_graph_types import RelationResult
 
-
 _SYSTEM_PROMPT = (
     "You are a knowledge graph specialist. Analyze relationships between "
     "knowledge units. Output valid JSON only. No markdown, no explanation."

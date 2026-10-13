@@ -8,7 +8,6 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from obase import ProviderRegistry
 
 
@@ -215,7 +214,7 @@ class TestVideoSelfAssess:
             bitrate_kbps=1500, codec_video="h264", codec_audio="aac", audio_lufs=None,
         ))
         with (
-            patch("oprim.video_quality_metrics.video_quality_metrics", metrics_mock),
+            patch("oprim._video_quality_metrics.video_quality_metrics", metrics_mock),
             patch("oskill.video_self_assess._extract_frames", return_value=[tmp_path / "f.png"]),
         ):
             score = await video_self_assess(
@@ -265,7 +264,7 @@ class TestVideoSelfAssess:
             codec_video="h264", codec_audio="aac", audio_lufs=None,
         ))
         with (
-            patch("oprim.video_quality_metrics.video_quality_metrics", metrics_mock),
+            patch("oprim._video_quality_metrics.video_quality_metrics", metrics_mock),
             patch("oskill.video_self_assess._extract_frames", return_value=[]),
         ):
             with pytest.raises(VideoSelfAssessError, match="VLM call failed"):
@@ -286,7 +285,7 @@ class TestVideoSelfAssess:
             codec_video="h264", codec_audio="aac", audio_lufs=None,
         ))
         with (
-            patch("oprim.video_quality_metrics.video_quality_metrics", metrics_mock),
+            patch("oprim._video_quality_metrics.video_quality_metrics", metrics_mock),
             patch("oskill.video_self_assess._extract_frames", return_value=[]),
         ):
             with pytest.raises(VideoSelfAssessError, match="invalid JSON"):
@@ -311,7 +310,7 @@ class TestVideoSelfAssess:
             codec_video="h264", codec_audio="aac", audio_lufs=None,
         ))
         with (
-            patch("oprim.video_quality_metrics.video_quality_metrics", metrics_mock),
+            patch("oprim._video_quality_metrics.video_quality_metrics", metrics_mock),
             patch("oskill.video_self_assess._extract_frames", return_value=[]),
         ):
             score = await video_self_assess(
@@ -327,10 +326,10 @@ class TestVideoSelfAssess:
         video.write_bytes(b"x")
         script = Script(title="T", description="d", scenes=[], estimated_duration_s=5.0)
 
-        from oprim.video_quality_metrics import VideoQualityError
+        from oprim._video_quality_metrics import VideoQualityError
 
         metrics_mock = AsyncMock(side_effect=VideoQualityError("ffprobe fail"))
-        with patch("oprim.video_quality_metrics.video_quality_metrics", metrics_mock):
+        with patch("oprim._video_quality_metrics.video_quality_metrics", metrics_mock):
             with pytest.raises(VideoSelfAssessError, match="Metrics extraction"):
                 await video_self_assess(
                     video_path=video, script=script, vlm=self._mock_vlm(),

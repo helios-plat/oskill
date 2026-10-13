@@ -86,7 +86,7 @@ async def image_to_video_workflow(
     sem = asyncio.Semaphore(concurrency)
 
     async def _process_one(idx: int) -> Path:
-        from oprim.image_to_video import ImageToVideoError, image_to_video
+        from oprim._image_to_video import ImageToVideoError, image_to_video
 
         img = reference_images[idx]
         prompt = motion_prompts[idx]
@@ -95,7 +95,7 @@ async def image_to_video_workflow(
 
         # Optionally translate motion prompt
         if llm is not None:
-            from oprim.motion_prompt_translate import motion_prompt_translate
+            from oprim._motion_prompt_translate import motion_prompt_translate
 
             prompt = await motion_prompt_translate(
                 natural_language_motion=prompt, llm=llm, target_provider=primary_provider,

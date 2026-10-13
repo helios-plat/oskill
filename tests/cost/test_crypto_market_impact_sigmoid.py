@@ -7,7 +7,6 @@ import pytest
 
 from oskill.cost import crypto_market_impact_sigmoid
 
-
 ADV = 1_000_000_000.0   # 1B USD typical BTC daily volume
 REF_VOL = 0.4           # reference vol (BTC-like)
 HIGH_VOL = 1.5          # shitcoin-like vol

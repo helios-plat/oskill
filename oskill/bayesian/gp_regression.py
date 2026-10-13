@@ -9,7 +9,6 @@ import pandas as pd
 from scipy.linalg import cho_factor, cho_solve, solve_triangular
 from scipy.optimize import minimize
 
-
 # ---------------------------------------------------------------------------
 # Kernel implementations
 # ---------------------------------------------------------------------------
@@ -112,7 +111,6 @@ def _optimize_hyperparams(
     """Optimize kernel hyperparameters in log-space using L-BFGS-B."""
     kernel_fn = _KERNEL_FACTORIES[kernel]
     param_names = _PARAM_NAMES[kernel]
-    all_names = param_names + ["noise_variance"]
     all_vals = [kernel_params[k] for k in param_names] + [noise_variance]
 
     def neg_lml(log_theta: np.ndarray) -> float:

@@ -1,7 +1,6 @@
 """Generate derivatives (markdown/plaintext/chapters/thumbnail) for a substrate."""
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 
 from oprim._logging import log

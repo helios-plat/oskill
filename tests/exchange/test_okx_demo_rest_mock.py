@@ -1,8 +1,9 @@
 """Mock aiohttp — verify RestClient parse + error handling."""
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from oskill.exchange.okx_demo import OKXAPIError, OKXClientError, OKXDemoRestClient
+import pytest
+
+from oskill.exchange.okx_demo import OKXClientError, OKXDemoRestClient
 
 
 @pytest.fixture

@@ -8,11 +8,9 @@ Pure computation, no LLM.
 """
 from __future__ import annotations
 
-import math
 import random as _random
 
 from oprim._aii_graph_types import Community
-
 
 # ---------------------------------------------------------------------------
 # Pure-Python k-means (inline, no sklearn dependency)

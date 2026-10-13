@@ -15,16 +15,20 @@ generate_patch_preview / dedup_edits / build_undo_plan
 from __future__ import annotations
 
 import difflib
+import os
 import re
-from typing import Any
-
-from ._types import (
-    ApplyResult, EditBlock, EditOskillError, UndoPlan,
-)
 
 # oprim 函数直接 import（复用已有计算，不是 oprim 间裸调）
 import sys
-import os
+from typing import Any
+
+from ._types import (
+    ApplyResult,
+    EditBlock,
+    EditOskillError,
+    UndoPlan,
+)
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
 try:
     from oprim.text import compute_diff

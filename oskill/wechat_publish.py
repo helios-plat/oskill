@@ -438,8 +438,8 @@ def upload_image(
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="media"; filename="img{ext}"\r\n'
             f"Content-Type: {ctype}\r\n\r\n"
-        ).encode("utf-8")
-        tail = f"\r\n--{boundary}--\r\n".encode("utf-8")
+        ).encode()
+        tail = f"\r\n--{boundary}--\r\n".encode()
         req = urllib.request.Request(
             f"https://api.weixin.qq.com/cgi-bin/material/add_material"
             f"?access_token={access_token}&type=image",

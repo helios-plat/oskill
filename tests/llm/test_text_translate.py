@@ -51,7 +51,7 @@ class TestTextTranslate:
     def test_long_text_chunked(self) -> None:
         llm = _mock_llm("chunk result")
         long_text = "A" * 10000
-        result = text_translate(text=long_text, target_lang="zh", llm_client=llm)
+        text_translate(text=long_text, target_lang="zh", llm_client=llm)
         assert llm.call.call_count >= 2  # Should be chunked
 
     def test_llm_failure_raises(self) -> None:

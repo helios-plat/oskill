@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from oskill.agent_discovery import ResourceCatalog
 from oskill.wechat_resources import (
     catalog_summary,

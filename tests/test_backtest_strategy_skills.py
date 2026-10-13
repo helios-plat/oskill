@@ -1,6 +1,7 @@
 """Tests for backtest_strategy_skills oskills."""
-import pytest
+
 from oskill.backtest_strategy_skills import *  # noqa: F403, F405
+
 
 def test_portfolio_backtest():
     r = portfolio_backtest_simulation(trades=[{"entry": 100, "exit": 110, "size": 1}])

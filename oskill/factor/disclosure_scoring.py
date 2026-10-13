@@ -2,11 +2,7 @@
 
 from __future__ import annotations
 
-import statistics
-from datetime import date
-from typing import Callable, Optional
-
-import oprim
+from collections.abc import Callable
 
 STABILITY = "experimental"
 
@@ -15,7 +11,7 @@ def disclosure_event_scoring(
     events: list[dict],
     scoring_dimensions: list[dict],
     weights: dict[str, float],
-    history_lookup: Optional[Callable] = None,
+    history_lookup: Callable | None = None,
 ) -> list[dict]:
     """Score a list of disclosure events on multiple dimensions.
 

@@ -4,9 +4,12 @@
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Any, List, Optional
-from oprim.generate_variant import generate_variant, VariantInput, VariantItem
+from typing import Any
+
+from oprim.generate_variant import VariantInput, VariantItem, generate_variant
+
 
 @dataclass(frozen=True)
 class ReviewVariantInput:
@@ -23,7 +26,7 @@ async def variant_for_review(
     model: str = "claude-sonnet-4-6"
 ) -> VariantItem:
     """为复习生成变式。"""
-    
+
     # 直接调用 generate_variant
     v_inp = VariantInput(
         original_question=inp.original_question,
@@ -31,9 +34,9 @@ async def variant_for_review(
         kc_ids=[inp.kc_id],
         variant_type=inp.variant_type
     )
-    
+
     result = await generate_variant(v_inp, caller=caller, model=model)
-    
+
     # 如果生成失败，降级逻辑通常由调用方处理（比如返回原题）
     # 这里只负责调用生成原子
     return result

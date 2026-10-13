@@ -1,8 +1,6 @@
 """Signal fusion oskills — composite analysis combining multiple oprims."""
 from __future__ import annotations
 
-from typing import Any, Literal
-
 
 class SignalFusionSkillError(Exception):
     """Raised when a signal fusion skill fails."""
@@ -25,7 +23,7 @@ def fusion_score_with_uncertainty(
         >>> fusion_score_with_uncertainty(raw_signals={"trend": 0.8, "flow": 0.5})
         {'fusion_score': 0.65, 'uncertainty': 0.2, 'abstain': False, ...}
     """
-    from oprim.signal_analysis import abstain_decision, bayesian_factor_posterior
+    from oprim._signal_analysis import abstain_decision, bayesian_factor_posterior
 
     values = list(raw_signals.values())
     if not values:
@@ -63,7 +61,7 @@ def signal_quality_gate(
         >>> signal_quality_gate(signals={"trend": 0.8, "flow": 0.3})
         {'passed': ['trend'], 'gated': ['flow'], ...}
     """
-    from oprim.signal_analysis import abstain_decision, cross_sectional_rank, signal_rarity_weight
+    from oprim._signal_analysis import abstain_decision, cross_sectional_rank, signal_rarity_weight
 
     ranks = cross_sectional_rank(asset_scores=signals, method="percentile")
     passed, gated = [], []
@@ -97,7 +95,7 @@ def temporal_fusion(
         >>> temporal_fusion(signals={"a": 0.8}, ages_hours={"a": 12}, tf1_signal=0.7, tf4_signal=0.6)
         {'decayed_signals': {...}, 'consistency': 0.66, ...}
     """
-    from oprim.signal_analysis import cross_timeframe_consistency, signal_temporal_decay
+    from oprim._signal_analysis import cross_timeframe_consistency, signal_temporal_decay
 
     decayed = {}
     for name, val in signals.items():
@@ -124,7 +122,7 @@ def behavioral_weighting(
         >>> behavioral_weighting(signals={"trend": 0.8}, frequencies={"trend": 10}, total_signals=100, sentiment_score=0.9)
         {'weighted': {'trend': ...}, ...}
     """
-    from oprim.signal_analysis import signal_rarity_weight, trend_sentiment_synergy
+    from oprim._signal_analysis import signal_rarity_weight, trend_sentiment_synergy
 
     weighted = {}
     for name, val in signals.items():
@@ -151,7 +149,7 @@ def pack_evaluation(
         >>> pack_evaluation(historical_packs=[{"score": 60}], new_pack={"score": 75})
         {'promote': True, 'posterior': {...}, ...}
     """
-    from oprim.signal_analysis import bayesian_factor_posterior, pack_promotion_test
+    from oprim._signal_analysis import bayesian_factor_posterior, pack_promotion_test
 
     test = pack_promotion_test(historical_packs=historical_packs, new_pack=new_pack)
     hist_scores = [p.get("score", 0) for p in historical_packs] if historical_packs else [0]
@@ -176,7 +174,7 @@ def alphalens_style_ic(
         >>> alphalens_style_ic(ic_series=[0.1, 0.09, 0.05], oos_start_idx=1)
         {'ic_decay': {...}, 'attribution': {...}}
     """
-    from oprim.signal_analysis import factor_attribution, ic_oos_decay
+    from oprim._signal_analysis import factor_attribution, ic_oos_decay
 
     decay = ic_oos_decay(ic_series=ic_series, oos_start_idx=oos_start_idx)
     attr = factor_attribution(fusion_score=decay["ic_mean"] * 100, factor_contributions=factor_contributions or {"signal": decay["ic_mean"] * 100})
@@ -199,7 +197,7 @@ def regime_aware_scoring(
         >>> regime_aware_scoring(ic_series=[0.1, -0.05], regime_labels=["bull", "bear"], asset_scores={"BTC": 80})
         {'regime_ic': {...}, 'ranks': {...}}
     """
-    from oprim.signal_analysis import cross_sectional_rank, regime_conditional_ic
+    from oprim._signal_analysis import cross_sectional_rank, regime_conditional_ic
 
     regime_ic = regime_conditional_ic(ic_series=ic_series, regime_labels=regime_labels)
     ranks = cross_sectional_rank(asset_scores=asset_scores)
@@ -221,7 +219,7 @@ def relative_strength_rank(
         >>> relative_strength_rank(asset_scores={"BTC": 80, "ETH": 60})
         {'ranks': {'BTC': 1.0, 'ETH': 0.0}, ...}
     """
-    from oprim.signal_analysis import correlation_matrix, cross_sectional_rank
+    from oprim._signal_analysis import correlation_matrix, cross_sectional_rank
 
     ranks = cross_sectional_rank(asset_scores=asset_scores)
     corr = None
@@ -313,7 +311,7 @@ def data_drift_detector(
         >>> data_drift_detector(reference=[1,2,3,4,5], current=[5,6,7,8,9])
         {'drifted': True, 'divergence': ..., ...}
     """
-    from oprim.signal_analysis import divergence_score
+    from oprim._signal_analysis import divergence_score
 
     div = divergence_score(signal_a=reference, signal_b=current, method="js")
     return {"drifted": div > threshold, "divergence": round(div, 6), "threshold": threshold}
@@ -334,7 +332,7 @@ def counterfactual_generator(
         >>> counterfactual_generator(base_scenario={"trend": 0.8}, perturbations={"trend": -0.5})
         [{'scenario': 'trend_shock', 'values': {'trend': 0.3}, ...}]
     """
-    from oprim.signal_analysis import cross_sectional_rank
+    from oprim._signal_analysis import cross_sectional_rank
 
     scenarios = []
     for factor, delta in perturbations.items():

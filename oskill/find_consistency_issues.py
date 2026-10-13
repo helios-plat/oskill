@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from typing import Callable
 
 from oprim import coherence_compute, entity_graph_search
 

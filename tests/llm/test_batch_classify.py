@@ -1,6 +1,5 @@
 """Tests for oskill.llm.batch_classify (B7)."""
 
-import json
 from unittest.mock import MagicMock
 
 from oskill.llm.batch_classify import llm_batch_classify

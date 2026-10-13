@@ -49,7 +49,6 @@ def bocpd_changepoint(
         - ``hazard_rate``          – the hazard rate used.
     """
     import numpy as np  # noqa: PLC0415
-
     from oprim.risk_limit_check import risk_limit_check  # noqa: PLC0415
     from oprim.zscore_signal import zscore_signal  # noqa: PLC0415
 
@@ -77,9 +76,9 @@ def bocpd_changepoint(
     effective_lb = min(zscore_lookback, max(2, T // 4))
     if T >= effective_lb + 1:
         zs = zscore_signal(obs.tolist(), lookback=effective_lb)
-        zscores = np.array(zs["zscores"])
+        zscores = np.array(zs["zscores"])  # noqa: F841  (z-score pass kept; result not yet consumed)
     else:
-        zscores = np.zeros(T)
+        zscores = np.zeros(T)  # noqa: F841
 
     # BOCPD core: run-length distribution via Normal-Gamma conjugate
     # R[t, r] = P(run length = r at time t)

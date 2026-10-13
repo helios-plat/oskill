@@ -14,7 +14,6 @@ mpl.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 VARIABLES = [f"Variable_{idx}" for idx in range(1, 10)]
 
 

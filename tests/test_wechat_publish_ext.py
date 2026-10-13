@@ -8,7 +8,6 @@ import json
 import pytest
 
 from oskill.wechat_publish import (
-    Article,
     WechatAccountRegistry,
     create_image_post,
     inspect_article,

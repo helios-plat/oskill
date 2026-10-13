@@ -1,11 +1,15 @@
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
-import pytest
-from datetime import datetime, timezone, timedelta
-from oskill.structured_log_anomaly_cluster import structured_log_anomaly_cluster, LogCluster, LogAnomalyClusters
+from datetime import UTC, datetime, timedelta
+
+from oskill.structured_log_anomaly_cluster import (
+    structured_log_anomaly_cluster,
+)
+
 
 def test_log_anomaly_cluster_empty():
     result = structured_log_anomaly_cluster(log_lines=[])
@@ -32,7 +36,7 @@ def test_log_anomaly_cluster_basic():
     assert result.unique_patterns == 2
 
 def test_log_anomaly_cluster_with_time_window():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     logs = [
         {"timestamp": (now - timedelta(minutes=10)).isoformat(), "event": "Recent event"},
         {"timestamp": (now - timedelta(hours=2)).isoformat(), "event": "Old event"}

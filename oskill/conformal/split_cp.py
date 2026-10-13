@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Literal
 
 import numpy as np
-import pandas as pd
 import oprim
+import pandas as pd
 
 
 def conformal_prediction_interval(

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from oprim import canonical_json, sha256_hash
-
 
 _DEFAULT_CLAIM_EXTRACTOR_TEMPLATE = (
     "Extract atomic factual claims from the following response. "

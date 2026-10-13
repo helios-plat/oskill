@@ -1,12 +1,9 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import difflib
-import re
+
 from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
 
 def dedup_edits(
     edits: list[dict[str, Any]],

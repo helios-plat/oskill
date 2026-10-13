@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from oprim._logging import log
-from oprim.external.clients.whisper_client import WhisperClient, WhisperSegment
+from oprim.external.clients.whisper_client import WhisperClient
 from oprim.external.gpu_lock import GpuLock
 from oprim.meta_db import open_meta_db
 

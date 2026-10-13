@@ -31,7 +31,6 @@ def skills_dynamic_inject(
     Returns:
         {injected, system_prompt_additions, tools_added, config_updates}
     """
-    ctx = context or {}
     injected: dict[str, Any] = {
         "system_prompt_additions": [],
         "tools_added": [],

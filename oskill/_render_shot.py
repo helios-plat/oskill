@@ -4,9 +4,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from oprim._render_html_to_mp4 import RenderHtmlError, render_html_to_mp4
 from oprim._shot_types import ShotResult
-from oprim._render_html_to_mp4 import render_html_to_mp4, RenderHtmlError
-from oprim._video_generate import video_generate, VideoGenError
+from oprim._video_generate import VideoGenError, video_generate
 
 
 async def render_shot(

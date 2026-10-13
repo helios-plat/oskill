@@ -11,7 +11,8 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def deep_research_tree(
@@ -34,7 +35,6 @@ def deep_research_tree(
     max_depth = int(ctx.get("max_depth", 3))
     max_branches = int(ctx.get("max_branches", 5))
 
-    findings: list[dict[str, Any]] = []
     visited: set[str] = set()
 
     def _branch(question: str, depth: int) -> list[dict[str, Any]]:

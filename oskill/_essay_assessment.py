@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from oprim._mneme_speech_types import EssayAssessmentInput, EssayAssessmentResult
 from oprim._rubric_score import rubric_score
-
 
 _DEFAULT_RUBRIC = {"结构": 0.25, "立意": 0.35, "语言": 0.25, "格式": 0.15}
 
@@ -101,15 +101,6 @@ async def _generate_guidance_questions(
     import asyncio
 
     dim_summary = "；".join(f"{d}={v:.1f}分" for d, v in scores.items())
-    system = (
-        "你是一名引导式语文教师。你的唯一任务是为学生的作文生成引导性问题，"
-        "帮助学生自己发现需要改进的地方。\n"
-        "规则：\n"
-        "1. 只输出问题，不输出修改建议。\n"
-        "2. 每个问题必须以中文问号'？'结尾。\n"
-        "3. 不要给出范文、示例句子或改写后的段落。\n"
-        "4. 输出格式：JSON 数组，例如 [\"问题一？\", \"问题二？\"]"
-    )
     user = (
         f"作文类型：{inp.essay_type}，年级：{inp.grade_level}\n"
         f"各维度评分：{dim_summary}\n\n"

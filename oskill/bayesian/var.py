@@ -6,7 +6,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from scipy.stats import invwishart
 
 
 def _ar1_residual_variance(series: np.ndarray) -> float:
@@ -107,7 +106,6 @@ def bayesian_var(
     Reference:
         Karlsson (2013); Doan, Litterman, Sims (1984).
     """
-    rng = np.random.default_rng(seed)
 
     if isinstance(data, pd.DataFrame):
         data_arr = data.values.astype(np.float64)

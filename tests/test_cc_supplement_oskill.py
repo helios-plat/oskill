@@ -10,9 +10,9 @@ import pytest
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 def _make_registry(
-    plugins: "dict | None" = None,
-    command_names: "set | None" = None,
-    skill_names: "set | None" = None,
+    plugins: dict | None = None,
+    command_names: set | None = None,
+    skill_names: set | None = None,
 ) -> Any:
     class Reg:
         pass

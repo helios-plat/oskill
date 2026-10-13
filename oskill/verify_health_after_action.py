@@ -7,11 +7,9 @@ Used by AppInstallerEngine as verify_health injection.
 from __future__ import annotations
 
 import time
-from typing import Any
-
-from pydantic import BaseModel
 
 from oprim._network import network_http_health  # v3 not top-level
+from pydantic import BaseModel
 
 
 class HealthVerifyResult(BaseModel):

@@ -1,6 +1,7 @@
 """Test referee parsing, clamping, verdict normalization."""
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from oskill.llm_agent.referee import referee
 

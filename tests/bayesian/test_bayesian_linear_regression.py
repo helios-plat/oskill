@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.bayesian.linear_regression import bayesian_linear_regression
 

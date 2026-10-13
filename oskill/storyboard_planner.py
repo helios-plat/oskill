@@ -10,6 +10,7 @@ Raises:
 
 from __future__ import annotations
 
+import inspect
 import json
 from typing import Any
 
@@ -105,7 +106,10 @@ async def storyboard_planner(
         },
     ]
 
-    result = await llm(messages=messages)
+    # LLMCaller may be async (production) or a plain sync callable (tests, simple adapters).
+    result = llm(messages=messages)
+    if inspect.isawaitable(result):
+        result = await result
     content = result.get("content", "")
 
     try:

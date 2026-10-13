@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import warnings
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 STABILITY_NEW = "experimental"  # for Sprint 0 additions only
 
@@ -393,7 +392,7 @@ def multi_dim_nearest_search(
     anchor_vec: list[float],
     history_vecs: list[tuple],
     k: int = 20,
-    weights: Optional[list[float]] = None,
+    weights: list[float] | None = None,
     distance_metric: Literal["euclidean", "cosine", "weighted_euclidean"] = "weighted_euclidean",
 ) -> list[dict]:
     """Find k nearest historical neighbors for a multi-dimensional anchor vector.

@@ -17,7 +17,6 @@ import pytest
 
 from oskill.recursive_utility.ez_solver import epstein_zin_solver
 
-
 # ---------------------------------------------------------------------------
 # Bansal-Yaron (2004) Table I monthly calibration (annualised μ ≈ 1.8%)
 # ---------------------------------------------------------------------------

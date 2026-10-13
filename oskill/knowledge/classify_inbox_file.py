@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Literal
 
 from oprim._logging import log
+from oprim.classifier.detect_image_exif import detect_image_exif
 from oprim.classifier.detect_mime import detect_mime
 from oprim.classifier.detect_pdf_features import detect_pdf_features
-from oprim.classifier.detect_image_exif import detect_image_exif
 
 MEDIUMS = frozenset([
     "paper", "book", "markdown_note", "webpage",
