@@ -1,6 +1,6 @@
 """Tests for oskill.find_consistency_issues."""
 
-import pytest
+
 from oskill import find_consistency_issues
 
 

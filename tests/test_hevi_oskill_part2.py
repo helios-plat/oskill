@@ -5,15 +5,18 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any
 from types import ModuleType
-from unittest.mock import patch, MagicMock
+from typing import Any
 
 import pytest
 
 from oskill._schemas import (
-    MetadataConstraints, ReferenceDescription, Script, Scene, Shot,
-    ShotPlan, Storyboard,
+    MetadataConstraints,
+    Scene,
+    Script,
+    Shot,
+    ShotPlan,
+    Storyboard,
 )
 from oskill.metadata_generate import MetadataGenerateError, metadata_generate
 from oskill.reference_generator import ReferenceGeneratorError, reference_generator
@@ -126,7 +129,7 @@ class TestSubtitleGenerator:
 
     def test_ass_format(self, tmp_path: Path) -> None:
         out = tmp_path / "sub.ass"
-        result = subtitle_generator(shots=_make_shots(), output_path=out, format="ass")
+        subtitle_generator(shots=_make_shots(), output_path=out, format="ass")
         content = out.read_text()
         assert "Dialogue:" in content
         assert "Hello" in content

@@ -1,12 +1,12 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-import json
+
 import re
-import sys
-import os
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from ._types import RepoMap
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):

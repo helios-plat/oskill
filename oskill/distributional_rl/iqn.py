@@ -59,7 +59,6 @@ def implicit_quantile_loss(
     if tq.ndim == 1:
         # (batch,) → (batch, 1)
         tq = tq[:, np.newaxis]
-    n_target = tq.shape[1]
 
     st = np.asarray(sample_taus, dtype=np.float64)
     if st.ndim == 1:

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import Any, List, Protocol
+from typing import Any, Protocol
 
 from oprim import (
     location_to_snippet,  # noqa: F401
@@ -77,7 +77,7 @@ async def call_hierarchy_trace(
         if current_depth <= 0:
             return
 
-        gathered: List[Any] = list(await asyncio.gather(
+        gathered: list[Any] = list(await asyncio.gather(
             lsp_incoming_calls(item, lsp=lsp),
             lsp_outgoing_calls(item, lsp=lsp),
             return_exceptions=True,

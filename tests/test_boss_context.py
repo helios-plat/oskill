@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("obase.workspace_snapshot", reason="needs obase workspace_snapshot (not yet on obase main)")
+pytest.importorskip("obase.veya_workspace", reason="needs obase veya_workspace (not yet on obase main)")
+
 from obase.workspace_snapshot import WorkspaceSnapshot
 
 from oskill.context_assembler import assemble_boss_context, assemble_intent_context

@@ -1,16 +1,14 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import file_read
-import ast
-import json
-import re
-import sys
+
 import os
+import sys
 from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import file_read
+
 
 def load_skill_progressive(
     skill_dir: str,

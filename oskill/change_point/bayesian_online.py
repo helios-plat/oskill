@@ -107,7 +107,6 @@ def bocpd_bayesian(
 
         # Current valid run lengths are 0..t-1
         valid_r = t  # indices 0..t-1
-        r_vec = np.arange(valid_r)
 
         # Predictive probabilities P(x_t | r_{t-1} = r, data)
         pred_probs = pred_fn(x_t, mu_r[:valid_r], kappa_r[:valid_r],

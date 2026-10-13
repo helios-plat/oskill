@@ -1,5 +1,6 @@
 """Tests for Wave 2 oskills and omodul."""
 import pytest
+
 from oskill.wave2_skills import *  # noqa: F403, F405
 
 

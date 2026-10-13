@@ -6,9 +6,8 @@ import math
 from typing import Any
 
 import numpy as np
+from oprim._point_process import hawkes_nll
 from scipy.optimize import minimize
-
-from oprim.point_process import hawkes_nll
 
 
 def hawkes_branching_ratio(

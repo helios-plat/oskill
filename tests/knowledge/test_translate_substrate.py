@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
-import pytest
+from unittest.mock import AsyncMock, patch
 
+import pytest
 from oprim.meta_db import open_meta_db
 from oprim.translate.protocol import TranslationResult
+
 from oskill.translate_substrate import TranslateResult, translate_substrate
 
 

@@ -15,7 +15,8 @@ from __future__ import annotations
 import asyncio
 import calendar as cal_mod
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 # legal transitions mimic Cindy's attemptLifecycle.ts
 LEGAL_TRANSITIONS: dict[str, tuple[str, ...]] = {
@@ -67,14 +68,14 @@ def monthly_clamp(cron_expr: str, now_ts: float | None = None) -> int:
         return int(now + 3600)
 
     import datetime
-    dt = datetime.datetime.fromtimestamp(now, tz=datetime.timezone.utc)
+    dt = datetime.datetime.fromtimestamp(now, tz=datetime.UTC)
     year, month = dt.year, dt.month
 
     # clamp day to month's max
     max_day = cal_mod.monthrange(year, month)[1]
     effective_day = min(day, max_day)
 
-    target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.timezone.utc)
+    target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.UTC)
     if target.timestamp() <= now:
         # advance to next month
         if month == 12:
@@ -84,7 +85,7 @@ def monthly_clamp(cron_expr: str, now_ts: float | None = None) -> int:
             month += 1
         max_day = cal_mod.monthrange(year, month)[1]
         effective_day = min(day, max_day)
-        target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.timezone.utc)
+        target = datetime.datetime(year, month, effective_day, hour, minute, 0, tzinfo=datetime.UTC)
 
     return int(target.timestamp())
 
@@ -96,7 +97,6 @@ async def pre_run_knowledge_hook(schedule: dict[str, Any], context: dict[str, An
     and updates the schedule's prompt context with any refreshed items.
     Returns False if no knowledge store is available (skips silently).
     """
-    ctx = context or {}
     try:
         from obase.knowledge_store import KnowledgeStore
         store = KnowledgeStore()

@@ -1,17 +1,13 @@
 """Tests for K-AII-3: relation_extract_llm and K-AII-4: community_cluster."""
 from __future__ import annotations
 
-import asyncio
 import json
-from dataclasses import dataclass
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from oprim._aii_graph_types import Community, RelationResult
 
-from oskill._relation_extract_llm import relation_extract_llm
 from oskill._community_cluster import community_cluster
-from oprim._aii_graph_types import RelationResult, Community
-
+from oskill._relation_extract_llm import relation_extract_llm
 
 # ---------------------------------------------------------------------------
 # Helpers

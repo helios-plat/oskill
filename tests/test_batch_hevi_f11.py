@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import pytest
-
 from oprim._hevi_types import CanvasEdge, CanvasNode
 from oprim.canvas_node_execute import CanvasNodeResult
+
 from oskill.canvas_workflow_executor import (
     CanvasWorkflowError,
     canvas_workflow_executor,

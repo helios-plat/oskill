@@ -1,27 +1,36 @@
 import sys
+from types import SimpleNamespace
 from unittest.mock import MagicMock
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from datetime import datetime, timezone, timedelta
+
 from oskill import (
     container_health_aggregate,
+    event_trail_correlate,
     metric_baseline_compare,
     structured_log_anomaly_cluster,
-    event_trail_correlate,
 )
+
+
+def _inspect(state: str, health: str | None = None) -> SimpleNamespace:
+    """Shape of obase.docker.docker_container_inspect's ContainerInfo (the parts used)."""
+    return SimpleNamespace(state=state, health=health)
+
 
 # === container_health_aggregate tests ===
 
 def test_container_health_aggregate_all_healthy():
     with patch("oskill.container_health_aggregate.docker_container_inspect") as mock_inspect:
         with patch("oskill.container_health_aggregate.http_health_probe") as mock_probe:
-            mock_inspect.return_value = {"State": {"Running": True, "Health": {"Status": "healthy"}}}
+            mock_inspect.return_value = _inspect("running", "healthy")
             mock_probe.return_value = {"healthy": True, "elapsed_ms": 10, "status_code": 200}
-            
+
             result = container_health_aggregate(container_id="test", check_endpoints=["http://localhost:8080"])
             assert result.overall_status == "healthy"
             assert len(result.passing_checks) == 1
@@ -30,12 +39,12 @@ def test_container_health_aggregate_all_healthy():
 def test_container_health_aggregate_degraded():
     with patch("oskill.container_health_aggregate.docker_container_inspect") as mock_inspect:
         with patch("oskill.container_health_aggregate.http_health_probe") as mock_probe:
-            mock_inspect.return_value = {"State": {"Running": True}}
+            mock_inspect.return_value = _inspect("running")
             mock_probe.side_effect = [
                 {"healthy": True, "elapsed_ms": 10, "status_code": 200},
                 {"healthy": False, "elapsed_ms": 0, "status_code": 500, "error": "Internal Error"}
             ]
-            
+
             result = container_health_aggregate(container_id="test", check_endpoints=["http://ok", "http://fail"])
             assert result.overall_status == "degraded"
             assert len(result.passing_checks) == 1
@@ -44,8 +53,8 @@ def test_container_health_aggregate_degraded():
 
 def test_container_health_aggregate_down():
     with patch("oskill.container_health_aggregate.docker_container_inspect") as mock_inspect:
-        mock_inspect.return_value = {"State": {"Running": False}}
-        
+        mock_inspect.return_value = _inspect("exited")
+
         result = container_health_aggregate(container_id="test", check_endpoints=["http://localhost"])
         assert result.overall_status == "down"
         assert result.aggregate_health_score == 0.0
@@ -53,9 +62,9 @@ def test_container_health_aggregate_down():
 def test_container_health_aggregate_unhealthy_internal():
     with patch("oskill.container_health_aggregate.docker_container_inspect") as mock_inspect:
         with patch("oskill.container_health_aggregate.http_health_probe") as mock_probe:
-            mock_inspect.return_value = {"State": {"Running": True, "Health": {"Status": "unhealthy"}}}
+            mock_inspect.return_value = _inspect("running", "unhealthy")
             mock_probe.return_value = {"healthy": True, "elapsed_ms": 10, "status_code": 200}
-            
+
             result = container_health_aggregate(container_id="test", check_endpoints=["http://localhost:8080"])
             assert result.overall_status == "degraded"
             assert any(f.endpoint == "docker-internal-healthcheck" for f in result.failing_checks)
@@ -63,17 +72,17 @@ def test_container_health_aggregate_unhealthy_internal():
 def test_container_health_aggregate_probe_exception():
     with patch("oskill.container_health_aggregate.docker_container_inspect") as mock_inspect:
         with patch("oskill.container_health_aggregate.http_health_probe") as mock_probe:
-            mock_inspect.return_value = {"State": {"Running": True}}
+            mock_inspect.return_value = _inspect("running")
             mock_probe.side_effect = Exception("Probe failed")
-            
+
             result = container_health_aggregate(container_id="test", check_endpoints=["http://error"])
             assert result.overall_status == "degraded"
             assert result.failing_checks[0].error == "Probe failed"
 
 def test_container_health_aggregate_no_endpoints():
     with patch("oskill.container_health_aggregate.docker_container_inspect") as mock_inspect:
-        mock_inspect.return_value = {"State": {"Running": True}}
-        
+        mock_inspect.return_value = _inspect("running")
+
         result = container_health_aggregate(container_id="test", check_endpoints=[])
         assert result.overall_status == "healthy"
         assert result.aggregate_health_score == 1.0
@@ -89,8 +98,8 @@ def test_metric_baseline_compare_higher_is_better():
     current = {"success_rate": 0.8}
     baseline = {"success_rate": 0.9} # -11% decrease
     result = metric_baseline_compare(
-        current_metrics=current, 
-        baseline_metrics=baseline, 
+        current_metrics=current,
+        baseline_metrics=baseline,
         degradation_threshold=0.1,
         metric_directions={"success_rate": "higher_is_better"}
     )
@@ -164,7 +173,7 @@ def test_log_anomaly_cluster_basic():
     assert result.unique_patterns == 2
 
 def test_log_anomaly_cluster_with_time_window():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     logs = [
         {"timestamp": (now - timedelta(minutes=10)).isoformat(), "event": "Recent event"},
         {"timestamp": (now - timedelta(hours=2)).isoformat(), "event": "Old event"}

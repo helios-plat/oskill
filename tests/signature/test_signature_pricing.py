@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from oskill.signature.pricing import signature_based_pricing
 

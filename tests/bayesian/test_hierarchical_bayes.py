@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from oskill.bayesian.hierarchical import hierarchical_bayes_normal
 
@@ -69,7 +68,7 @@ def test_hbn_partial_pooling():
     # Small group should be pulled toward population mean (shrinkage)
     # Its posterior mean should be less than raw empirical mean of 10
     small_post_mean = ci["small"]["mean"]
-    large_post_mean = ci["large"]["mean"]
+    ci["large"]["mean"]
     # Partial pooling: small group mean should be pulled toward large group
     assert small_post_mean < 10.0 + 3.0  # bounded from above
 

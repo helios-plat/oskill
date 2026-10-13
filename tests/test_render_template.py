@@ -1,6 +1,8 @@
 import pytest
-from oskill.render_template import render_template, TemplateVariableSpec
+
 from oskill._exceptions import OskillError
+from oskill.render_template import TemplateVariableSpec, render_template
+
 
 def test_render_template_fixed():
     spec = [TemplateVariableSpec(name="foo", source="fixed", fixed_value="bar")]

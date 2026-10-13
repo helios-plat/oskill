@@ -18,10 +18,13 @@ from dataclasses import dataclass
 from typing import Any
 
 from ._types import (
-    ConfigOskillError, OskillError, ParseOskillError,
-    PluginManifest, TodoItem, ToolCall,
+    ConfigOskillError,
+    OskillError,
+    ParseOskillError,
+    PluginManifest,
+    TodoItem,
+    ToolCall,
 )
-
 
 # ---------------------------------------------------------------------------
 # format_diagnostics
@@ -237,7 +240,9 @@ def merge_config(
 # evaluate_hooks
 # ---------------------------------------------------------------------------
 
-from ._types import HookCmd
+from ._types import HookCmd  # noqa: E402
+
+
 @dataclass
 class _OldHookCmd:
     event: str

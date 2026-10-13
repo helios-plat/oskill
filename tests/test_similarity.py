@@ -9,7 +9,6 @@ from oskill.similarity import (
     regime_transition_analysis,
 )
 
-
 # ============================================================
 # historical_analogy_search tests
 # ============================================================
@@ -563,7 +562,8 @@ class TestGeopoliticalRiskIndex:
 # ============================================================
 
 from datetime import date as _date
-from oskill.similarity import multi_dim_nearest_search, forward_outcome_distribution
+
+from oskill.similarity import forward_outcome_distribution, multi_dim_nearest_search
 
 
 class TestMultiDimNearestSearch:

@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
+import oprim
 import pandas as pd
 from scipy import stats
-import oprim
 
 
 def pcmci_causal_discovery(

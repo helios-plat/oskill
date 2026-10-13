@@ -56,7 +56,7 @@ async def avatar_assembler(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    from oprim.avatar_generate import avatar_generate
+    from oprim._avatar_generate import avatar_generate
     from oprim.tts_synthesize import tts_synthesize
 
     sem = asyncio.Semaphore(concurrency)

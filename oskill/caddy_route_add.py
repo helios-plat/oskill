@@ -12,10 +12,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel
-
 from oprim import caddy_route_add_atomic
 from oprim._network import network_http_health  # v3 not top-level
+from pydantic import BaseModel
 
 
 class CaddyRouteAddResult(BaseModel):

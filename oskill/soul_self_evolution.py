@@ -9,7 +9,8 @@ persist its own behavior changes (skills, model settings, thinking mode).
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def soul_self_evolution(
@@ -38,7 +39,8 @@ def soul_self_evolution(
 
     if llm_caller is not None and ctx.get("use_llm", True):
         try:
-            import json, re
+            import json
+            import re
             prompt = (
                 f"You are {agent_name} evaluating your own performance. "
                 f"Current SOUL.md: {current_soul[:2000]}\n"

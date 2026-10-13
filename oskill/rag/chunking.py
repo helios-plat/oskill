@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import numpy as np
-
 from oprim import vector_similarity
 
 

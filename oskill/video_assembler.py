@@ -61,12 +61,12 @@ async def video_assembler(
 
     # Step 2: Mix BGM if provided
     if bgm_path and bgm_path.exists():
-        from oprim.audio_mix import audio_mix
+        from oprim._audio_mix import audio_mix
 
         mixed_audio = output_path.parent / f"{output_path.stem}_bgm.wav"
         await audio_mix(inputs=[current, bgm_path], weights=[1.0, 0.3], output_path=mixed_audio)
 
-        from oprim.audio_video_merge import audio_video_merge
+        from oprim._audio_video_merge import audio_video_merge
 
         merged = output_path.parent / f"{output_path.stem}_merged.mp4"
         await audio_video_merge(video_path=current, audio_path=mixed_audio, output_path=merged)
@@ -74,7 +74,7 @@ async def video_assembler(
 
     # Step 3: Burn subtitles if provided
     if subtitle_path and subtitle_path.exists():
-        from oprim.subtitle_burn import subtitle_burn
+        from oprim._subtitle_burn import subtitle_burn
 
         await subtitle_burn(
             video_path=current, srt_paths=[subtitle_path], output_path=output_path

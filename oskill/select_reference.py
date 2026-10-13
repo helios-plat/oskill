@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from oskill._schemas import FrameConsistencyResult, ReferenceSet, ShotFrame
+from oskill._schemas import ReferenceSet, ShotFrame
 
 
 class SelectReferenceError(Exception):

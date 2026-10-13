@@ -5,13 +5,11 @@ All tests are pure-compute; no LLM, no network, no mocks needed.
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
-
 from oprim._aii_types import ClusterResult, GapReport
-from oskill._query_cluster import query_cluster
-from oskill._capability_gap_analyze import capability_gap_analyze
 
+from oskill._capability_gap_analyze import capability_gap_analyze
+from oskill._query_cluster import query_cluster
 
 # ===========================================================================
 # K-AII-1: query_cluster
@@ -265,8 +263,8 @@ class TestCapabilityGapAnalyzeMissTopics:
             graph_stats={},
         )
         # The momentum-related topics should cluster; ocean stays separate
-        topics = [t["topic"] for t in result.high_miss_topics]
-        counts = {t["topic"]: t["miss_count"] for t in result.high_miss_topics}
+        [t["topic"] for t in result.high_miss_topics]
+        {t["topic"]: t["miss_count"] for t in result.high_miss_topics}
         # merged momentum cluster has total 7
         momentum_cluster = [t for t in result.high_miss_topics if t["miss_count"] == 7]
         assert len(momentum_cluster) == 1

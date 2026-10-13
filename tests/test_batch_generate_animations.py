@@ -1,12 +1,10 @@
 """Tests for batch_generate_animations."""
 from __future__ import annotations
 
-import asyncio
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from oprim._animation_types import AnimationResult
+
 from oskill._batch_generate_animations import batch_generate_animations
 
 _GOOD = AnimationResult(

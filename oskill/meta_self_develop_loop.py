@@ -9,7 +9,8 @@ heart of AutoAgent's "Self-Managing Workflow Generation".
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 async def meta_self_develop_loop(

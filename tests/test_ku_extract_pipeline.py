@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from oskill.ku_extract_pipeline import ku_extract_pipeline
 
 

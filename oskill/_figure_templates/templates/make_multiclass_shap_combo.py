@@ -15,7 +15,6 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.patches import Patch
 
-
 FEATURES = ["Mn", "Co", "Ge", "Fe", "Cd", "Sn", "In", "Pb", "Ga", "Sb", "Ag", "Cu"]
 CLASSES = ["MVT", "SEDEX", "VMS", "epithermal", "skarn"]
 

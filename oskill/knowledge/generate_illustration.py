@@ -1,9 +1,7 @@
 """Generate an illustration for a substrate or fragment via SD 1.5."""
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
-from pathlib import Path
 
 from oprim._logging import log
 from oprim.external.clients.sd_client import SdClient

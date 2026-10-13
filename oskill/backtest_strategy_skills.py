@@ -1,8 +1,6 @@
 """Backtest and strategy analysis oskills — composite workflows combining oprims."""
 from __future__ import annotations
 
-from typing import Any
-
 
 class BacktestSkillError(Exception):
     """Raised when a backtest skill fails."""
@@ -131,7 +129,7 @@ def turnover_churn_analysis(*, position_history: list[dict[str, float]]) -> dict
     - oprim.compute_portfolio_turnover
     - oprim.compute_position_churn
     """
-    from oprim.quant_analysis import compute_position_churn, compute_portfolio_turnover
+    from oprim.quant_analysis import compute_portfolio_turnover, compute_position_churn
     churn = compute_position_churn(position_history=position_history)
     if len(position_history) >= 2:
         last_turnover = compute_portfolio_turnover(weights_before=position_history[-2], weights_after=position_history[-1])

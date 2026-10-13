@@ -64,8 +64,7 @@ def register_wechat_resources(
     Returns:
         填充后的 ResourceCatalog。
     """
-    from oskill import wechat_theme
-    from oskill import wechat_writing
+    from oskill import wechat_theme, wechat_writing
 
     catalog = catalog or ResourceCatalog()
 

@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Patch
 
-
 PALETTE = {
     "Versicolor": {"edge": "#c9253e", "fill": "#ee7f8d"},
     "Virginica": {"edge": "#145f86", "fill": "#6f9fba"},

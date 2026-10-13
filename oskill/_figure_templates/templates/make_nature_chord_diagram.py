@@ -13,8 +13,8 @@ mpl.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.path import Path as MplPath
 from matplotlib.patches import PathPatch, Wedge
+from matplotlib.path import Path as MplPath
 
 
 @dataclass(frozen=True)

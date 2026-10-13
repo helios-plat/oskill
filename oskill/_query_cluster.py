@@ -10,7 +10,6 @@ from __future__ import annotations
 from collections import defaultdict
 
 import numpy as np
-
 from oprim._aii_types import ClusterResult
 from oprim._distance import cosine_similarity_batch
 from oprim._keyword_merge import keyword_merge

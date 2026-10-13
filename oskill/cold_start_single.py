@@ -4,19 +4,23 @@
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Any, Optional, Union
-from oprim.ocr_paper import ocr_paper, OCRPaperInput
-from oprim.speech_to_math import speech_to_math, SpeechToMathInput
-from oskill.metacog_scaffold import metacog_scaffold, MetacogScaffoldInput
-from oskill.socratic_guide_v2 import socratic_guide_v2, SocraticStateV2
+from typing import Any
+
+from oprim.ocr_paper import OCRPaperInput, ocr_paper
+from oprim.speech_to_math import SpeechToMathInput, speech_to_math
+
+from oskill.metacog_scaffold import MetacogScaffoldInput, metacog_scaffold
+from oskill.socratic_guide_v2 import SocraticStateV2
+
 
 @dataclass(frozen=True)
 class ColdStartInput:
     student_id: str
     input_type: str # 'image', 'voice', 'text'
     content: str    # b64, url, or raw text
-    question_context: Optional[str] = None # 如果已知
+    question_context: str | None = None # 如果已知
 
 async def cold_start_single(
     inp: ColdStartInput,
@@ -25,18 +29,18 @@ async def cold_start_single(
     model: str = "claude-sonnet-4-6"
 ) -> dict:
     """执行冷启动链路。"""
-    
+
     # 1. 识别
     recognized_text = ""
     confidence = 1.0
-    
+
     if inp.input_type == "image":
         ocr_res = await ocr_paper(OCRPaperInput(image_b64=inp.content), caller=caller)
         if not ocr_res.success:
             return {"error": ocr_res.error, "status": "failed"}
         recognized_text = ocr_res.raw_text
         # ocr_paper v3.5.0 暂无 confidence，这里模拟
-        confidence = 0.9 
+        confidence = 0.9
     elif inp.input_type == "voice":
         stt_res = await speech_to_math(SpeechToMathInput(audio_b64=inp.content), caller=caller)
         if not stt_res.success:
@@ -70,7 +74,7 @@ async def cold_start_single(
         question=recognized_text,
         correct_answer="", # 冷启动可能不知道正确答案，需要 LLM 自行推理或后续补充
     )
-    
+
     return {
         "status": "ready_for_guidance",
         "recognized_text": recognized_text,

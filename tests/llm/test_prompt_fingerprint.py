@@ -7,7 +7,6 @@ import pytest
 
 from oskill.llm.prompt_fingerprint import prompt_fingerprint
 
-
 # ── Happy path ──────────────────────────────────────────────────────────────
 
 

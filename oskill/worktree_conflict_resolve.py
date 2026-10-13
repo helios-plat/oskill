@@ -9,7 +9,8 @@ conflicts intelligently. Falls back to ``diff3`` markers when LLM unavailable.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def worktree_conflict_resolve(
@@ -39,7 +40,6 @@ def worktree_conflict_resolve(
     # detect conflict blocks (<<<<<<< / ======= / >>>>>>>)
     ours_lines = ours_content.splitlines()
     theirs_lines = theirs_content.splitlines()
-    base_lines = base_content.splitlines()
 
     conflicts = _detect_conflicts(ours_lines, theirs_lines)
     if not conflicts:
@@ -65,7 +65,7 @@ def worktree_conflict_resolve(
             )
             out = llm_caller(messages=[{"role": "user", "content": prompt}], tools=None, config=ctx)
             raw = out.get("content", "") if isinstance(out, dict) else str(out)
-            m = _re.search(r"```(?:\w*)\n?(.*?)\n?```", raw, re.DOTALL)
+            m = _re.search(r"```(?:\w*)\n?(.*?)\n?```", raw, _re.DOTALL)
             if m:
                 return {"status": "resolved", "resolved_content": m.group(1), "conflict_blocks": len(conflicts), "strategy": "llm"}
         except Exception:
@@ -86,7 +86,6 @@ def _detect_conflicts(ours: list[str], theirs: list[str]) -> list[tuple[int, int
     """Find <<<<<<< / ======= / >>>>>>> markers in ours."""
     conflicts = []
     ours_text = "\n".join(ours)
-    theirs_text = "\n".join(theirs)
     import re
     for m in re.finditer(r"<<<<<<< .*?\n(.*?)=======\n(.*?)>>>>>>>", ours_text, re.DOTALL):
         conflicts.append((m.start(), 0, 0))  # simplified: just count markers

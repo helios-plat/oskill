@@ -9,9 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import tempfile
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -19,23 +17,56 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from oskill import (
-    ApplyResult, Chunk, EditBlock, OskillError, EditOskillError,
-    LLMOskillError, ConfigOskillError, ParseOskillError,
-    PluginManifest, RepoMap, SubTask, Symbol, TodoItem, ToolCall, UndoPlan,
-    apply_edit_block, apply_unified_diff, apply_todo_update,
-    build_repo_context, build_subagent_prompt, build_undo_plan,
-    chunk_code, compose_plugin_manifest, compress_context,
-    dedup_edits, escalate_thinking_budget, evaluate_hooks,
-    extract_symbols, format_diagnostics, generate_patch_preview,
-    load_skill_progressive, match_permission_rule, merge_config,
-    merge_subagent_result, parse_llm_tool_calls, plan_decompose,
-    plan_to_todos, rank_relevant_files, repo_map_build,
-    resolve_memory_hierarchy, resolve_mentions, select_skill,
-    select_tools, semantic_search, summarize_file, syntax_check,
-    three_way_merge, validate_edit,
+    ApplyResult,
+    Chunk,
+    ConfigOskillError,
+    EditBlock,
+    EditOskillError,
+    LLMOskillError,
+    OskillError,
+    ParseOskillError,
+    PluginManifest,
+    RepoMap,
+    SubTask,
+    Symbol,
+    TodoItem,
+    ToolCall,
+    UndoPlan,
+    apply_edit_block,
+    apply_todo_update,
+    apply_unified_diff,
+    build_repo_context,
+    build_subagent_prompt,
+    build_undo_plan,
+    chunk_code,
+    compose_plugin_manifest,
+    compress_context,
+    dedup_edits,
+    escalate_thinking_budget,
+    evaluate_hooks,
+    extract_symbols,
+    format_diagnostics,
+    generate_patch_preview,
+    load_skill_progressive,
+    match_permission_rule,
+    merge_config,
+    merge_subagent_result,
+    parse_llm_tool_calls,
+    plan_decompose,
+    plan_to_todos,
+    rank_relevant_files,
+    repo_map_build,
+    resolve_memory_hierarchy,
+    resolve_mentions,
+    select_skill,
+    select_tools,
+    semantic_search,
+    summarize_file,
+    syntax_check,
+    three_way_merge,
+    validate_edit,
 )
 from oskill.tooling import HookCmd
-
 
 # ===========================================================================
 # helpers
@@ -1020,7 +1051,7 @@ class TestResolveMentions:
     def test_resolves_file_ref(self, tmp_path):
         f = tmp_path / "main.py"
         f.write_text("x = 1\n")
-        result = resolve_mentions(f"Look at @main.py", root=str(tmp_path))
+        result = resolve_mentions("Look at @main.py", root=str(tmp_path))
         assert str(f) in result["files"]
 
     def test_no_mentions_unchanged(self, tmp_path):
@@ -1413,7 +1444,6 @@ class TestBuildRepoContext:
         for i in range(20):
             (tmp_path / f"f{i}.py").write_text("x = " + "y" * 500 + "\n")
         result = asyncio.run(build_repo_context("task", root=str(tmp_path), budget=200))
-        from oskill._types import OskillError
         assert isinstance(result, str)
 
     def test_nonexistent_root(self):

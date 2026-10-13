@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 
 from oskill.wechat_review_loop import (
-    ReviewIssue,
     WechatReviewLoop,
     merge_revision,
     needs_full_rewrite,

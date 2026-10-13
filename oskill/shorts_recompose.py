@@ -68,7 +68,7 @@ async def shorts_recompose(
     # Re-order by scene_index for narrative coherence
     selected_shots.sort(key=lambda s: (s.scene_index, s.shot_id))
 
-    from oprim.video_recompose import video_recompose
+    from oprim._video_recompose import video_recompose
 
     # Recompose to vertical format
     await video_recompose(

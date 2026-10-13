@@ -5,7 +5,6 @@ Demo header: x-simulated-trading: 1
 """
 from __future__ import annotations
 
-import asyncio
 import json
 
 import aiohttp
@@ -99,7 +98,7 @@ class OKXDemoRestClient:
                         text = await r.text()
                         raise OKXClientError(f"HTTP {r.status}: {text[:200]}")
                     data = await r.json()
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise OKXClientError(f"timeout submitting order: {e}") from e
         except aiohttp.ClientError as e:
             raise OKXClientError(f"client error: {e}") from e
@@ -127,7 +126,7 @@ class OKXDemoRestClient:
                     if r.status != 200:
                         raise OKXClientError(f"HTTP {r.status}")
                     data = await r.json()
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise OKXClientError(f"timeout fetching balance: {e}") from e
         except aiohttp.ClientError as e:
             raise OKXClientError(f"client error: {e}") from e

@@ -6,7 +6,8 @@ Optional LLM callable for narrative summary.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import BaseModel
 

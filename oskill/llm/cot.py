@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Callable, Literal
-
+from collections.abc import Callable
+from typing import Any, Literal
 
 _DEFAULT_REASONING_MARKERS = [
     "<thinking>",

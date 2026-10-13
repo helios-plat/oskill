@@ -1,7 +1,7 @@
 """Wave 2 oskills — IC diagnosis, directionality, normalization, regime weights."""
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 import numpy as np
 
@@ -28,7 +28,6 @@ def ic_root_cause_decompose(
         >>> ic_root_cause_decompose(signal_matrix=[[0.1]*3]*100, returns=[0.01]*100, regime_labels=["bull"]*100, dimension_names=["trend","flow","sentiment"])
     """
     T = len(returns)
-    D = len(dimension_names)
     regimes = sorted(set(regime_labels))
     matrix = []
     top_neg = []

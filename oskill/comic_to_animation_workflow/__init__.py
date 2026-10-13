@@ -110,7 +110,7 @@ async def comic_to_animation_workflow(
         keyframes.append(img_path)
 
     # Step 3: Convert each keyframe to a video clip (lazy import)
-    from oprim.image_to_video import ImageToVideoError, image_to_video
+    from oprim._image_to_video import ImageToVideoError, image_to_video
 
     clips: list[Path] = []
     for i, (kf, frame) in enumerate(zip(keyframes, frames_data)):

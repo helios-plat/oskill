@@ -1,14 +1,8 @@
 """Tests for K-1 and K-2 of the video/audio ingestion batch."""
 from __future__ import annotations
 
-import asyncio
-from dataclasses import dataclass, field
-from typing import Any
-
 import pytest
-
 from oprim._media_types import FilterRules, TranscriptResult, VideoMeta
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -108,7 +102,7 @@ class TestVideoFilterByRules:
             return {"content": "YES"}
 
         rules = FilterRules(min_duration=200.0, llm_filter="relevant")
-        result = await video_filter_by_rules(_VIDEOS, rules=rules, llm=recording_llm)
+        await video_filter_by_rules(_VIDEOS, rules=rules, llm=recording_llm)
         # Only videos with duration >= 200 should have been passed to LLM
         for title_ctx in called_titles:
             assert "广告推广" not in title_ctx  # duration 60 < 200, filtered before LLM

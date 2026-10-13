@@ -1,10 +1,13 @@
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
 import pytest
-from oskill.runbook_match import runbook_match, RunbookMatchResult
+
+from oskill.runbook_match import runbook_match
+
 
 def test_runbook_match_rule_pattern():
     """Test matching by error pattern regex."""
