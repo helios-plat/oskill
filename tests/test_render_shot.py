@@ -1,12 +1,11 @@
 """Tests for render_shot."""
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from oprim._shot_types import ShotResult
+
 from oskill._render_shot import render_shot
 
 

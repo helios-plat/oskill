@@ -1,16 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import detect_language
+
 import ast
 import json
-import re
-import sys
-import os
-from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import detect_language
+
 
 def syntax_check(
     content: str,

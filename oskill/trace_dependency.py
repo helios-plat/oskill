@@ -10,7 +10,7 @@ Internal oprim composition:
 from __future__ import annotations
 
 from collections import deque
-from typing import Callable
+from collections.abc import Callable
 
 from oprim import coherence_compute, entity_graph_search
 

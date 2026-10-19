@@ -1,13 +1,9 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
+
 from oprim import compute_diff
-import difflib
-import re
-from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
 
 def generate_patch_preview(
     old: str,

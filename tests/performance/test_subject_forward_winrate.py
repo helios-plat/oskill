@@ -1,7 +1,8 @@
 """Tests for oskill.performance.subject_forward_winrate (S3)."""
 
 import pytest
-from oskill.performance.subject_forward_winrate import subject_forward_winrate
+
+from oskill.performance import subject_forward_winrate
 
 
 class TestSubjectForwardWinrate:

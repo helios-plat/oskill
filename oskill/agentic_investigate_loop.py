@@ -1,11 +1,12 @@
 import json
 import re
-from typing import Any, Callable, Literal
-
-from pydantic import BaseModel
+from collections.abc import Callable
+from typing import Any, Literal
 
 from obase.tool_registry import ToolRegistry
 from obase.tool_registry.schema import to_anthropic_tool
+from pydantic import BaseModel
+
 from oskill._llm_caller import LLMCaller
 from oskill._signal import Signal
 from oskill._utils import extract_confidence
@@ -44,11 +45,11 @@ def agentic_investigate_loop(
             tools_schemas.append(to_anthropic_tool(meta))
 
     system_prompt = _build_system_prompt(signal, available_tool_names)
-    
+
     messages: list[dict[str, Any]] = [
         {"role": "user", "content": "Start investigation."},
     ]
-    
+
     messages[0]["content"] = f"{system_prompt}\n\n{messages[0]['content']}"
 
     steps: list[InvestigationStep] = []
@@ -96,7 +97,7 @@ def agentic_investigate_loop(
                 tool_output = {"error": str(e)}
 
         observation = _summarize_observation(tool_output)
-        
+
         step = InvestigationStep(
             step_no=step_no,
             tool_called=tool_name,
@@ -174,9 +175,9 @@ def _parse_final_conclusion(content: Any) -> dict[str, Any]:
         "confidence": extract_confidence(content),
         "evidence": []
     }
-    
+
     match = re.search(r"Root Cause Hypothesis:\s*(.*?)(?:\s+confidence:|$|\n)", text, re.IGNORECASE)
     if match:
         conclusion["root_cause_hypothesis"] = match.group(1).strip()
-        
+
     return conclusion

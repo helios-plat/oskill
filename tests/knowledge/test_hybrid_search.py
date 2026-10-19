@@ -1,15 +1,16 @@
 """Tests for hybrid_search."""
 
 from __future__ import annotations
-from unittest.mock import patch, AsyncMock
-import pytest
+
+from datetime import UTC
+from unittest.mock import AsyncMock, patch
 
 from oskill.hybrid_search import (
-    hybrid_search,
-    _rrf_fuse,
+    SearchResult,
     _boost_pinned,
     _make_citation,
-    SearchResult,
+    _rrf_fuse,
+    hybrid_search,
 )
 
 
@@ -33,11 +34,13 @@ class TestRRFFuse:
 
 class TestBoostPinned:
     def test_boost_pinned_substrate(self, stratum_schema):
-        from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import meta_db_path
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        now = datetime.now(timezone.utc).isoformat()
+        from oprim.meta_db import open_meta_db
+
+        from oskill.knowledge._context import meta_db_path
+
+        now = datetime.now(UTC).isoformat()
         db = open_meta_db(meta_db_path())
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -81,11 +84,13 @@ class TestHybridSearch:
         assert result == []
 
     async def test_bm25_hit(self, stratum_schema):
+        from datetime import datetime
+
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_path = tantivy_path()
         ft_path.mkdir(parents=True)
@@ -104,7 +109,7 @@ class TestHybridSearch:
 
         db_p = meta_db_path()
         db = open_meta_db(db_p)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
@@ -130,11 +135,13 @@ class TestHybridSearch:
         assert any(r.id == "sub001" for r in results)
 
     async def test_medium_filter(self, stratum_schema):
+        from datetime import datetime
+
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_path = tantivy_path()
         ft_path.mkdir(parents=True)
@@ -152,7 +159,7 @@ class TestHybridSearch:
 
         db_p = meta_db_path()
         db = open_meta_db(db_p)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
@@ -222,11 +229,13 @@ class TestHybridSearch:
         assert results[0].type == "llm_augmented"
 
     async def test_return_citations_true(self, stratum_schema):
+        from datetime import datetime
+
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_path = tantivy_path()
         ft_path.mkdir(parents=True)
@@ -240,7 +249,7 @@ class TestHybridSearch:
         )
 
         db = open_meta_db(meta_db_path())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             ["cite001", "test_user", "citation test", "", "", "h001", 0, "{}", now, now],
@@ -258,11 +267,13 @@ class TestHybridSearch:
         assert "deep_link" in results[0].citation
 
     async def test_return_citations_false(self, stratum_schema):
+        from datetime import datetime
+
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_path = tantivy_path()
         ft_path.mkdir(parents=True)
@@ -272,7 +283,7 @@ class TestHybridSearch:
         )
 
         db = open_meta_db(meta_db_path())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
             ["nocite001", "test_user", "no citation", "", "", "h001", 0, "{}", now, now],
@@ -288,11 +299,13 @@ class TestHybridSearch:
         assert results[0].citation is None
 
     async def test_pinned_boost_promotes_pinned(self, stratum_schema):
+        from datetime import datetime
+
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
-        from datetime import datetime, timezone
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_path = tantivy_path()
         ft_path.mkdir(parents=True)
@@ -311,7 +324,7 @@ class TestHybridSearch:
         )
 
         db = open_meta_db(meta_db_path())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, byte_size, meta_json, is_pinned, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             ["normal_a", "test_user", "Finance Normal", "", "", "h001", 0, "{}", False, now, now],
@@ -350,9 +363,9 @@ class TestViewFilterResolution:
     def _insert_substrate(
         self, db, sid: str, medium: str, domain: str | None = None, created_at: str | None = None
     ) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        now = created_at or datetime.now(timezone.utc).isoformat()
+        now = created_at or datetime.now(UTC).isoformat()
         meta = {"medium": medium}
         if domain:
             meta["domain"] = domain
@@ -379,9 +392,9 @@ class TestViewFilterResolution:
         self, db, view_id: str, user_id: str, default_filter: dict, is_default: bool = False
     ) -> None:
         import json
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO views (id, user_id, name, description, default_filter, "
             "default_llm, default_system_prompt, icon, is_default, is_builtin, "
@@ -406,7 +419,8 @@ class TestViewFilterResolution:
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_idx = open_fulltext_index(tantivy_path())
         ft_idx.add(
@@ -435,7 +449,8 @@ class TestViewFilterResolution:
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_idx = open_fulltext_index(tantivy_path())
         ft_idx.add(
@@ -464,7 +479,8 @@ class TestViewFilterResolution:
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_idx = open_fulltext_index(tantivy_path())
         ft_idx.add(
@@ -494,7 +510,8 @@ class TestViewFilterResolution:
         from oprim.fulltext import open_fulltext_index
         from oprim.fulltext.tantivy import FulltextDoc
         from oprim.meta_db import open_meta_db
-        from oskill.knowledge._context import tantivy_path, meta_db_path
+
+        from oskill.knowledge._context import meta_db_path, tantivy_path
 
         ft_idx = open_fulltext_index(tantivy_path())
         ft_idx.add(

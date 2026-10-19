@@ -6,11 +6,10 @@ LLM feedback must be encouraging/guiding — never a direct correction or model 
 
 from __future__ import annotations
 
-import json
-from typing import Any, Callable, Awaitable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from oprim._mneme_speech_types import PronunciationResult, SpeakingPracticeResult
-
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -51,7 +50,7 @@ async def english_speaking_practice(
 
     # Generate opening teacher utterance
     ai_text = await _llm_text(history, llm=llm, model=model)
-    ai_audio_b64 = await tts(text=ai_text, language="en")
+    await tts(text=ai_text, language="en")
     history.append({"role": "assistant", "content": ai_text})
 
     for turn_idx in range(max_turns):
@@ -76,7 +75,7 @@ async def english_speaking_practice(
         ai_feedback = await _llm_text(history, llm=llm, model=model)
         ai_feedback = _ensure_encouraging(ai_feedback)
         history.append({"role": "assistant", "content": ai_feedback})
-        ai_audio_b64 = await tts(text=ai_feedback, language="en")
+        await tts(text=ai_feedback, language="en")
 
         turns.append({
             "turn": turn_idx + 1,

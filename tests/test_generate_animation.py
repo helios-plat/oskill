@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from oprim._animation_types import AnimationResult
+
 from oskill._generate_animation import generate_animation
 
 

@@ -5,9 +5,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
-from scipy import stats
 import oprim
+import pandas as pd
 
 try:
     from oprim import distributional_distance
@@ -114,7 +113,6 @@ def ddpm_synthetic_path_generator(
         # Use the last step's alpha_bar to set scale
         # At the "denoised" level, paths look like GBM
         # Scale each path step by historical volatility
-        vol_scale = hist_std
         paths = x0  # GBM-based
     else:
         # Pure noise, scaled by sqrt(1 - alpha_bar[-1])
@@ -200,7 +198,6 @@ def _evaluate_stylized_facts(paths: np.ndarray) -> dict[str, Any]:
         negative_skew: bool — mean skewness < 0
     """
     from scipy.stats import kurtosis, skew
-    from scipy.stats import jarque_bera
 
     n_paths = paths.shape[0]
 

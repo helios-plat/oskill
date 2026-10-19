@@ -1,8 +1,10 @@
 """Tests for oskill.similarity_indexing (B4)."""
 
 import tempfile
+
 import numpy as np
 import pytest
+
 from oskill.similarity_indexing import batch_similarity_indexing
 
 

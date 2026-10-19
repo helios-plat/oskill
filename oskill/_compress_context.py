@@ -1,13 +1,13 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import count_tokens
-import json
-import re
-import sys
-import os
+
 from typing import Any, Protocol, runtime_checkable
-from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask
+
+from oprim import count_tokens
+
+from ._types import LLMOskillError
+
 
 @runtime_checkable
 class VectorStoreHandle(Protocol):
@@ -98,7 +98,8 @@ async def compress_context(
 
 def _msg_text(msg: dict) -> str:
     content = msg.get("content", "")
-    if isinstance(content, str): return content
+    if isinstance(content, str):
+        return content
     if isinstance(content, list):
         return " ".join(b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text")
     return str(content)

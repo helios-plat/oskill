@@ -6,9 +6,8 @@ import warnings
 from typing import Literal
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 
 def distribution_shift_test(
@@ -184,7 +183,7 @@ def detect_outliers_robust(
     for method in methods:
         if method == "zscore":
             # Use oprim.zscore_normalize (expanding mode for full-sample z-score)
-            z_scores = oprim.zscore_normalize(
+            oprim.zscore_normalize(
                 pd.DataFrame(data_2d), window=None, min_periods=1, clip_extreme=None
             )
             # Take the last row's z-score (which uses all data) - or compute directly

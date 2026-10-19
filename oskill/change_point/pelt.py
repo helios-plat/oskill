@@ -31,7 +31,6 @@ def _cost_normal(x: np.ndarray, start: int, end: int) -> float:
     n = len(seg)
     if n <= 1:
         return 0.0
-    mu = np.mean(seg)
     var = np.var(seg)
     if var <= 0:
         var = 1e-10

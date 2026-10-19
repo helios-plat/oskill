@@ -28,6 +28,7 @@ dev = [
     "pytest-benchmark>=4.0",
     "pytest-mock>=3.0",
     "pytest-asyncio>=0.24",       # async test support (llm_client)
+    "pytest-xdist>=3.5",          # CI runs the suite with -n auto
     "ruff>=0.1.0",
     "mypy>=1.5",
 ]
@@ -59,6 +60,25 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]
+# Targeted ignores (everything else stays enforced):
+# - E501: line length is left to the formatter (also off in ruff's default rule set).
+# - E741: `l` is the conventional name for the OHLC "low" series.
+ignore = ["E501", "E741"]
+
+[tool.ruff.lint.per-file-ignores]
+# Package __init__ is the public re-export surface (lazy map + explicit `x as x` pins
+# placed after the lazy-loader definitions).
+"__init__.py" = ["E402"]
+# Tests: section-local imports / star-imports of the module under test are intentional.
+"tests/**" = ["E402", "F403", "F405", "E731"]
+# Figure templates are standalone data-asset scripts (matplotlib backend set before imports).
+"oskill/_figure_templates/**" = ["E402", "E731"]
+# Edu skills vendored byte-for-byte by Mneme (which pins platform main): keep them
+# untouched here; fix together with Mneme so the vendored copies stay in sync.
+"oskill/conic_chord_skill.py" = ["I001"]
+"oskill/echo_loop_skill.py" = ["I001", "UP017", "UP045"]
+"oskill/equation_balancing_skill.py" = ["I001"]
+"oskill/solid_geometry_skill.py" = ["I001"]
 
 [tool.mypy]
 python_version = "3.11"

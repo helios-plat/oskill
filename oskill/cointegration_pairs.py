@@ -46,7 +46,6 @@ def cointegration_pairs(
         - ``zscore_result`` – Full zscore_signal output dict.
     """
     import numpy as np  # noqa: PLC0415
-
     from oprim.cointegration_test import cointegration_test  # noqa: PLC0415
     from oprim.zscore_signal import zscore_signal  # noqa: PLC0415
 

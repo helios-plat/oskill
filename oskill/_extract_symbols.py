@@ -1,16 +1,15 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oprim import detect_language, file_read
+
 import ast
-import json
 import re
-import sys
-import os
-from pathlib import Path
 from typing import Any
-from ._types import Chunk, EditBlock, RepoFile, RepoMap, Symbol
-from .edit import apply_edit_block
+
+from oprim import detect_language, file_read
+
+from ._types import Symbol
+
 
 def extract_symbols(
     path: str,
@@ -86,9 +85,10 @@ def extract_symbols(
                     ))
 
     return sorted(symbols, key=lambda s: s.start_line)
-import ast
 def _args_str(args: ast.arguments) -> str:
     parts = [a.arg for a in args.args]
-    if args.vararg: parts.append(f"*{args.vararg.arg}")
-    if args.kwarg: parts.append(f"**{args.kwarg.arg}")
+    if args.vararg:
+        parts.append(f"*{args.vararg.arg}")
+    if args.kwarg:
+        parts.append(f"**{args.kwarg.arg}")
     return ", ".join(parts)

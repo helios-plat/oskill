@@ -1,11 +1,15 @@
 import sys
 from unittest.mock import MagicMock
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
+from datetime import UTC, datetime, timedelta
+
 import pytest
-from datetime import datetime, timedelta, timezone
-from oskill.event_trail_correlate import event_trail_correlate, CorrelatedEvents
+
+from oskill.event_trail_correlate import event_trail_correlate
+
 
 def test_event_trail_correlate_causal_chain():
     """Test explicit causal chain (parent_id/root_cause_id)."""
@@ -23,7 +27,7 @@ def test_event_trail_correlate_causal_chain():
 
 def test_event_trail_correlate_time_window():
     """Test correlation based on time window only."""
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
     events = [
         {"id": "E1", "timestamp": base_time.isoformat()},
         {"id": "E2", "timestamp": (base_time + timedelta(seconds=10)).isoformat()},

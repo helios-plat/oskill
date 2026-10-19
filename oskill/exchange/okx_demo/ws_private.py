@@ -71,7 +71,7 @@ class OKXDemoWSPrivate:
         if self._task:
             try:
                 await asyncio.wait_for(self._task, timeout=5)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self._task.cancel()
 
     async def _run(self):

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-import pytest
+from datetime import UTC, datetime
 
 from oskill.knowledge.detect_duplicate_substrate import detect_duplicate_substrate
 
@@ -18,11 +16,12 @@ class TestDetectDuplicateSubstrate:
     async def test_hash_match_returns_id(self, stratum_schema):
         """SHA-256 match → return existing substrate_id (real DuckDB, substrates table)."""
         from oprim.meta_db import open_meta_db
+
         from oskill.knowledge._context import meta_db_path
 
         db_p = meta_db_path()
         db = open_meta_db(db_p)
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         db.execute(
             "INSERT INTO substrates (id, user_id, title, mime, source_path, file_hash, "
             "byte_size, meta_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",

@@ -42,7 +42,6 @@ def gaussian_hmm(
     .. [1] Baum, L.E. et al. (1970). A maximization technique in statistical analysis of probabilistic functions of Markov chains.
     .. [2] Extraction source: Selene project, sel_v2/observation_tools/bayesian_hmm.py:_GaussianHMM
     """
-    rng = np.random.default_rng(random_state)
     x = np.asarray(x, dtype=float).ravel()
     T = len(x)
 

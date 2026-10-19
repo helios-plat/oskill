@@ -8,17 +8,15 @@ from __future__ import annotations
 
 import base64
 import json
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
-
 from oprim._mneme_speech_types import (
     EssayAssessmentInput,
     EssayAssessmentResult,
     PronunciationResult,
     SpeakingPracticeResult,
 )
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -261,10 +259,10 @@ class TestEssayAssessment:
         assert result.revision_needed is True
 
     async def test_revision_needed_false_for_good_essay(self):
-        from oskill._essay_assessment import essay_assessment
-
         # Patch rubric_score to return high scores
         from unittest.mock import patch
+
+        from oskill._essay_assessment import essay_assessment
         with patch("oskill._essay_assessment.rubric_score", return_value={
             "结构": 90.0, "立意": 88.0, "语言": 85.0, "格式": 92.0
         }):
@@ -276,7 +274,8 @@ class TestEssayAssessment:
 
     async def test_essay_guide_not_imported(self):
         """CI guard: essay_guide must not be imported by essay_assessment."""
-        import importlib, sys
+        import importlib
+        import sys
         for key in list(sys.modules.keys()):
             if "essay_assessment" in key:
                 del sys.modules[key]

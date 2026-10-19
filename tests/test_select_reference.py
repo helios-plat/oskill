@@ -6,10 +6,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-import pytest
-
-from oskill._schemas import ReferenceSet, ShotFrame
-from oskill.select_reference import SelectReferenceError, select_reference
+from oskill._schemas import ShotFrame
+from oskill.select_reference import select_reference
 
 
 @dataclass

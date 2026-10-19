@@ -7,7 +7,6 @@ import pytest
 
 from oskill.causal import symbolic_transfer_entropy
 
-
 # ─── basic API ───────────────────────────────────────────────────────────────
 
 def test_ste_returns_te_key():

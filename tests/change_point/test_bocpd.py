@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.change_point.bayesian_online import bocpd_bayesian
 

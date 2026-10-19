@@ -9,7 +9,8 @@ Internal oprim composition:
 """
 
 from __future__ import annotations
-from oprim import searxng_search, url_fetch_ssrf_safe, concept_extractor
+
+from oprim import concept_extractor, searxng_search, url_fetch_ssrf_safe
 
 
 def researcher_workflow(

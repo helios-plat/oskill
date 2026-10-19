@@ -1,14 +1,14 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
-from oskill import apply_unified_diff
-from oprim import compute_diff
+
 import difflib
-import re
 from typing import Any
-from ._types import ApplyResult, EditBlock, EditOskillError, UndoPlan
-import sys
-import os
+
+from oprim import compute_diff
+
+from oskill import apply_unified_diff
+
 
 def three_way_merge(
     base: str,

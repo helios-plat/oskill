@@ -4,8 +4,10 @@
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
+
+from dataclasses import dataclass
+from typing import Any
+
 
 @dataclass(frozen=True)
 class MetacogScaffoldInput:
@@ -17,7 +19,7 @@ class MetacogScaffoldInput:
 @dataclass(frozen=True)
 class MetacogScaffoldResult:
     """自评结果。"""
-    self_eval: Dict[str, Any]
+    self_eval: dict[str, Any]
     starter_prompt: str # 作为后续引导的起点上下文
 
 _METACOG_PROMPT = (
@@ -34,27 +36,28 @@ async def metacog_scaffold(
 ) -> MetacogScaffoldResult:
     """生成或处理元认知自评。"""
     import json
+
     from oprim.llm._llm_complete import llm_complete
 
     # 实际场景中，这可能是分两步：1. 展示问题，2. 收集结果。
     # 作为一个 oskill，这里提供生成自评结构的能力。
     user_msg = f"题目: {inp.question}\n学生输入: {inp.input_content}"
-    
+
     response = await llm_complete(
         [{"role": "user", "content": user_msg}],
         caller=caller,
         system=_METACOG_PROMPT,
         model=model
     )
-    
+
     raw = response.text.strip()
     if "```" in raw:
         raw = raw.split("```")[1]
         if raw.startswith("json"):
             raw = raw[4:]
-    
+
     data = json.loads(raw)
-    
+
     # 模拟生成的自评（如果是实时交互，这部分逻辑会被拆分）
     # 这里直接返回结构
     return MetacogScaffoldResult(

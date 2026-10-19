@@ -109,9 +109,8 @@ def _parse_response(
             results.append({"item": batch[idx], "labels": item_labels, "confidence": 0.8})
 
     # Fill missing items
-    classified_indices = {r.get("item", {}).get("_idx") for r in results}
     for i, item in enumerate(batch):
-        if i not in {entry.get("item_idx", 0) - 1 for entry in (parsed if isinstance(parsed, list) else [])}: 
+        if i not in {entry.get("item_idx", 0) - 1 for entry in (parsed if isinstance(parsed, list) else [])}:
             if len(results) < len(batch):
                 results.append({"item": item, "labels": [labels[0]] if labels else [], "confidence": 0.0})
 

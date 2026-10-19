@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import minimize
-
 from oprim import hawkes_nll
+from scipy.optimize import minimize
 
 
 def fit_hawkes(

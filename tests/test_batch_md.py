@@ -10,38 +10,30 @@ Version: oskill v3.21.0
 from __future__ import annotations
 
 import asyncio
-import json
-import time
 
 import pytest
 
-from oskill.solve_and_visualize import (
-    solve_and_visualize,
-    SolveAndVisualizeInput,
-    _guess_problem_type,
-)
-from oskill.socratic_loop import (
-    process_socratic_turn,
-    create_socratic_state,
-    SocraticLoopState,
+from oskill.generate_practice_set import (
+    PracticeSetConfig,
+    generate_practice_set,
 )
 from oskill.interleave_select import (
-    interleave_select,
     QuestionItem,
-    InterleaveResult,
-)
-from oskill.generate_practice_set import (
-    generate_practice_set,
-    PracticeSetConfig,
-    PracticeSetResult,
+    interleave_select,
 )
 from oskill.longitudinal_pattern import (
-    longitudinal_pattern,
     AttemptRecord,
-    LongitudinalPatternResult,
-    KCTrajectory,
+    longitudinal_pattern,
 )
-
+from oskill.socratic_loop import (
+    create_socratic_state,
+    process_socratic_turn,
+)
+from oskill.solve_and_visualize import (
+    SolveAndVisualizeInput,
+    _guess_problem_type,
+    solve_and_visualize,
+)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Mock LLM caller

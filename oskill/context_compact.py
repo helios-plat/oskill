@@ -12,7 +12,7 @@ IO-orchestration (LLM call). Not used as sub-call by sibling oskills.
 """
 from __future__ import annotations
 
-from typing import Any, List, Protocol, cast
+from typing import Any, Protocol, cast
 
 from oprim import (
     build_compaction_prompt,
@@ -75,4 +75,4 @@ async def context_compact(
                 summary = block.get("text", "")
                 break
 
-    return cast(List[Message], merge_summary(summary, tail=window.to_keep))
+    return cast(list[Message], merge_summary(summary, tail=window.to_keep))

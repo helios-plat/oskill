@@ -6,9 +6,8 @@ import math
 from typing import Any
 
 import numpy as np
+from oprim._point_process import hawkes_nll
 from scipy.optimize import minimize
-
-from oprim.point_process import hawkes_nll
 
 
 def hawkes_branching_ratio(
@@ -48,7 +47,7 @@ def hawkes_branching_ratio(
             # NOTE: oprim.hawkes_nll uses log-parameterization: params = [log_mu, log_alpha, log_beta]
             x0 = np.array([math.log(0.1), math.log(0.5), math.log(1.0)])
             result = minimize(
-                lambda p: hawkes_nll(p, event_times, T=T),
+                lambda p: hawkes_nll(p, event_times=event_times, t=T),
                 x0,
                 method="L-BFGS-B",
                 options={"maxiter": 500, "ftol": 1e-10},

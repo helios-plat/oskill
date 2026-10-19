@@ -10,13 +10,13 @@ from oskill.formal_proof_verify import formal_proof_verify
 def test_formal_proof_proven():
     # Mock lookup function
     mock_lookup_fn = MagicMock()
-    
+
     # Mock a hit
     mock_hit = MagicMock()
     mock_hit.name = "Nat.add_comm"
     mock_hit.module = "Mathlib.Algebra.Group.Nat"
     mock_hit.dict.return_value = {"name": "Nat.add_comm", "module": "Mathlib.Algebra.Group.Nat"}
-    
+
     mock_res = MagicMock()
     mock_res.count = 1
     mock_res.hits = [mock_hit]
@@ -35,7 +35,7 @@ def test_formal_proof_proven():
     assert result.evidence == "established_proof:mathlib:Nat.add_comm:Mathlib.Algebra.Group.Nat"
     assert len(result.decision_trail) == 3
     assert result.decision_trail[2]["status"] == "proven"
-    
+
     mock_lookup_fn.assert_called_once_with(identifier="Nat.add_comm")
 
 

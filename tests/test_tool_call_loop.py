@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+
 from oskill.tool_call_loop import tool_call_loop
+
 
 def test_tool_call_loop_no_tool():
     llm = MagicMock()
@@ -10,14 +13,14 @@ def test_tool_call_loop_no_tool():
         "tool_calls": [],
         "usage": {"input_tokens": 10, "output_tokens": 5}
     }
-    
+
     res = tool_call_loop(
         initial_messages=[{"role": "user", "content": "hi"}],
         tools=[],
         tool_handler=MagicMock(),
         llm=llm
     )
-    
+
     assert res["stop_reason"] == "end_turn"
     assert res["total_input_tokens"] == 10
     assert len(res["steps"]) == 0
@@ -40,16 +43,16 @@ def test_tool_call_loop_single_tool():
             "usage": {"input_tokens": 20, "output_tokens": 10}
         }
     ]
-    
+
     handler = MagicMock(return_value={"temp": 25})
-    
+
     res = tool_call_loop(
         initial_messages=[{"role": "user", "content": "weather?"}],
         tools=[{"name": "get_weather"}],
         tool_handler=handler,
         llm=llm
     )
-    
+
     assert res["stop_reason"] == "end_turn"
     assert res["total_input_tokens"] == 30
     assert len(res["steps"]) == 1
@@ -65,7 +68,7 @@ def test_tool_call_loop_max_steps():
         "tool_calls": [{"id": "c", "name": "t", "input": {}}],
         "usage": {"input_tokens": 1, "output_tokens": 1}
     }
-    
+
     res = tool_call_loop(
         initial_messages=[],
         tools=[],
@@ -73,7 +76,7 @@ def test_tool_call_loop_max_steps():
         llm=llm,
         max_steps=3
     )
-    
+
     assert res["stop_reason"] == "max_steps"
     assert len(res["steps"]) == 3
 
@@ -84,16 +87,16 @@ def test_tool_call_loop_tool_error():
         "tool_calls": [{"id": "c", "name": "fail_tool", "input": {}}],
         "usage": {}
     }
-    
+
     handler = MagicMock(side_effect=ValueError("tool failed"))
-    
+
     res = tool_call_loop(
         initial_messages=[],
         tools=[],
         tool_handler=handler,
         llm=llm
     )
-    
+
     assert res["stop_reason"] == "tool_error"
     assert "tool failed" in res["steps"][0]["error"]
 
@@ -103,7 +106,7 @@ def test_tool_call_loop_on_step():
         {"role": "assistant", "tool_calls": [{"id": "c1", "name": "t1", "input": {}}], "usage": {}},
         {"role": "assistant", "content": "done", "tool_calls": [], "usage": {}}
     ]
-    
+
     on_step = MagicMock()
     tool_call_loop(
         initial_messages=[],
@@ -112,7 +115,7 @@ def test_tool_call_loop_on_step():
         llm=llm,
         on_step=on_step
     )
-    
+
     assert on_step.call_count == 1
 
 def test_tool_call_loop_openai_style():
@@ -125,10 +128,10 @@ def test_tool_call_loop_openai_style():
         },
         {"role": "assistant", "content": "ok", "tool_calls": [], "usage": {}}
     ]
-    
+
     handler = MagicMock(return_value="res")
-    res = tool_call_loop(initial_messages=[], tools=[], tool_handler=handler, llm=llm)
-    
+    tool_call_loop(initial_messages=[], tools=[], tool_handler=handler, llm=llm)
+
     assert handler.call_args[0][1] == {"a": 1}
 
 def test_tool_call_loop_multi_tool_one_turn():
@@ -144,10 +147,10 @@ def test_tool_call_loop_multi_tool_one_turn():
         },
         {"role": "assistant", "content": "ok", "tool_calls": [], "usage": {}}
     ]
-    
+
     handler = MagicMock(return_value="ok")
     res = tool_call_loop(initial_messages=[], tools=[], tool_handler=handler, llm=llm)
-    
+
     assert len(res["steps"][0]["tool_calls"]) == 2
     assert handler.call_count == 2
 

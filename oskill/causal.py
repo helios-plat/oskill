@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-from oprim import ordinal_pattern, phase_randomize, shannon_entropy
+from oprim import ordinal_pattern, phase_randomize
 
 
 def symbolic_transfer_entropy(

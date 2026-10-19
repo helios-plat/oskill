@@ -1,13 +1,11 @@
 """Auto-split from hicode whl."""
 
 from __future__ import annotations
+
 import fnmatch
-import json
-import re
-import uuid
 from dataclasses import dataclass
 from typing import Any
-from ._types import ConfigOskillError, OskillError, ParseOskillError, PluginManifest, TodoItem, ToolCall
+
 
 @dataclass
 class ToolScore:
@@ -23,11 +21,13 @@ class HookCmd:
 
 
 def _to_str_list(v: Any) -> list[str]:
-    if isinstance(v, list): return [str(x) for x in v]
+    if isinstance(v, list):
+        return [str(x) for x in v]
     return []
 
 def _to_dict_list(v: Any) -> list[dict]:
-    if isinstance(v, list): return [x for x in v if isinstance(x, dict)]
+    if isinstance(v, list):
+        return [x for x in v if isinstance(x, dict)]
     return []
 
 def build_subagent_prompt(
@@ -93,9 +93,11 @@ def build_subagent_prompt(
     return {"system": system, "scoped_tools": scoped}
 
 def _to_str_list(v: Any) -> list[str]:
-    if isinstance(v, list): return [str(x) for x in v]
+    if isinstance(v, list):
+        return [str(x) for x in v]
     return []
 
 def _to_dict_list(v: Any) -> list[dict]:
-    if isinstance(v, list): return [x for x in v if isinstance(x, dict)]
+    if isinstance(v, list):
+        return [x for x in v if isinstance(x, dict)]
     return []

@@ -1,12 +1,11 @@
 """Tests for snapshot_backup skill."""
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from oprim.storage.protocol import UploadResult
+
 from oskill.sync.errors import SnapshotError
 from oskill.sync.snapshot_backup import snapshot_backup
 
@@ -63,7 +62,7 @@ class TestSnapshotBackup:
         assert result["note_count"] == 0
 
     async def test_snapshot_counts_reflect_data(self, db):
-        from tests.sync.conftest import seed_substrate, seed_note
+        from tests.sync.conftest import seed_note, seed_substrate
         seed_substrate(db, "sub_1", "01HX")
         seed_note(db, "note_1")
 

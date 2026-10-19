@@ -1,3 +1,4 @@
+import importlib.util
 import sys
 from unittest.mock import MagicMock
 
@@ -50,5 +51,16 @@ _HEAVY_DEPS = [
     "python_alipay_sdk",
 ]
 
+def _importable(name: str) -> bool:
+    try:
+        return importlib.util.find_spec(name) is not None
+    except (ImportError, ValueError):
+        return False
+
+
+# Only stub what is genuinely missing. Stubbing an installed dependency (e.g. duckdb,
+# python-magic, lancedb via oprim[storage]) silently turns real-backend tests into
+# MagicMock soup ("Object of type MagicMock is not JSON serializable", empty fetchall()).
 for _mod in _HEAVY_DEPS:
-    _mock_deep(_mod)
+    if not _importable(_mod):
+        _mock_deep(_mod)

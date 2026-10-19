@@ -6,7 +6,6 @@ import pytest
 
 from oskill.llm.tool_validation import tool_call_validator
 
-
 # ---------------------------------------------------------------------------
 # Fixtures / Helpers
 # ---------------------------------------------------------------------------

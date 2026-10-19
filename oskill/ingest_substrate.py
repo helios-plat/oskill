@@ -8,7 +8,7 @@ import re
 import shutil
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import duckdb as _duckdb
@@ -210,7 +210,7 @@ async def ingest_substrate(
         path_mime = detect_mime(path)
         try:
             db = open_meta_db(db_p)
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(UTC).isoformat()
             _meta_extra = metadata_override or {}
             _meta_dict = {
                 "medium": medium,

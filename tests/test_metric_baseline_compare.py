@@ -1,10 +1,12 @@
 import sys
 from unittest.mock import MagicMock
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
-import pytest
+
 from oskill.metric_baseline_compare import metric_baseline_compare
+
 
 def test_metric_baseline_compare_no_common():
     result = metric_baseline_compare(current_metrics={"a": 1}, baseline_metrics={"b": 1})
@@ -16,8 +18,8 @@ def test_metric_baseline_compare_higher_is_better_degradation():
     baseline = {"success_rate": 0.9} # -11% decrease
     # 0.8 - 0.9 / 0.9 = -0.111
     result = metric_baseline_compare(
-        current_metrics=current, 
-        baseline_metrics=baseline, 
+        current_metrics=current,
+        baseline_metrics=baseline,
         degradation_threshold=0.1,
         metric_directions={"success_rate": "higher_is_better"}
     )
@@ -62,7 +64,7 @@ def test_metric_baseline_compare_zero_current_higher_is_better():
     current = {"throughput": 0}
     baseline = {"throughput": 100}
     result = metric_baseline_compare(
-        current_metrics=current, 
+        current_metrics=current,
         baseline_metrics=baseline,
         metric_directions={"throughput": "higher_is_better"}
     )

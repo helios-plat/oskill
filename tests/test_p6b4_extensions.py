@@ -5,10 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import pytest
-
 from oskill._schemas import Script
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # script_writer — template_prompt extension

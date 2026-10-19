@@ -922,7 +922,10 @@ class TestTransformPipeline:
         self.tgf = MagicMock(return_value={"contents": [], "_provider": "google"})
         self.tbf = MagicMock(return_value={"messages": [], "_provider": "bedrock"})
 
-        import oskill.transform_pipeline as mod
+        import importlib
+
+        # the package attribute is the exported function; fetch the submodule itself
+        mod = importlib.import_module("oskill.transform_pipeline")
         fake_map = {
             "anthropic": self.taf,
             "openai": self.tof,
@@ -1995,7 +1998,10 @@ class TestSubagentDispatch:
 
     async def test_does_not_run_agent_loop(self):
         """Verify no recursive subagent_dispatch call is made inside itself."""
-        from oskill import subagent_dispatch as module
+        import importlib
+
+        # `oskill.subagent_dispatch` is the exported function; fetch the submodule itself
+        module = importlib.import_module("oskill.subagent_dispatch")
         original = module.subagent_dispatch
         call_count = [0]
 

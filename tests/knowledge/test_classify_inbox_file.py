@@ -1,10 +1,9 @@
 """Tests for oskill.knowledge.classify_inbox_file."""
 from __future__ import annotations
-from pathlib import Path
-import pytest
-from unittest.mock import patch, MagicMock
 
-from oskill.knowledge.classify_inbox_file import classify_inbox_file, ClassifyResult, MEDIUMS
+from unittest.mock import patch
+
+from oskill.knowledge.classify_inbox_file import MEDIUMS, ClassifyResult, classify_inbox_file
 
 
 class TestLayer1ExtensionClassifier:

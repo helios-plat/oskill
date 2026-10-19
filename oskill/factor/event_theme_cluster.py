@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-import statistics
-from typing import Optional
-
-import oprim
-
 STABILITY = "experimental"
 
 
 def event_theme_cluster(
     events: list[dict],
     classification: dict[str, list[str]],
-    history_window: Optional[list[dict]] = None,
+    history_window: list[dict] | None = None,
     top_n: int = 3,
 ) -> list[dict]:
     """Cluster event-bearing stocks into themes, rank by strength.

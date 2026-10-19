@@ -2,22 +2,20 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from oprim.storage.protocol import StorageFile
-from oskill.sync.apply_remote_events import ApplyResult, apply_remote_events, _parse_jsonl
-from oskill.sync.errors import ApplyError
 
+from oskill.sync.apply_remote_events import _parse_jsonl, apply_remote_events
+from oskill.sync.errors import ApplyError
 from tests.sync.conftest import (
-    make_event_dict,
     jsonl_content,
-    seed_substrate,
+    make_event_dict,
     seed_concept,
     seed_note,
+    seed_substrate,
 )
 
 USER = "u1"
@@ -228,12 +226,13 @@ class TestApplyConcept:
         ev = make_event_dict(
             "concept.linked",
             "c_1",
-            {"source_ids": '["sub_1"]'},
+            {"substrate_refs": ["sub_1"]},
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
-        rows = db.fetchall("SELECT source_ids FROM concepts WHERE id = 'c_1'")
+        # concepts.substrate_refs is the canonical link column (Stratum migration 020)
+        rows = db.fetchall("SELECT substrate_refs FROM concepts WHERE id = 'c_1'")
         assert "sub_1" in rows[0][0]
 
     async def test_concept_unlinked(self, db, tmp_path):
@@ -241,11 +240,13 @@ class TestApplyConcept:
         ev = make_event_dict(
             "concept.unlinked",
             "c_1",
-            {"source_ids": "[]"},
+            {"substrate_refs": []},
             device_id=DEVICE_B,
         )
         storage = _make_storage_with_files({f"events_{DEVICE_B}_1_1.jsonl": jsonl_content(ev)})
         await apply_remote_events(USER, DEVICE_A, db, storage, state_dir=tmp_path)
+        rows = db.fetchall("SELECT substrate_refs FROM concepts WHERE id = 'c_1'")
+        assert list(rows[0][0]) == []
 
 
 class TestApplyEdgeCases:

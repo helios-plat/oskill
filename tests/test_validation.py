@@ -10,7 +10,6 @@ from oskill.validation import (
     walk_forward_optimization,
 )
 
-
 # ============================================================
 # walk_forward_optimization tests
 # ============================================================
@@ -245,7 +244,7 @@ class TestCpcvPipeline:
             call_log.append(len(test_idx))
             return np.random.default_rng(42).normal(0.001, 0.01, len(test_idx))
 
-        result = cpcv_pipeline(n_total, n_folds=n_folds, n_test_groups=2, backtest_fn=logging_bt)
+        cpcv_pipeline(n_total, n_folds=n_folds, n_test_groups=2, backtest_fn=logging_bt)
         # Each combo tests 2 folds, so test_idx length = 2 * fold_size = 200
         assert all(length == 2 * fold_size for length in call_log)
 
