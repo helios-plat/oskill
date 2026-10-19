@@ -76,7 +76,7 @@ def engine_consensus(
     live_num = live_den = 0.0
     obs_num = obs_den = 0.0
     for s in signals:
-        w = weights.get(s["engine"], 1.0) * weight_scale
+        w = weights.get(s["engine"], 1.0)
         decay = max(0.0, 1.0 - float(s.get("age_seconds", 0.0)) / ttl_seconds)
         eff = w * float(s.get("confidence", 1.0)) * decay
         sc = float(s["score"])
@@ -90,8 +90,11 @@ def engine_consensus(
             {"engine": s["engine"], "score": sc, "eff_weight": eff, "promoted": promoted}
         )
 
-    live_score = (live_num / live_den) if live_den > 0 else 0.0
-    observe_score = (obs_num / obs_den) if obs_den > 0 else 0.0
+    # weight_scale applied post-ratio (a uniform per-engine multiplier cancels
+    # out of a weighted average — applying it here is what actually makes
+    # regime scale the blended conviction rather than being a no-op).
+    live_score = ((live_num / live_den) if live_den > 0 else 0.0) * weight_scale
+    observe_score = ((obs_num / obs_den) if obs_den > 0 else 0.0) * weight_scale
 
     # sentiment / on-chain nudge on the live score, then bound to [-1,1]
     nudged = (
@@ -111,9 +114,13 @@ def engine_consensus(
     is_divergent = agreement_ratio < divergence_threshold
 
     effective_threshold = base_threshold + thr_adj
+    # Crisis notional shrink lives in oskill.risk.consensus_risk_size (its
+    # documented pipeline step 2, "crisis override"), not here — this used to
+    # also apply a ×0.1 crisis shrink to kelly_position, so a crisis signal
+    # got shrunk twice (×0.1 here, ×0.1 again downstream) for a net ×0.01
+    # instead of the intended single ×0.1. Consensus reports raw conviction;
+    # the risk layer alone decides how much crisis suppresses size.
     kelly = min(abs(consensus_score) * 0.5, max_kelly)
-    if regime_state == "crisis":
-        kelly *= 0.1
 
     final_direction = (
         "long" if consensus_score > 0 else ("short" if consensus_score < 0 else "neutral")

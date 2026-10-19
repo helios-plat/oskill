@@ -52,6 +52,39 @@ def fgi_sentiment_bias(fgi: float) -> dict:
     return {"bias": bias, "classification": cls}
 
 
+def news_sentiment_nudge(score: float, *, threshold: float = 0.15, cap: float = 0.15) -> float:
+    """Contrarian nudge in [-cap, cap] from a keyword-scored news sentiment [0,1].
+
+    Extraction source: helixa fear-greed-collector WeightFactorCalculator — news
+    is treated as a minor confirming/contrarian adjustment on top of FGI, not an
+    independent bias channel (very negative news nudges bullish, very positive
+    news nudges bearish; mid-range news is a no-op). `threshold`/`cap` mirror
+    helixa's 0.35/0.65 bands and small (~5%) adjustment magnitude, expressed here
+    as a direct additive bias term rather than a multiplier on downstream weights.
+
+    Parameters
+    ----------
+    score : float
+        News sentiment in [0, 1] (0=very negative, 1=very positive, 0.5=neutral).
+    threshold : float
+        Distance from 0.5 the score must exceed to produce a nonzero nudge.
+    cap : float
+        Nudge magnitude at the extremes (linear ramp from `threshold` to 0.5±0.5).
+
+    Returns
+    -------
+    float
+        Bias nudge in [-cap, cap]; positive = bullish, negative = bearish.
+    """
+    dist = score - 0.5
+    if abs(dist) <= threshold:
+        return 0.0
+    # ramp from `threshold` (nudge=0) to the extreme (nudge=±cap)
+    span = 0.5 - threshold
+    magnitude = cap * min(1.0, (abs(dist) - threshold) / span) if span > 0 else cap
+    return -magnitude if dist > 0 else magnitude
+
+
 def onchain_signal(
     *,
     flow_in: float,
