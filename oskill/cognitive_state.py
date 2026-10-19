@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from oprim import KCState
+from obase.cognitive_types import KCState
 from oprim.bkt import bkt_update, classify_error
 from oprim.fsrs_engine import fsrs_map_rating, fsrs_retrievability, fsrs_review
 from pydantic import BaseModel

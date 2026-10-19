@@ -1,20 +1,14 @@
 """Oskill — Composite financial analysis workflows built on oprim atomic operations. Lazy-loaded."""
 
 from __future__ import annotations
-
 import ast
 import importlib
-import sys as _sys
-import types as _types
 from pathlib import Path
 from typing import Any
-
 from oskill._version import __version__
 
 _ELEMENT_MAP: dict[str, str] = {}
 _SUBMODULE_SET: set[str] = set()
-# 跳过扫描的包目录: 内置模板脚本等数据资产, 防止其公共函数污染顶层命名空间
-_SKIP_SCAN_DIRS: frozenset[str] = frozenset({"_figure_templates"})
 
 
 def _build_element_map() -> None:
@@ -23,8 +17,6 @@ def _build_element_map() -> None:
     for py in sorted(pkg_dir.rglob("*.py")):
         rel_path = py.relative_to(pkg_dir)
         if rel_path.parts == ("__init__.py",):
-            continue
-        if any(part in _SKIP_SCAN_DIRS for part in rel_path.parts):
             continue
         mod_parts = list(rel_path.with_suffix("").parts)
         if mod_parts[-1] == "__init__":
@@ -57,43 +49,555 @@ def _build_element_map() -> None:
 
 
 _build_element_map()
-# The top-level ``oskill.Chunk`` is the code-chunk type from ``oskill._types`` (returned
-# by chunk_code / semantic_search); rag_pipeline.Chunk would otherwise win the name
-# heuristic. The RAG document slice is exposed lazily as ``oskill.RagChunk``.
-_ELEMENT_MAP["Chunk"] = "oskill._types"
-_ELEMENT_MAP["RagChunk"] = "oskill.rag_pipeline"
 
-
-class _OskillPackage(_types.ModuleType):
-    """Package module type that keeps exported callables winning over same-named submodules.
-
-    Many skills live in ``oskill/<name>.py`` and export a callable also called ``<name>``.
-    ``from oskill import <name>`` must return that callable (``__getattr__`` resolves it
-    lazily via ``_ELEMENT_MAP``). But once *anything* imports the submodule
-    ``oskill.<name>``, the import system does ``setattr(oskill, "<name>", <module>)``,
-    which shadows ``__getattr__`` — so the result depended on import order (and broke
-    under pytest-xdist with "'module' object is not callable"). Intercept that binding
-    and store the exported callable instead. The submodule itself stays reachable via
-    ``sys.modules`` / ``importlib.import_module("oskill.<name>")`` / ``mock.patch``.
-    """
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        if (
-            isinstance(value, _types.ModuleType)
-            and value.__name__ == f"{self.__name__}.{name}"
-            and name in _ELEMENT_MAP
-        ):
-            if _ELEMENT_MAP[name] != value.__name__:
-                # The export lives in another module (e.g. ``_<name>.py``); leave the
-                # attribute unbound so ``__getattr__`` resolves the export lazily.
-                return
-            exported = getattr(value, name, None)
-            if exported is not None and not isinstance(exported, _types.ModuleType):
-                value = exported
-        super().__setattr__(name, value)
-
-
-_sys.modules[__name__].__class__ = _OskillPackage
+# Authoritative export bindings inherited from origin/main's explicit import
+# surface.  The AST walk is permissive and discovers new atoms without a registry
+# edit; where both lines shipped a binding for the same public name, origin/main's
+# explicit ``from ... import`` is the contract and wins.
+_AUTHORITATIVE_EXPORTS: dict[str, str] = {
+    'A2AProtocol': 'oskill.agent_messaging',
+    'ACL': 'oskill.memory_assets',
+    'ACTIONABLE_ANIMATION_STABLE': 'oskill.test_stability',
+    'ACTIONABLE_CHECKS': 'oskill.test_stability',
+    'ACTIONABLE_CLICKABLE': 'oskill.test_stability',
+    'ACTIONABLE_NOT_COVERED': 'oskill.test_stability',
+    'ACTIONABLE_VISIBLE': 'oskill.test_stability',
+    'ATOM_CONSTRAINT': 'oskill.memory_layers',
+    'ATOM_EVENT': 'oskill.memory_layers',
+    'ATOM_FACT': 'oskill.memory_layers',
+    'ATOM_PREFERENCE': 'oskill.memory_layers',
+    'AdrDraft': 'oskill.shared_language',
+    'AgentBus': 'oskill.agent_messaging',
+    'AgentMessage': 'oskill.agent_messaging',
+    'AgentResult': 'oskill.agent_orchestrator',
+    'AntiNoiseValidator': 'oskill.agent_discovery',
+    'ApplyResult': 'oskill._types',
+    'Article': 'oskill.wechat_publish',
+    'ArticleStore': 'oskill.wechat_publish',
+    'AssetRegistry': 'oskill.memory_assets',
+    'BackendExecutor': 'oskill.runtime_backends',
+    'BackendRegistry': 'oskill.runtime_backends',
+    'BanditRouter': 'oskill.bandit_router',
+    'BanditState': 'oskill.bandit_router',
+    'BayesianBeliefUpdater': 'oskill._bayesian_belief_update',
+    'BrowserRunner': 'oskill.browser_runner',
+    'BrowserStepResult': 'oskill.browser_runner',
+    'BuildStats': 'oskill.code_graph_builder',
+    'CONTRACT_FIELDS': 'oskill._skill_contract',
+    'CallEdge': 'oskill.code_parse',
+    'CategoricalCPD': 'oskill._online_cpd_update',
+    'CodeGraphBuilder': 'oskill.code_graph_builder',
+    'CodeSymbol': 'oskill.code_parse',
+    'CodeTree': 'oskill.code_parse',
+    'ComparisonReport': 'oskill.eval_suite',
+    'ComplianceHit': 'oskill.wechat_writing',
+    'ConfigOskillError': 'oskill._types',
+    'ContextBudget': 'oskill.context_engineering',
+    'ContextEngine': 'oskill.context_engineering',
+    'ContextItem': 'oskill.agent_context_pool',
+    'ContextMessage': 'oskill.context_engineering',
+    'ContextPool': 'oskill.agent_context_pool',
+    'ConversationVars': 'oskill.conversation_vars',
+    'DECISION_COMPONENTS': 'oskill.productization_gate',
+    'DECISION_KEEP_FIELD': 'oskill.productization_gate',
+    'DECISION_PRODUCTIZE': 'oskill.productization_gate',
+    'DEFAULT_HYPOTHESES': 'oskill._bayesian_belief_update',
+    'DEFAULT_SPECS': 'oskill.env_doctor',
+    'DaemonLifecycle': 'oskill.daemon_runtime',
+    'DaemonState': 'oskill.daemon_runtime',
+    'DataSourceAdapter': 'oskill.doc_extractors',
+    'DecisionVerdict': 'oskill.agent_discovery',
+    'DepSpec': 'oskill.env_doctor',
+    'DirWatcher': 'oskill.daemon_runtime',
+    'DistillPipeline': 'oskill.memory_layers',
+    'DoctorReport': 'oskill.env_doctor',
+    'EDGE_EXTRACTED': 'oskill.knowledge_graph_query',
+    'EDGE_INFERRED': 'oskill.knowledge_graph_query',
+    'ENV_CN': 'oskill.social_publish',
+    'ENV_INTL': 'oskill.social_publish',
+    'EXTRACTED': 'oskill._edge_confidence',
+    'EditBlock': 'oskill._types',
+    'EditOskillError': 'oskill._types',
+    'EmbeddingProvider': 'oskill.embedding_service',
+    'EmbeddingService': 'oskill.embedding_service',
+    'EvalCase': 'oskill.eval_suite',
+    'EvalRun': 'oskill.eval_suite',
+    'Experience': 'oskill.failure_learning',
+    'ExperienceStore': 'oskill.failure_learning',
+    'FRAMEWORK_AUTOGEN': 'oskill.agent_frameworks',
+    'FRAMEWORK_LANGGRAPH': 'oskill.agent_frameworks',
+    'FULL_DUPLEX_MODE': 'oskill.voice_pipeline',
+    'FULL_REWRITE_CRITERIA': 'oskill.wechat_review_loop',
+    'FailureRecord': 'oskill.failure_learning',
+    'Finding': 'oskill.pentest_loop',
+    'FlowBroker': 'oskill.flow_orchestrator',
+    'FlowRegistry': 'oskill.flow_orchestrator',
+    'FlowResult': 'oskill.flow_orchestrator',
+    'FlowRunner': 'oskill.flow_orchestrator',
+    'FlowStep': 'oskill.flow_orchestrator',
+    'ForceAnalysisResult': 'oskill._physics_force_analysis_guide',
+    'FrameworkRegistry': 'oskill.agent_frameworks',
+    'FrameworkSpec': 'oskill.agent_frameworks',
+    'GRADE_AT_RISK': 'oskill.health_score',
+    'GRADE_CRITICAL': 'oskill.health_score',
+    'GRADE_HEALTHY': 'oskill.health_score',
+    'GateVerdict': 'oskill.svg_craft',
+    'GenericHttpAdapter': 'oskill.social_publish',
+    'GraphEdge': 'oskill.knowledge_graph_query',
+    'GraphNode': 'oskill.knowledge_graph_query',
+    'HealthAlert': 'oskill.health_score',
+    'HealthMonitor': 'oskill.health_probe',
+    'HealthProbe': 'oskill.health_probe',
+    'HealthReport': 'oskill.health_score',
+    'HookCmd': 'oskill._types',
+    'INFERRED': 'oskill._edge_confidence',
+    'InterviewQuestion': 'oskill.requirements_interview',
+    'InterviewState': 'oskill.requirements_interview',
+    'KnowledgeGraph': 'oskill.knowledge_graph_query',
+    'L1Atom': 'oskill.memory_layers',
+    'L2Scenario': 'oskill.memory_layers',
+    'L3Persona': 'oskill.memory_layers',
+    'LAYERS': 'oskill.health_score',
+    'LAYER_BUSINESS': 'oskill.health_score',
+    'LAYER_CUSTOMER': 'oskill.health_score',
+    'LAYER_DELIVERY': 'oskill.health_score',
+    'LAYER_ORG': 'oskill.health_score',
+    'LEVEL_NAMES': 'oskill.svg_craft',
+    'LINK_DEPENDS_ON': 'oskill.code_graph_semantic',
+    'LINK_IMPLEMENTS': 'oskill.code_graph_semantic',
+    'LINK_PART_OF': 'oskill.code_graph_semantic',
+    'LINK_PRODUCES': 'oskill.code_graph_semantic',
+    'LINK_USES': 'oskill.code_graph_semantic',
+    'LLMOskillError': 'oskill._types',
+    'LLMRouter': 'oskill.llm_router',
+    'LadderDecision': 'oskill.svg_craft',
+    'LayoutBlock': 'oskill.wechat_theme',
+    'Listing': 'oskill.marketplace',
+    'MEMORY_KINDS': 'oskill.memory_system',
+    'MEMORY_RAG': 'oskill.memory_system',
+    'MEMORY_TOOL': 'oskill.memory_system',
+    'MODES': 'oskill.agent_orchestrator',
+    'MODE_FUNCTION_CALLING': 'oskill.agent_orchestrator',
+    'MODE_PLAN': 'oskill.agent_orchestrator',
+    'MODE_REACT': 'oskill.agent_orchestrator',
+    'MSG_STATUS_ERROR': 'oskill.agent_messaging',
+    'MSG_STATUS_SUCCESS': 'oskill.agent_messaging',
+    'Marketplace': 'oskill.marketplace',
+    'MemoryAsset': 'oskill.memory_assets',
+    'MemoryEntry': 'oskill.memory_layers',
+    'MemoryStore': 'oskill.memory_system',
+    'Metric': 'oskill.health_score',
+    'ModerationRule': 'oskill.content_moderation',
+    'ModerationVerdict': 'oskill.content_moderation',
+    'MvdPipeline': 'oskill.mvd',
+    'MvdVerdict': 'oskill.mvd',
+    'NODE_CONDITION': 'oskill.workflow_dsl',
+    'NODE_END': 'oskill.workflow_dsl',
+    'NODE_ITERATION': 'oskill.workflow_dsl',
+    'NODE_KNOWLEDGE': 'oskill.workflow_dsl',
+    'NODE_LLM': 'oskill.workflow_dsl',
+    'NODE_START': 'oskill.workflow_dsl',
+    'NODE_TOOL': 'oskill.workflow_dsl',
+    'NODE_VARIABLE': 'oskill.workflow_dsl',
+    'OffloadPipeline': 'oskill.memory_offload',
+    'OskillError': 'oskill._types',
+    'PHASES': 'oskill.mvd',
+    'PIPE_MODE': 'oskill.voice_pipeline',
+    'PLACEHOLDER_RE': 'oskill.verity_check',
+    'PLATFORM_TIKTOK': 'oskill.social_publish',
+    'PLATFORM_WECHAT': 'oskill.social_publish',
+    'PLATFORM_XIAOHONGSHU': 'oskill.social_publish',
+    'PLATFORM_YOUTUBE': 'oskill.social_publish',
+    'PRESETS': 'oskill.spec_execute',
+    'PROVIDER_REGISTRY': 'oskill.provider_clients',
+    'ParseOskillError': 'oskill._types',
+    'PathAudit': 'oskill.svg_craft',
+    'PathSegment': 'oskill.svg_craft',
+    'PentestReport': 'oskill.pentest_loop',
+    'PentestState': 'oskill.pentest_loop',
+    'PipelineAction': 'oskill.workflow_pipeline',
+    'PlatformAdapter': 'oskill.social_publish',
+    'PlatformCapabilities': 'oskill.social_publish',
+    'PlatformCredential': 'oskill.social_publish',
+    'PlaybookLibrary': 'oskill.playbook',
+    'PluginDecl': 'oskill.plugin_registry',
+    'PluginManifest': 'oskill._types',
+    'PluginRegistry': 'oskill.plugin_registry',
+    'Principal': 'oskill.memory_assets',
+    'ProbeState': 'oskill.health_probe',
+    'ProductizationVerdict': 'oskill.productization_gate',
+    'ProviderClient': 'oskill.provider_clients',
+    'PublishResult': 'oskill.social_publish',
+    'ROLES': 'oskill.pentest_squad',
+    'RULEBOOK_KEYWORDS': 'oskill.rulebooks',
+    'RULES': 'oskill.mvd',
+    'RagIndex': 'oskill.rag_pipeline',
+    'ReadingGuideResult': 'oskill._reading_comprehension_guide',
+    'RecurringScheduler': 'oskill.recurring_scheduler',
+    'ReflectionLoop': 'oskill.reflection_agent',
+    'ReflectionResult': 'oskill.reflection_agent',
+    'RepoFile': 'oskill._types',
+    'RepoMap': 'oskill._types',
+    'Resource': 'oskill.agent_discovery',
+    'ResourceCatalog': 'oskill.agent_discovery',
+    'RetrievalBudget': 'oskill.rrf_retrieval',
+    'ReviewFinding': 'oskill.review_double_axis',
+    'ReviewIssue': 'oskill.wechat_review_loop',
+    'ReviewReport': 'oskill.review_double_axis',
+    'ReviewRound': 'oskill.wechat_review_loop',
+    'RewardRule': 'oskill.agentic_rl',
+    'RunResult': 'oskill.test_stability',
+    'RuntimeBackend': 'oskill.runtime_backends',
+    'SCOPE_PROJECT': 'oskill.conversation_vars',
+    'SCOPE_SESSION': 'oskill.conversation_vars',
+    'SECTIONS': 'oskill.playbook',
+    'SETTLEMENT_FIXED': 'oskill.social_publish',
+    'SETTLEMENT_PER_UNIT': 'oskill.social_publish',
+    'SETTLEMENT_REVENUE_SHARE': 'oskill.social_publish',
+    'STAGE_EVAL': 'oskill.agentic_rl',
+    'STAGE_RL': 'oskill.agentic_rl',
+    'STAGE_RM': 'oskill.agentic_rl',
+    'STAGE_SFT': 'oskill.agentic_rl',
+    'STATUS_CLAIMED': 'oskill.marketplace',
+    'STATUS_DELIVERED': 'oskill.marketplace',
+    'STATUS_ERROR': 'oskill.health_probe',
+    'STATUS_HEALTHY': 'oskill.health_probe',
+    'STATUS_INVALID': 'oskill.health_probe',
+    'STATUS_NEEDS_INFO': 'oskill.triage_flow',
+    'STATUS_NEEDS_TRIAGE': 'oskill.triage_flow',
+    'STATUS_OPEN': 'oskill.marketplace',
+    'STATUS_RATE_LIMITED': 'oskill.health_probe',
+    'STATUS_READY_AGENT': 'oskill.triage_flow',
+    'STATUS_READY_HUMAN': 'oskill.triage_flow',
+    'STATUS_SETTLED': 'oskill.marketplace',
+    'STATUS_WONTFIX': 'oskill.triage_flow',
+    'STRATEGY_NAMES': 'oskill._strategy_evolve',
+    'STRATEGY_PARAMS': 'oskill._strategy_evolve',
+    'STREAM_MODE': 'oskill.voice_pipeline',
+    'STYLE_BOX': 'oskill.drawio_diagram',
+    'STYLE_DATA': 'oskill.drawio_diagram',
+    'STYLE_DECISION': 'oskill.drawio_diagram',
+    'STYLE_EDGE': 'oskill.drawio_diagram',
+    'STYLE_PROCESS': 'oskill.drawio_diagram',
+    'SYMBOL_CLASS': 'oskill.code_parse',
+    'SYMBOL_FUNCTION': 'oskill.code_parse',
+    'SYMBOL_IMPORT': 'oskill.code_parse',
+    'SYMBOL_METHOD': 'oskill.code_parse',
+    'ScenarioPlaybook': 'oskill.playbook',
+    'Scorer': 'oskill.eval_suite',
+    'SecureStore': 'oskill.secure_store',
+    'SecureStoreError': 'oskill.secure_store',
+    'SemanticBuild': 'oskill.code_graph_semantic',
+    'SemanticNode': 'oskill.code_graph_semantic',
+    'SocialTask': 'oskill.social_publish',
+    'SocraticStateV2': 'oskill.socratic_guide_v2',
+    'SourceRef': 'oskill.code_graph_semantic',
+    'SpecExecutor': 'oskill.spec_execute',
+    'SquadFinding': 'oskill.pentest_squad',
+    'SquadOrchestrator': 'oskill.pentest_squad',
+    'SquadReport': 'oskill.pentest_squad',
+    'StrategyEvolver': 'oskill._strategy_evolve',
+    'SubTask': 'oskill._types',
+    'Symbol': 'oskill._types',
+    'SyncSession': 'oskill.daemon_runtime',
+    'TICKET_BLOCKED': 'oskill.workflow_pipeline',
+    'TICKET_DONE': 'oskill.workflow_pipeline',
+    'TICKET_OPEN': 'oskill.workflow_pipeline',
+    'TYPST_GUIDE': 'oskill.typst_author',
+    'TaskSegment': 'oskill.memory_offload',
+    'TestCaseResult': 'oskill.test_report',
+    'TestRunReport': 'oskill.test_report',
+    'Ticket': 'oskill.workflow_pipeline',
+    'TodoItem': 'oskill._types',
+    'ToolCall': 'oskill._types',
+    'ToolMemory': 'oskill.memory_system',
+    'TrainPipeline': 'oskill.agentic_rl',
+    'TriageFlow': 'oskill.triage_flow',
+    'TriageIssue': 'oskill.triage_flow',
+    'TrimResult': 'oskill.context_engineering',
+    'UndoPlan': 'oskill._types',
+    'VISIBILITY_DERIVED': 'oskill.agent_context_pool',
+    'VISIBILITY_ISOLATED': 'oskill.agent_context_pool',
+    'VISIBILITY_PRIVATE': 'oskill.memory_assets',
+    'VISIBILITY_RESTRICTED': 'oskill.memory_assets',
+    'VISIBILITY_SHARED': 'oskill.agent_context_pool',
+    'VISIBILITY_TEAM': 'oskill.memory_assets',
+    'VarEntry': 'oskill.conversation_vars',
+    'VerityConfig': 'oskill.verity_check',
+    'VerityItem': 'oskill.verity_check',
+    'VerityReport': 'oskill.verity_check',
+    'VoiceTurn': 'oskill.voice_pipeline',
+    'WechatAccount': 'oskill.wechat_publish',
+    'WechatAccountRegistry': 'oskill.wechat_publish',
+    'WechatAdapter': 'oskill.social_publish',
+    'WechatReviewLoop': 'oskill.wechat_review_loop',
+    'WechatTheme': 'oskill.wechat_theme',
+    'WiringResult': 'oskill.agent_wiring',
+    'WorkflowDAG': 'oskill.workflow_dsl',
+    'WorkflowNode': 'oskill.workflow_dsl',
+    'WorkflowState': 'oskill.workflow_pipeline',
+    '__version__': 'oskill._version',
+    '_bayesian_belief_update': 'oskill._bayesian_belief_update',
+    'adapt_call': 'oskill.fn_call_adapter',
+    'advise_prompt': 'oskill.wechat_writing',
+    'agent_form_synthesize': 'oskill.agent_form_synthesize',
+    'allocate_gift_card_balance': 'oskill._allocate_gift_card_balance',
+    'annotate_edges': 'oskill._edge_confidence',
+    'apply_discount_amount': 'oskill._apply_discount_amount',
+    'apply_discount_percentage': 'oskill._apply_discount_percentage',
+    'apply_edit_block': 'oskill._apply_edit_block',
+    'apply_free_shipping': 'oskill._apply_free_shipping',
+    'apply_theme': 'oskill.wechat_theme',
+    'apply_todo_update': 'oskill._apply_todo_update',
+    'apply_unified_diff': 'oskill._apply_unified_diff',
+    'batch_draft': 'oskill.social_publish',
+    'bm25_score': 'oskill.rrf_retrieval',
+    'build_definition_index': 'oskill._edge_confidence',
+    'build_fingerprint': 'oskill.code_graph_semantic',
+    'build_rag_pipeline': 'oskill.rag_pipeline',
+    'build_repo_context': 'oskill._build_repo_context',
+    'build_subagent_prompt': 'oskill._build_subagent_prompt',
+    'build_undo_plan': 'oskill._build_undo_plan',
+    'cascade_delete': 'oskill._cascade_delete',
+    'catalog_summary': 'oskill.wechat_resources',
+    'check_dependencies': 'oskill.env_doctor',
+    'chunk_code': 'oskill._chunk_code',
+    'chunk_text': 'oskill.rag_pipeline',
+    'clean_document': 'oskill.rag_pipeline',
+    'client_for': 'oskill.provider_clients',
+    'cohens_d': 'oskill.eval_suite',
+    'cold_start_single': 'oskill.cold_start_single',
+    'collect_test_run': 'oskill.test_report',
+    'compare_runs': 'oskill.eval_suite',
+    'compile_paper': 'oskill.verity_check',
+    'complexity_ladder': 'oskill.svg_craft',
+    'compliance_report': 'oskill.wechat_writing',
+    'compose_plugin_manifest': 'oskill._compose_plugin_manifest',
+    'compress_context': 'oskill._compress_context',
+    'compute_cart_grand_total': 'oskill._compute_cart_grand_total',
+    'compute_cart_subtotal': 'oskill._compute_cart_subtotal',
+    'compute_health': 'oskill.health_score',
+    'compute_reward': 'oskill.agentic_rl',
+    'config_key': 'oskill._online_cpd_update',
+    'conflict_resolution': 'oskill._conflict_resolution',
+    'content_hash': 'oskill.code_graph_semantic',
+    'content_limits': 'oskill.social_publish',
+    'convert_to_tool_calls': 'oskill.fn_call_adapter',
+    'cover_prompt': 'oskill.wechat_writing',
+    'create_image_post': 'oskill.wechat_publish',
+    'dag_visual_layout': 'oskill.dag_visual_layout',
+    'dedup_edits': 'oskill._dedup_edits',
+    'deep_research_tree': 'oskill.deep_research_tree',
+    'derive_key': 'oskill.secure_store',
+    'detect_platform': 'oskill.env_doctor',
+    'dirichlet_update': 'oskill._online_cpd_update',
+    'drawio_doc': 'oskill.drawio_diagram',
+    'drawio_edge': 'oskill.drawio_diagram',
+    'drawio_node': 'oskill.drawio_diagram',
+    'dsl_to_framework': 'oskill.agent_frameworks',
+    'edge_confidence': 'oskill._edge_confidence',
+    'ema_update': 'oskill._online_cpd_update',
+    'escalate_thinking_budget': 'oskill._escalate_thinking_budget',
+    'essay_guide': 'oskill.essay_guide',
+    'evaluate_discount_conditions': 'oskill._evaluate_discount_conditions',
+    'evaluate_discount_eligibility': 'oskill._evaluate_discount_eligibility',
+    'evaluate_hooks': 'oskill._evaluate_hooks',
+    'evaluate_productization': 'oskill.productization_gate',
+    'expect_eventually': 'oskill.test_stability',
+    'export_drawio': 'oskill.drawio_diagram',
+    'extract_contract': 'oskill._skill_contract',
+    'extract_docx': 'oskill.doc_extractors',
+    'extract_pdf': 'oskill.doc_extractors',
+    'extract_symbols': 'oskill._extract_symbols',
+    'extract_text': 'oskill.doc_extractors',
+    'extract_variables': 'oskill.template_engine',
+    'extract_xlsx': 'oskill.doc_extractors',
+    'fan_out_and_synthesize': 'oskill._fan_out_synthesize',
+    'fetch_url': 'oskill.doc_extractors',
+    'fit_smooth_cubic': 'oskill.svg_path_tools',
+    'format_diagnostics': 'oskill._format_diagnostics',
+    'format_experiences': 'oskill.failure_learning',
+    'format_skill_contract_block': 'oskill._skill_contract',
+    'generate_patch_preview': 'oskill._generate_patch_preview',
+    'get_platform': 'oskill.social_publish',
+    'get_rulebook': 'oskill.rulebooks',
+    'get_theme': 'oskill.wechat_theme',
+    'graph_expand_retrieval': 'oskill._graph_expand_retrieval',
+    'grpo_advantages': 'oskill.agentic_rl',
+    'has_contract': 'oskill._skill_contract',
+    'humanize_prompt': 'oskill.wechat_writing',
+    'hybrid_search': 'oskill.rrf_retrieval',
+    'incremental_refresh': 'oskill.code_graph_semantic',
+    'infographic_prompt': 'oskill.wechat_writing',
+    'inspect_article': 'oskill.wechat_publish',
+    'install_commands': 'oskill.env_doctor',
+    'interrupt_turn': 'oskill.voice_pipeline',
+    'interview_frontier': 'oskill.requirements_interview',
+    'interview_pending_facts': 'oskill.requirements_interview',
+    'interview_progress': 'oskill.requirements_interview',
+    'iou_score': 'oskill.svg_craft',
+    'is_function_call_output': 'oskill.fn_call_adapter',
+    'is_interview_complete': 'oskill.requirements_interview',
+    'is_low_confidence': 'oskill._edge_confidence',
+    'layout_modules': 'oskill.wechat_theme',
+    'leader_worker_dispatch': 'oskill.leader_worker_dispatch',
+    'list_agents': 'oskill.agent_wiring',
+    'list_figure_templates': 'oskill.figure_templates',
+    'list_platforms': 'oskill.social_publish',
+    'list_rulebooks': 'oskill.rulebooks',
+    'list_themes': 'oskill.wechat_theme',
+    'llm_router': 'oskill.llm_router',
+    'load_document': 'oskill.rag_pipeline',
+    'load_skill_progressive': 'oskill._load_skill_progressive',
+    'mark_no_function_calling': 'oskill.fn_call_adapter',
+    'mark_settled': 'oskill.social_publish',
+    'match_permission_rule': 'oskill._match_permission_rule',
+    'md_to_wechat_html': 'oskill.wechat_publish',
+    'merge_config': 'oskill._merge_config',
+    'merge_revision': 'oskill.wechat_review_loop',
+    'merge_subagent_result': 'oskill._merge_subagent_result',
+    'meta_self_develop_loop': 'oskill.meta_self_develop_loop',
+    'metacog_scaffold': 'oskill.metacog_scaffold',
+    'moderate': 'oskill.content_moderation',
+    'moderate_with_llm': 'oskill.content_moderation',
+    'monthly_clamp': 'oskill.scheduler_attempt_lifecycle',
+    'mvd_check': 'oskill.mvd',
+    'needs_adapter': 'oskill.fn_call_adapter',
+    'needs_full_rewrite': 'oskill.wechat_review_loop',
+    'normalize': 'oskill.health_score',
+    'paired_t_test': 'oskill.eval_suite',
+    'parse_code': 'oskill.code_parse',
+    'parse_dsl': 'oskill.workflow_dsl',
+    'parse_dsl_json': 'oskill.workflow_dsl',
+    'parse_function_tags': 'oskill.fn_call_adapter',
+    'parse_layout_blocks': 'oskill.wechat_theme',
+    'parse_llm_tool_calls': 'oskill._parse_llm_tool_calls',
+    'parse_path': 'oskill.svg_craft',
+    'parse_python_tree': 'oskill.code_parse',
+    'parse_verdict': 'oskill.wechat_review_loop',
+    'parse_wikilinks': 'oskill.code_graph_semantic',
+    'path_bbox': 'oskill.svg_path_tools',
+    'path_center': 'oskill.svg_path_tools',
+    'pdf_pages': 'oskill.verity_check',
+    'physics_force_analysis_guide': 'oskill._physics_force_analysis_guide',
+    'pipeline_next_action': 'oskill.workflow_pipeline',
+    'pipeline_transition': 'oskill.workflow_pipeline',
+    'plan_decompose': 'oskill._plan_decompose',
+    'plan_to_todos': 'oskill._plan_to_todos',
+    'plan_wiring': 'oskill.agent_wiring',
+    'pre_run_knowledge_hook': 'oskill.scheduler_attempt_lifecycle',
+    'produce_article': 'oskill.wechat_publish',
+    'publish_draft': 'oskill.wechat_publish',
+    'publish_to': 'oskill.social_publish',
+    'rank_relevant_files': 'oskill._rank_relevant_files',
+    'read_glossary': 'oskill.shared_language',
+    'reading_comprehension_guide': 'oskill._reading_comprehension_guide',
+    'record_interview_answers': 'oskill.requirements_interview',
+    'record_interview_facts': 'oskill.requirements_interview',
+    'register_layout_module': 'oskill.wechat_theme',
+    'register_platform': 'oskill.social_publish',
+    'register_theme': 'oskill.wechat_theme',
+    'register_wechat_resources': 'oskill.wechat_resources',
+    'relevance_compute': 'oskill._relevance_compute',
+    'render_cubic_path': 'oskill.svg_path_tools',
+    'render_drawio': 'oskill.drawio_diagram',
+    'render_figure_template': 'oskill.figure_templates',
+    'render_layout_block': 'oskill.wechat_theme',
+    'render_markdown_with_layout': 'oskill.wechat_theme',
+    'render_node_markdown': 'oskill.code_graph_semantic',
+    'render_preset': 'oskill.spec_execute',
+    'render_template': 'oskill.template_engine',
+    'repo_map_build': 'oskill._repo_map_build',
+    'resolve_config': 'oskill.verity_check',
+    'resolve_display_batch': 'oskill._resolve_display_batch',
+    'resolve_interview_answer': 'oskill.requirements_interview',
+    'resolve_memory_hierarchy': 'oskill._resolve_memory_hierarchy',
+    'resolve_mentions': 'oskill._resolve_mentions',
+    'resolve_template': 'oskill.figure_templates',
+    'retry_execute': 'oskill.scheduler_attempt_lifecycle',
+    'retry_until': 'oskill.test_stability',
+    'review_diff': 'oskill.review_double_axis',
+    'reviewer_prompt': 'oskill.wechat_writing',
+    'reviser_prompt': 'oskill.wechat_writing',
+    'rrf_merge': 'oskill.rrf_retrieval',
+    'rules_sections': 'oskill.rulebooks',
+    'run_agent': 'oskill.agent_orchestrator',
+    'run_browser_test': 'oskill.browser_runner',
+    'run_doctor': 'oskill.env_doctor',
+    'run_function_calling': 'oskill.agent_orchestrator',
+    'run_pentest_loop': 'oskill.pentest_loop',
+    'run_plan': 'oskill.agent_orchestrator',
+    'run_react': 'oskill.agent_orchestrator',
+    'run_suite': 'oskill.eval_suite',
+    'run_text_gate': 'oskill.verity_check',
+    'run_verity': 'oskill.verity_check',
+    'run_voice_pipeline': 'oskill.voice_pipeline',
+    'scan_compliance': 'oskill.wechat_writing',
+    'scan_spec_coverage': 'oskill.review_double_axis',
+    'scan_standards': 'oskill.review_double_axis',
+    'select_rulebooks': 'oskill.rulebooks',
+    'select_skill': 'oskill._select_skill',
+    'select_tools': 'oskill._select_tools',
+    'semantic_build': 'oskill.code_graph_semantic',
+    'semantic_search': 'oskill._semantic_search',
+    'semantic_to_graph': 'oskill.knowledge_graph_query',
+    'sequential_update': 'oskill._bayesian_belief_update',
+    'settle': 'oskill.social_publish',
+    'should_write_adr': 'oskill.shared_language',
+    'simplify_line': 'oskill.svg_path_tools',
+    'skill_export': 'oskill.skill_teach',
+    'skill_import_': 'oskill.skill_teach',
+    'skill_list': 'oskill.skill_teach',
+    'skill_teach': 'oskill.skill_teach',
+    'skills_dynamic_inject': 'oskill.skills_dynamic_inject',
+    'smoothness_gate': 'oskill.svg_craft',
+    'socratic_guide_v2': 'oskill.socratic_guide_v2',
+    'soul_self_evolution': 'oskill.soul_self_evolution',
+    'spec_executor': 'oskill.spec_execute',
+    'split_config': 'oskill._online_cpd_update',
+    'stack_discount_allocations': 'oskill._stack_discount_allocations',
+    'stale_nodes': 'oskill.code_graph_semantic',
+    'standards_rules': 'oskill.rulebooks',
+    'summarize_file': 'oskill._summarize_file',
+    'svg_path_audit': 'oskill.svg_craft',
+    'syntax_check': 'oskill._syntax_check',
+    'team_plan_gen': 'oskill.team_plan_gen',
+    'three_way_merge': 'oskill._three_way_merge',
+    'ticket_set_status': 'oskill.workflow_pipeline',
+    'tickets_check_cycles': 'oskill.workflow_pipeline',
+    'tickets_next_runnable': 'oskill.workflow_pipeline',
+    'title_prompt': 'oskill.wechat_writing',
+    'tokenize': 'oskill.rrf_retrieval',
+    'tools_to_prompt': 'oskill.fn_call_adapter',
+    'topological_execute': 'oskill.workflow_dsl',
+    'transition_attempt': 'oskill.scheduler_attempt_lifecycle',
+    'two_step_ingest': 'oskill._two_step_ingest',
+    'typst_compile': 'oskill.typst_author',
+    'typst_format_check': 'oskill.typst_author',
+    'typst_minimal_doc': 'oskill.typst_author',
+    'typst_probe': 'oskill.typst_author',
+    'update_cpd': 'oskill._online_cpd_update',
+    'upload_image': 'oskill.wechat_publish',
+    'upsert_term': 'oskill.shared_language',
+    'validate_drawio': 'oskill.drawio_diagram',
+    'validate_dsl': 'oskill.workflow_dsl',
+    'validate_edit': 'oskill._validate_edit',
+    'validate_skill_contract': 'oskill._skill_contract',
+    'variant_for_review': 'oskill.variant_for_review',
+    'verify_finding': 'oskill.pentest_loop',
+    'wait_actionable': 'oskill.test_stability',
+    'watchdog': 'oskill.health_score',
+    'wechat_catalog': 'oskill.wechat_resources',
+    'wilcoxon_signed_rank': 'oskill.eval_suite',
+    'workflow_from_dict': 'oskill.workflow_pipeline',
+    'workflow_to_dict': 'oskill.workflow_pipeline',
+    'worktree_conflict_resolve': 'oskill.worktree_conflict_resolve',
+    'wrap_tools': 'oskill.fn_call_adapter',
+    'write_adr': 'oskill.shared_language',
+    'write_agent_instructions': 'oskill.agent_wiring',
+    'write_prompt': 'oskill.wechat_writing',
+}
+_ELEMENT_MAP.update(_AUTHORITATIVE_EXPORTS)
 
 
 def __getattr__(name: str) -> Any:
@@ -107,8 +611,6 @@ def __getattr__(name: str) -> Any:
             actual_name = "FusedResult"
         if name == "MergedSearchResult":
             actual_name = "SearchResult"
-        if name == "RagChunk":
-            actual_name = "Chunk"
         return getattr(mod, actual_name)
     if name in _SUBMODULE_SET:
         pkg_name = __package__ or "oskill"
@@ -123,1497 +625,105 @@ def __dir__() -> list[str]:
 __all__ = sorted(_ELEMENT_MAP.keys())
 
 # --- Explicit re-exports (Pinning) ---
-from oskill._allocate_gift_card_balance import (
-    allocate_gift_card_balance as allocate_gift_card_balance,
+from oskill._types import (
+    OskillError,
+    EditOskillError,
+    ParseOskillError,
+    LLMOskillError,
+    ConfigOskillError,
+    EditBlock,
+    ApplyResult,
+    Chunk,
+    Symbol,
+    RepoFile,
+    RepoMap,
+    TodoItem,
+    SubTask,
+    ToolCall,
+    PluginManifest,
+    UndoPlan,
+    HookCmd,
 )
-from oskill._apply_discount_amount import apply_discount_amount as apply_discount_amount
-from oskill._apply_discount_percentage import apply_discount_percentage as apply_discount_percentage
-from oskill._apply_edit_block import apply_edit_block as apply_edit_block
-from oskill._apply_free_shipping import apply_free_shipping as apply_free_shipping
-from oskill._apply_todo_update import apply_todo_update as apply_todo_update
-from oskill._apply_unified_diff import apply_unified_diff as apply_unified_diff
-from oskill._build_repo_context import build_repo_context as build_repo_context
-from oskill._build_subagent_prompt import build_subagent_prompt as build_subagent_prompt
-from oskill._build_undo_plan import build_undo_plan as build_undo_plan
+from oskill._apply_edit_block import apply_edit_block
+from oskill._apply_unified_diff import apply_unified_diff
+from oskill._select_tools import select_tools
+from oskill._select_skill import select_skill
+from oskill._plan_decompose import plan_decompose
+from oskill._plan_to_todos import plan_to_todos
+from oskill._apply_todo_update import apply_todo_update
+from oskill._summarize_file import summarize_file
+from oskill._chunk_code import chunk_code
+from oskill._extract_symbols import extract_symbols
+from oskill._repo_map_build import repo_map_build
+from oskill._rank_relevant_files import rank_relevant_files
+from oskill._build_repo_context import build_repo_context
+from oskill._semantic_search import semantic_search
+from oskill._syntax_check import syntax_check
+from oskill._validate_edit import validate_edit
+from oskill._dedup_edits import dedup_edits
+from oskill._generate_patch_preview import generate_patch_preview
+from oskill._build_undo_plan import build_undo_plan
+from oskill._format_diagnostics import format_diagnostics
+from oskill.socratic_guide_v2 import socratic_guide_v2, SocraticStateV2
+from oskill.metacog_scaffold import metacog_scaffold
+from oskill.cold_start_single import cold_start_single
+from oskill.variant_for_review import variant_for_review
+from oskill.essay_guide import essay_guide
+from oskill._parse_llm_tool_calls import parse_llm_tool_calls
+from oskill._merge_config import merge_config
+from oskill._evaluate_hooks import evaluate_hooks
+from oskill._match_permission_rule import match_permission_rule
+from oskill._escalate_thinking_budget import escalate_thinking_budget
+from oskill._compose_plugin_manifest import compose_plugin_manifest
+from oskill._build_subagent_prompt import build_subagent_prompt
+from oskill._merge_subagent_result import merge_subagent_result
+from oskill._compress_context import compress_context
+from oskill._resolve_mentions import resolve_mentions
+from oskill._resolve_memory_hierarchy import resolve_memory_hierarchy
+from oskill._load_skill_progressive import load_skill_progressive
+from oskill._three_way_merge import three_way_merge
 
-# K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
-from oskill._cascade_delete import cascade_delete as cascade_delete
-from oskill._chunk_code import chunk_code as chunk_code
-from oskill._compose_plugin_manifest import compose_plugin_manifest as compose_plugin_manifest
-from oskill._compress_context import compress_context as compress_context
-from oskill._compute_cart_grand_total import compute_cart_grand_total as compute_cart_grand_total
-from oskill._compute_cart_subtotal import compute_cart_subtotal as compute_cart_subtotal
+from oskill._physics_force_analysis_guide import physics_force_analysis_guide, ForceAnalysisResult
+from oskill._reading_comprehension_guide import reading_comprehension_guide, ReadingGuideResult
 
 # ── AII Graph Capability (K-G1 … K-G5) ──────────────────────────────────────
 # K-G1: LLM-confirmed conflict resolution (grade hardcoded unverified)
-from oskill._conflict_resolution import conflict_resolution as conflict_resolution
-from oskill._dedup_edits import dedup_edits as dedup_edits
-from oskill._edge_confidence import (
-    EXTRACTED as EXTRACTED,
-)
-from oskill._edge_confidence import (
-    INFERRED as INFERRED,
-)
-from oskill._edge_confidence import (
-    annotate_edges as annotate_edges,
-)
-from oskill._edge_confidence import (
-    build_definition_index as build_definition_index,
-)
-from oskill._edge_confidence import (
-    edge_confidence as edge_confidence,
-)
-from oskill._edge_confidence import (
-    is_low_confidence as is_low_confidence,
-)
-from oskill._escalate_thinking_budget import escalate_thinking_budget as escalate_thinking_budget
-from oskill._evaluate_discount_conditions import (
-    evaluate_discount_conditions as evaluate_discount_conditions,
-)
-from oskill._evaluate_discount_eligibility import (
-    evaluate_discount_eligibility as evaluate_discount_eligibility,
-)
-from oskill._evaluate_hooks import evaluate_hooks as evaluate_hooks
-from oskill._extract_symbols import extract_symbols as extract_symbols
-from oskill._fan_out_synthesize import fan_out_and_synthesize as fan_out_and_synthesize
-from oskill._format_diagnostics import format_diagnostics as format_diagnostics
-from oskill._generate_patch_preview import generate_patch_preview as generate_patch_preview
-
-# K-G4: BFS graph expansion with relevance pruning
-from oskill._graph_expand_retrieval import graph_expand_retrieval as graph_expand_retrieval
-from oskill._load_skill_progressive import load_skill_progressive as load_skill_progressive
-from oskill._match_permission_rule import match_permission_rule as match_permission_rule
-from oskill._merge_config import merge_config as merge_config
-from oskill._merge_subagent_result import merge_subagent_result as merge_subagent_result
-from oskill._parse_llm_tool_calls import parse_llm_tool_calls as parse_llm_tool_calls
-from oskill._physics_force_analysis_guide import ForceAnalysisResult as ForceAnalysisResult
-from oskill._physics_force_analysis_guide import (
-    physics_force_analysis_guide as physics_force_analysis_guide,
-)
-from oskill._plan_decompose import plan_decompose as plan_decompose
-from oskill._plan_to_todos import plan_to_todos as plan_to_todos
-from oskill._rank_relevant_files import rank_relevant_files as rank_relevant_files
-from oskill._reading_comprehension_guide import ReadingGuideResult as ReadingGuideResult
-from oskill._reading_comprehension_guide import (
-    reading_comprehension_guide as reading_comprehension_guide,
-)
-
-# K-G3: composite KU relevance scoring (direct/source/adamic/type weights)
-from oskill._relevance_compute import relevance_compute as relevance_compute
-from oskill._repo_map_build import repo_map_build as repo_map_build
-
-# ── Batch-warehouse commerce vertical ───────────────────────────────────────
-from oskill._resolve_display_batch import resolve_display_batch as resolve_display_batch
-from oskill._resolve_memory_hierarchy import resolve_memory_hierarchy as resolve_memory_hierarchy
-from oskill._resolve_mentions import resolve_mentions as resolve_mentions
-from oskill._select_skill import select_skill as select_skill
-from oskill._select_tools import select_tools as select_tools
-from oskill._semantic_search import semantic_search as semantic_search
-from oskill._skill_contract import (
-    CONTRACT_FIELDS as CONTRACT_FIELDS,
-)
-from oskill._skill_contract import (
-    extract_contract as extract_contract,
-)
-from oskill._skill_contract import (
-    format_skill_contract_block as format_skill_contract_block,
-)
-from oskill._skill_contract import (
-    has_contract as has_contract,
-)
-from oskill._skill_contract import (
-    validate_skill_contract as validate_skill_contract,
-)
-from oskill._stack_discount_allocations import (
-    stack_discount_allocations as stack_discount_allocations,
-)
-from oskill._summarize_file import summarize_file as summarize_file
-from oskill._syntax_check import syntax_check as syntax_check
-from oskill._three_way_merge import three_way_merge as three_way_merge
+from oskill._conflict_resolution import conflict_resolution
 
 # K-G2: two-pass CoT knowledge extraction (analyze → generate, no free-play)
-from oskill._two_step_ingest import two_step_ingest as two_step_ingest
-from oskill._types import (
-    ApplyResult as ApplyResult,
-)
-from oskill._types import (
-    ConfigOskillError as ConfigOskillError,
-)
-from oskill._types import (
-    EditBlock as EditBlock,
-)
-from oskill._types import (
-    EditOskillError as EditOskillError,
-)
-from oskill._types import (
-    HookCmd as HookCmd,
-)
-from oskill._types import (
-    LLMOskillError as LLMOskillError,
-)
-from oskill._types import (
-    OskillError as OskillError,
-)
-from oskill._types import (
-    ParseOskillError as ParseOskillError,
-)
-from oskill._types import (
-    PluginManifest as PluginManifest,
-)
-from oskill._types import (
-    RepoFile as RepoFile,
-)
-from oskill._types import (
-    RepoMap as RepoMap,
-)
-from oskill._types import (
-    SubTask as SubTask,
-)
-from oskill._types import (
-    Symbol as Symbol,
-)
-from oskill._types import (
-    TodoItem as TodoItem,
-)
-from oskill._types import (
-    ToolCall as ToolCall,
-)
-from oskill._types import (
-    UndoPlan as UndoPlan,
-)
-from oskill._validate_edit import validate_edit as validate_edit
-from oskill.agent_context_pool import (
-    VISIBILITY_DERIVED as VISIBILITY_DERIVED,
-)
-from oskill.agent_context_pool import (
-    VISIBILITY_ISOLATED as VISIBILITY_ISOLATED,
-)
-from oskill.agent_context_pool import (
-    VISIBILITY_SHARED as VISIBILITY_SHARED,
-)
-from oskill.agent_context_pool import (  # noqa: E402
-    ContextItem as ContextItem,
-)
-from oskill.agent_context_pool import (
-    ContextPool as ContextPool,
-)
-from oskill.agent_discovery import (  # noqa: E402
-    AntiNoiseValidator as AntiNoiseValidator,
-)
-from oskill.agent_discovery import (
-    DecisionVerdict as DecisionVerdict,
-)
-from oskill.agent_discovery import (
-    Resource as Resource,
-)
-from oskill.agent_discovery import (
-    ResourceCatalog as ResourceCatalog,
-)
-from oskill.agent_frameworks import (  # noqa: E402
-    FRAMEWORK_AUTOGEN as FRAMEWORK_AUTOGEN,
-)
-from oskill.agent_frameworks import (
-    FRAMEWORK_LANGGRAPH as FRAMEWORK_LANGGRAPH,
-)
-from oskill.agent_frameworks import (
-    FrameworkRegistry as FrameworkRegistry,
-)
-from oskill.agent_frameworks import (
-    FrameworkSpec as FrameworkSpec,
-)
-from oskill.agent_frameworks import (
-    dsl_to_framework as dsl_to_framework,
-)
-from oskill.agent_messaging import (  # noqa: E402
-    MSG_STATUS_ERROR as MSG_STATUS_ERROR,
-)
-from oskill.agent_messaging import (
-    MSG_STATUS_SUCCESS as MSG_STATUS_SUCCESS,
-)
-from oskill.agent_messaging import (
-    A2AProtocol as A2AProtocol,
-)
-from oskill.agent_messaging import (
-    AgentBus as AgentBus,
-)
-from oskill.agent_messaging import (
-    AgentMessage as AgentMessage,
-)
-from oskill.agent_orchestrator import (  # noqa: E402
-    MODE_FUNCTION_CALLING as MODE_FUNCTION_CALLING,
-)
-from oskill.agent_orchestrator import (
-    MODE_PLAN as MODE_PLAN,
-)
-from oskill.agent_orchestrator import (
-    MODE_REACT as MODE_REACT,
-)
-from oskill.agent_orchestrator import (
-    MODES as MODES,
-)
-from oskill.agent_orchestrator import (
-    AgentResult as AgentResult,
-)
-from oskill.agent_orchestrator import (
-    run_agent as run_agent,
-)
-from oskill.agent_orchestrator import (
-    run_function_calling as run_function_calling,
-)
-from oskill.agent_orchestrator import (
-    run_plan as run_plan,
-)
-from oskill.agent_orchestrator import (
-    run_react as run_react,
-)
-from oskill.agent_wiring import (  # noqa: E402
-    WiringResult as WiringResult,
-)
-from oskill.agent_wiring import (
-    list_agents as list_agents,
-)
-from oskill.agent_wiring import (
-    plan_wiring as plan_wiring,
-)
-from oskill.agent_wiring import (
-    write_agent_instructions as write_agent_instructions,
-)
-from oskill.agentic_rl import (  # noqa: E402
-    STAGE_EVAL as STAGE_EVAL,
-)
-from oskill.agentic_rl import (
-    STAGE_RL as STAGE_RL,
-)
-from oskill.agentic_rl import (
-    STAGE_RM as STAGE_RM,
-)
-from oskill.agentic_rl import (
-    STAGE_SFT as STAGE_SFT,
-)
-from oskill.agentic_rl import (
-    RewardRule as RewardRule,
-)
-from oskill.agentic_rl import (
-    TrainPipeline as TrainPipeline,
-)
-from oskill.agentic_rl import (
-    compute_reward as compute_reward,
-)
-from oskill.agentic_rl import (
-    grpo_advantages as grpo_advantages,
-)
-from oskill.bandit_router import (  # noqa: E402
-    BanditRouter as BanditRouter,
-)
-from oskill.bandit_router import (
-    BanditState as BanditState,
-)
-from oskill.browser_runner import (  # noqa: E402
-    BrowserRunner as BrowserRunner,
-)
-from oskill.browser_runner import (
-    BrowserStepResult as BrowserStepResult,
-)
-from oskill.browser_runner import (
-    run_browser_test as run_browser_test,
-)
-from oskill.code_graph_builder import (  # noqa: E402
-    BuildStats as BuildStats,
-)
-from oskill.code_graph_builder import (
-    CodeGraphBuilder as CodeGraphBuilder,
-)
-from oskill.code_graph_semantic import (  # noqa: E402
-    LINK_DEPENDS_ON as LINK_DEPENDS_ON,
-)
-from oskill.code_graph_semantic import (
-    LINK_IMPLEMENTS as LINK_IMPLEMENTS,
-)
-from oskill.code_graph_semantic import (
-    LINK_PART_OF as LINK_PART_OF,
-)
-from oskill.code_graph_semantic import (
-    LINK_PRODUCES as LINK_PRODUCES,
-)
-from oskill.code_graph_semantic import (
-    LINK_USES as LINK_USES,
-)
-from oskill.code_graph_semantic import (
-    SemanticBuild as SemanticBuild,
-)
-from oskill.code_graph_semantic import (
-    SemanticNode as SemanticNode,
-)
-from oskill.code_graph_semantic import (
-    SourceRef as SourceRef,
-)
-from oskill.code_graph_semantic import (
-    build_fingerprint as build_fingerprint,
-)
-from oskill.code_graph_semantic import (
-    content_hash as content_hash,
-)
-from oskill.code_graph_semantic import (
-    incremental_refresh as incremental_refresh,
-)
-from oskill.code_graph_semantic import (
-    parse_wikilinks as parse_wikilinks,
-)
-from oskill.code_graph_semantic import (
-    render_node_markdown as render_node_markdown,
-)
-from oskill.code_graph_semantic import (
-    semantic_build as semantic_build,
-)
-from oskill.code_graph_semantic import (
-    stale_nodes as stale_nodes,
-)
-from oskill.code_parse import (  # noqa: E402
-    SYMBOL_CLASS as SYMBOL_CLASS,
-)
-from oskill.code_parse import (
-    SYMBOL_FUNCTION as SYMBOL_FUNCTION,
-)
-from oskill.code_parse import (
-    SYMBOL_IMPORT as SYMBOL_IMPORT,
-)
-from oskill.code_parse import (
-    SYMBOL_METHOD as SYMBOL_METHOD,
-)
-from oskill.code_parse import (
-    CallEdge as CallEdge,
-)
-from oskill.code_parse import (
-    CodeSymbol as CodeSymbol,
-)
-from oskill.code_parse import (
-    CodeTree as CodeTree,
-)
-from oskill.code_parse import (
-    parse_code as parse_code,
-)
-from oskill.code_parse import (
-    parse_python_tree as parse_python_tree,
-)
-from oskill.cold_start_single import cold_start_single as cold_start_single
-from oskill.content_moderation import (  # noqa: E402
-    ModerationRule as ModerationRule,
-)
-from oskill.content_moderation import (
-    ModerationVerdict as ModerationVerdict,
-)
-from oskill.content_moderation import (
-    moderate as moderate,
-)
-from oskill.content_moderation import (
-    moderate_with_llm as moderate_with_llm,
-)
-from oskill.context_engineering import (  # noqa: E402
-    ContextBudget as ContextBudget,
-)
-from oskill.context_engineering import (
-    ContextEngine as ContextEngine,
-)
-from oskill.context_engineering import (
-    ContextMessage as ContextMessage,
-)
-from oskill.context_engineering import (
-    TrimResult as TrimResult,
-)
-from oskill.conversation_vars import (
-    SCOPE_PROJECT as SCOPE_PROJECT,
-)
-from oskill.conversation_vars import (
-    SCOPE_SESSION as SCOPE_SESSION,
-)
-from oskill.conversation_vars import (  # noqa: E402
-    ConversationVars as ConversationVars,
-)
-from oskill.conversation_vars import (
-    VarEntry as VarEntry,
-)
-from oskill.daemon_runtime import (  # noqa: E402
-    DaemonLifecycle as DaemonLifecycle,
-)
-from oskill.daemon_runtime import (
-    DaemonState as DaemonState,
-)
-from oskill.daemon_runtime import (
-    DirWatcher as DirWatcher,
-)
-from oskill.daemon_runtime import (
-    SyncSession as SyncSession,
-)
-from oskill.doc_extractors import (  # noqa: E402
-    DataSourceAdapter as DataSourceAdapter,
-)
-from oskill.doc_extractors import (
-    extract_docx as extract_docx,
-)
-from oskill.doc_extractors import (
-    extract_pdf as extract_pdf,
-)
-from oskill.doc_extractors import (
-    extract_text as extract_text,
-)
-from oskill.doc_extractors import (
-    extract_xlsx as extract_xlsx,
-)
-from oskill.doc_extractors import (
-    fetch_url as fetch_url,
-)
+from oskill._two_step_ingest import two_step_ingest
 
-# DrawIO 非数据图示绘制 (4drawio SKILL 内化)
-from oskill.drawio_diagram import (  # noqa: E402
-    STYLE_BOX as STYLE_BOX,
-)
-from oskill.drawio_diagram import (
-    STYLE_DATA as STYLE_DATA,
-)
-from oskill.drawio_diagram import (
-    STYLE_DECISION as STYLE_DECISION,
-)
-from oskill.drawio_diagram import (
-    STYLE_EDGE as STYLE_EDGE,
-)
-from oskill.drawio_diagram import (
-    STYLE_PROCESS as STYLE_PROCESS,
-)
-from oskill.drawio_diagram import (
-    drawio_doc as drawio_doc,
-)
-from oskill.drawio_diagram import (
-    drawio_edge as drawio_edge,
-)
-from oskill.drawio_diagram import (
-    drawio_node as drawio_node,
-)
-from oskill.drawio_diagram import (
-    export_drawio as export_drawio,
-)
-from oskill.drawio_diagram import (
-    render_drawio as render_drawio,
-)
-from oskill.drawio_diagram import (
-    validate_drawio as validate_drawio,
-)
-from oskill.embedding_service import (  # noqa: E402
-    EmbeddingProvider as EmbeddingProvider,
-)
-from oskill.embedding_service import (
-    EmbeddingService as EmbeddingService,
-)
+# K-G3: composite KU relevance scoring (direct/source/adamic/type weights)
+from oskill._relevance_compute import relevance_compute
 
-# 环境检查与安装向导 (doctor SKILL 内化)
-from oskill.env_doctor import (  # noqa: E402
-    DEFAULT_SPECS as DEFAULT_SPECS,
-)
-from oskill.env_doctor import (
-    DepSpec as DepSpec,
-)
-from oskill.env_doctor import (
-    DoctorReport as DoctorReport,
-)
-from oskill.env_doctor import (
-    check_dependencies as check_dependencies,
-)
-from oskill.env_doctor import (
-    detect_platform as detect_platform,
-)
-from oskill.env_doctor import (
-    install_commands as install_commands,
-)
-from oskill.env_doctor import (
-    run_doctor as run_doctor,
-)
-from oskill.essay_guide import essay_guide as essay_guide
-from oskill.eval_suite import (  # noqa: E402
-    ComparisonReport as ComparisonReport,
-)
-from oskill.eval_suite import (
-    EvalCase as EvalCase,
-)
-from oskill.eval_suite import (
-    EvalRun as EvalRun,
-)
-from oskill.eval_suite import (
-    Scorer as Scorer,
-)
-from oskill.eval_suite import (
-    cohens_d as cohens_d,
-)
-from oskill.eval_suite import (
-    compare_runs as compare_runs,
-)
-from oskill.eval_suite import (
-    paired_t_test as paired_t_test,
-)
-from oskill.eval_suite import (
-    run_suite as run_suite,
-)
-from oskill.eval_suite import (
-    wilcoxon_signed_rank as wilcoxon_signed_rank,
-)
-from oskill.failure_learning import (  # noqa: E402
-    Experience as Experience,
-)
-from oskill.failure_learning import (
-    ExperienceStore as ExperienceStore,
-)
-from oskill.failure_learning import (
-    FailureRecord as FailureRecord,
-)
-from oskill.failure_learning import (
-    format_experiences as format_experiences,
-)
+# K-G4: BFS graph expansion with relevance pruning
+from oskill._graph_expand_retrieval import graph_expand_retrieval
 
-# 科研绘图模板 (mathmodel-figure-templates SKILL 内化)
-from oskill.figure_templates import (  # noqa: E402
-    list_figure_templates as list_figure_templates,
-)
-from oskill.figure_templates import (
-    render_figure_template as render_figure_template,
-)
-from oskill.figure_templates import (
-    resolve_template as resolve_template,
-)
-from oskill.flow_orchestrator import (  # noqa: E402
-    FlowBroker as FlowBroker,
-)
-from oskill.flow_orchestrator import (
-    FlowRegistry as FlowRegistry,
-)
-from oskill.flow_orchestrator import (
-    FlowResult as FlowResult,
-)
-from oskill.flow_orchestrator import (
-    FlowRunner as FlowRunner,
-)
-from oskill.flow_orchestrator import (
-    FlowStep as FlowStep,
-)
-from oskill.fn_call_adapter import (  # noqa: E402
-    adapt_call as adapt_call,
-)
-from oskill.fn_call_adapter import (
-    convert_to_tool_calls as convert_to_tool_calls,
-)
-from oskill.fn_call_adapter import (
-    is_function_call_output as is_function_call_output,
-)
-from oskill.fn_call_adapter import (
-    mark_no_function_calling as mark_no_function_calling,
-)
-from oskill.fn_call_adapter import (
-    needs_adapter as needs_adapter,
-)
-from oskill.fn_call_adapter import (
-    parse_function_tags as parse_function_tags,
-)
-from oskill.fn_call_adapter import (
-    tools_to_prompt as tools_to_prompt,
-)
-from oskill.fn_call_adapter import (
-    wrap_tools as wrap_tools,
-)
-from oskill.health_probe import (
-    STATUS_ERROR as STATUS_ERROR,
-)
-from oskill.health_probe import (
-    STATUS_HEALTHY as STATUS_HEALTHY,
-)
-from oskill.health_probe import (
-    STATUS_INVALID as STATUS_INVALID,
-)
-from oskill.health_probe import (
-    STATUS_RATE_LIMITED as STATUS_RATE_LIMITED,
-)
-from oskill.health_probe import (  # noqa: E402
-    HealthMonitor as HealthMonitor,
-)
-from oskill.health_probe import (
-    HealthProbe as HealthProbe,
-)
-from oskill.health_probe import (
-    ProbeState as ProbeState,
-)
-from oskill.health_score import (  # noqa: E402
-    GRADE_AT_RISK as GRADE_AT_RISK,
-)
-from oskill.health_score import (
-    GRADE_CRITICAL as GRADE_CRITICAL,
-)
-from oskill.health_score import (
-    GRADE_HEALTHY as GRADE_HEALTHY,
-)
-from oskill.health_score import (
-    LAYER_BUSINESS as LAYER_BUSINESS,
-)
-from oskill.health_score import (
-    LAYER_CUSTOMER as LAYER_CUSTOMER,
-)
-from oskill.health_score import (
-    LAYER_DELIVERY as LAYER_DELIVERY,
-)
-from oskill.health_score import (
-    LAYER_ORG as LAYER_ORG,
-)
-from oskill.health_score import (
-    LAYERS as LAYERS,
-)
-from oskill.health_score import (
-    HealthAlert as HealthAlert,
-)
-from oskill.health_score import (
-    HealthReport as HealthReport,
-)
-from oskill.health_score import (
-    Metric as Metric,
-)
-from oskill.health_score import (
-    compute_health as compute_health,
-)
-from oskill.health_score import (
-    normalize as normalize,
-)
-from oskill.health_score import (
-    watchdog as watchdog,
-)
-from oskill.knowledge_graph_query import (  # noqa: E402
-    EDGE_EXTRACTED as EDGE_EXTRACTED,
-)
-from oskill.knowledge_graph_query import (
-    EDGE_INFERRED as EDGE_INFERRED,
-)
-from oskill.knowledge_graph_query import (
-    GraphEdge as GraphEdge,
-)
-from oskill.knowledge_graph_query import (
-    GraphNode as GraphNode,
-)
-from oskill.knowledge_graph_query import (
-    KnowledgeGraph as KnowledgeGraph,
-)
-from oskill.knowledge_graph_query import (
-    semantic_to_graph as semantic_to_graph,
-)
+# K-G5: safe cascade delete (dry_run=True default; shared KUs preserved)
+from oskill._cascade_delete import cascade_delete
 
-# LLM 智能路由技能 (RouteLLM 内化)
-from oskill.llm_router import (  # noqa: E402
-    LLMRouter as LLMRouter,
-)
-from oskill.llm_router import (
-    llm_router as llm_router,
-)
-from oskill.marketplace import (
-    STATUS_CLAIMED as STATUS_CLAIMED,
-)
-from oskill.marketplace import (
-    STATUS_DELIVERED as STATUS_DELIVERED,
-)
-from oskill.marketplace import (
-    STATUS_OPEN as STATUS_OPEN,
-)
-from oskill.marketplace import (
-    STATUS_SETTLED as STATUS_SETTLED,
-)
-from oskill.marketplace import (  # noqa: E402
-    Listing as Listing,
-)
-from oskill.marketplace import (
-    Marketplace as Marketplace,
-)
-from oskill.memory_assets import (  # noqa: E402
-    ACL as ACL,
-)
-from oskill.memory_assets import (
-    VISIBILITY_PRIVATE as VISIBILITY_PRIVATE,
-)
-from oskill.memory_assets import (
-    VISIBILITY_RESTRICTED as VISIBILITY_RESTRICTED,
-)
-from oskill.memory_assets import (
-    VISIBILITY_TEAM as VISIBILITY_TEAM,
-)
-from oskill.memory_assets import (
-    AssetRegistry as AssetRegistry,
-)
-from oskill.memory_assets import (
-    MemoryAsset as MemoryAsset,
-)
-from oskill.memory_assets import (
-    Principal as Principal,
-)
-from oskill.memory_layers import (  # noqa: E402
-    ATOM_CONSTRAINT as ATOM_CONSTRAINT,
-)
-from oskill.memory_layers import (
-    ATOM_EVENT as ATOM_EVENT,
-)
-from oskill.memory_layers import (
-    ATOM_FACT as ATOM_FACT,
-)
-from oskill.memory_layers import (
-    ATOM_PREFERENCE as ATOM_PREFERENCE,
-)
-from oskill.memory_layers import (
-    DistillPipeline as DistillPipeline,
-)
-from oskill.memory_layers import (
-    L1Atom as L1Atom,
-)
-from oskill.memory_layers import (
-    L2Scenario as L2Scenario,
-)
-from oskill.memory_layers import (
-    L3Persona as L3Persona,
-)
-from oskill.memory_layers import (
-    MemoryEntry as MemoryEntry,
-)
-from oskill.memory_offload import (  # noqa: E402
-    OffloadPipeline as OffloadPipeline,
-)
-from oskill.memory_offload import (
-    TaskSegment as TaskSegment,
-)
-from oskill.memory_system import (  # noqa: E402
-    MEMORY_KINDS as MEMORY_KINDS,
-)
-from oskill.memory_system import (
-    MEMORY_RAG as MEMORY_RAG,
-)
-from oskill.memory_system import (
-    MEMORY_TOOL as MEMORY_TOOL,
-)
-from oskill.memory_system import (
-    MemoryStore as MemoryStore,
-)
-from oskill.memory_system import (
-    ToolMemory as ToolMemory,
-)
-from oskill.metacog_scaffold import metacog_scaffold as metacog_scaffold
-from oskill.mvd import (
-    PHASES as PHASES,
-)
-from oskill.mvd import (
-    RULES as RULES,
-)
-from oskill.mvd import (  # noqa: E402
-    MvdPipeline as MvdPipeline,
-)
-from oskill.mvd import (
-    MvdVerdict as MvdVerdict,
-)
-from oskill.mvd import (
-    mvd_check as mvd_check,
-)
-from oskill.pentest_loop import (  # noqa: E402
-    Finding as Finding,
-)
-from oskill.pentest_loop import (
-    PentestReport as PentestReport,
-)
-from oskill.pentest_loop import (
-    PentestState as PentestState,
-)
-from oskill.pentest_loop import (
-    run_pentest_loop as run_pentest_loop,
-)
-from oskill.pentest_loop import (
-    verify_finding as verify_finding,
-)
-from oskill.pentest_squad import (  # noqa: E402
-    ROLES as ROLES,
-)
-from oskill.pentest_squad import (
-    SquadFinding as SquadFinding,
-)
-from oskill.pentest_squad import (
-    SquadOrchestrator as SquadOrchestrator,
-)
-from oskill.pentest_squad import (
-    SquadReport as SquadReport,
-)
-from oskill.playbook import (
-    SECTIONS as SECTIONS,
-)
-from oskill.playbook import (  # noqa: E402
-    PlaybookLibrary as PlaybookLibrary,
-)
-from oskill.playbook import (
-    ScenarioPlaybook as ScenarioPlaybook,
-)
-from oskill.plugin_registry import (  # noqa: E402
-    PluginDecl as PluginDecl,
-)
-from oskill.plugin_registry import (
-    PluginRegistry as PluginRegistry,
-)
-from oskill.productization_gate import (  # noqa: E402
-    DECISION_COMPONENTS as DECISION_COMPONENTS,
-)
-from oskill.productization_gate import (
-    DECISION_KEEP_FIELD as DECISION_KEEP_FIELD,
-)
-from oskill.productization_gate import (
-    DECISION_PRODUCTIZE as DECISION_PRODUCTIZE,
-)
-from oskill.productization_gate import (
-    ProductizationVerdict as ProductizationVerdict,
-)
-from oskill.productization_gate import (
-    evaluate_productization as evaluate_productization,
-)
-from oskill.provider_clients import (  # noqa: E402
-    PROVIDER_REGISTRY as PROVIDER_REGISTRY,
-)
-from oskill.provider_clients import (
-    ProviderClient as ProviderClient,
-)
-from oskill.provider_clients import (
-    client_for as client_for,
-)
-from oskill.rag_pipeline import (
-    RagIndex as RagIndex,
-)
-from oskill.rag_pipeline import (
-    build_rag_pipeline as build_rag_pipeline,
-)
-from oskill.rag_pipeline import (
-    chunk_text as chunk_text,
-)
-from oskill.rag_pipeline import (
-    clean_document as clean_document,
-)
-from oskill.rag_pipeline import (
-    load_document as load_document,
-)
-from oskill.reflection_agent import (  # noqa: E402
-    ReflectionLoop as ReflectionLoop,
-)
-from oskill.reflection_agent import (
-    ReflectionResult as ReflectionResult,
-)
+# ── Batch-warehouse commerce vertical ───────────────────────────────────────
+from oskill._resolve_display_batch import resolve_display_batch
+from oskill._compute_cart_subtotal import compute_cart_subtotal
+from oskill._compute_cart_grand_total import compute_cart_grand_total
+from oskill._evaluate_discount_eligibility import evaluate_discount_eligibility
+from oskill._evaluate_discount_conditions import evaluate_discount_conditions
+from oskill._apply_discount_amount import apply_discount_amount
+from oskill._apply_discount_percentage import apply_discount_percentage
+from oskill._apply_free_shipping import apply_free_shipping
+from oskill._stack_discount_allocations import stack_discount_allocations
+from oskill._allocate_gift_card_balance import allocate_gift_card_balance
+from oskill._compute_tax_lines import compute_tax_lines
+from oskill._compute_line_item_totals import compute_line_item_totals
+from oskill._select_region_currency import select_region_currency
+from oskill._evaluate_tax_inclusive_pricing import evaluate_tax_inclusive_pricing
 
-# 工程工作流原语 (mattpocock skills 3O 内化)
-from oskill.requirements_interview import (  # noqa: E402
-    InterviewQuestion as InterviewQuestion,
-)
-from oskill.requirements_interview import (
-    InterviewState as InterviewState,
-)
-from oskill.requirements_interview import (
-    interview_frontier as interview_frontier,
-)
-from oskill.requirements_interview import (
-    interview_pending_facts as interview_pending_facts,
-)
-from oskill.requirements_interview import (
-    interview_progress as interview_progress,
-)
-from oskill.requirements_interview import (
-    is_interview_complete as is_interview_complete,
-)
-from oskill.requirements_interview import (
-    record_interview_answers as record_interview_answers,
-)
-from oskill.requirements_interview import (
-    record_interview_facts as record_interview_facts,
-)
-from oskill.requirements_interview import (
-    resolve_interview_answer as resolve_interview_answer,
-)
-from oskill.review_double_axis import (  # noqa: E402
-    ReviewFinding as ReviewFinding,
-)
-from oskill.review_double_axis import (
-    ReviewReport as ReviewReport,
-)
-from oskill.review_double_axis import (
-    review_diff as review_diff,
-)
-from oskill.review_double_axis import (
-    scan_spec_coverage as scan_spec_coverage,
-)
-from oskill.review_double_axis import (
-    scan_standards as scan_standards,
-)
-from oskill.rrf_retrieval import (  # noqa: E402
-    RetrievalBudget as RetrievalBudget,
-)
-from oskill.rrf_retrieval import (
-    bm25_score as bm25_score,
-)
-from oskill.rrf_retrieval import (
-    hybrid_search as hybrid_search,
-)
-from oskill.rrf_retrieval import (
-    rrf_merge as rrf_merge,
-)
-from oskill.rrf_retrieval import (
-    tokenize as tokenize,
-)
-from oskill.rulebooks import (  # noqa: E402
-    RULEBOOK_KEYWORDS as RULEBOOK_KEYWORDS,
-)
-from oskill.rulebooks import (
-    get_rulebook as get_rulebook,
-)
-from oskill.rulebooks import (
-    list_rulebooks as list_rulebooks,
-)
-from oskill.rulebooks import (
-    rules_sections as rules_sections,
-)
-from oskill.rulebooks import (
-    select_rulebooks as select_rulebooks,
-)
-from oskill.rulebooks import (
-    standards_rules as standards_rules,
-)
-from oskill.runtime_backends import (  # noqa: E402
-    BackendExecutor as BackendExecutor,
-)
-from oskill.runtime_backends import (
-    BackendRegistry as BackendRegistry,
-)
-from oskill.runtime_backends import (
-    RuntimeBackend as RuntimeBackend,
-)
-from oskill.secure_store import (  # noqa: E402
-    SecureStore as SecureStore,
-)
-from oskill.secure_store import (
-    SecureStoreError as SecureStoreError,
-)
-from oskill.secure_store import (
-    derive_key as derive_key,
-)
-from oskill.shared_language import (  # noqa: E402
-    AdrDraft as AdrDraft,
-)
-from oskill.shared_language import (
-    read_glossary as read_glossary,
-)
-from oskill.shared_language import (
-    should_write_adr as should_write_adr,
-)
-from oskill.shared_language import (
-    upsert_term as upsert_term,
-)
-from oskill.shared_language import (
-    write_adr as write_adr,
-)
-from oskill.social_publish import (  # noqa: E402
-    ENV_CN as ENV_CN,
-)
-from oskill.social_publish import (
-    ENV_INTL as ENV_INTL,
-)
-from oskill.social_publish import (
-    PLATFORM_TIKTOK as PLATFORM_TIKTOK,
-)
-from oskill.social_publish import (
-    PLATFORM_WECHAT as PLATFORM_WECHAT,
-)
-from oskill.social_publish import (
-    PLATFORM_XIAOHONGSHU as PLATFORM_XIAOHONGSHU,
-)
-from oskill.social_publish import (
-    PLATFORM_YOUTUBE as PLATFORM_YOUTUBE,
-)
-from oskill.social_publish import (
-    SETTLEMENT_FIXED as SETTLEMENT_FIXED,
-)
-from oskill.social_publish import (
-    SETTLEMENT_PER_UNIT as SETTLEMENT_PER_UNIT,
-)
-from oskill.social_publish import (
-    SETTLEMENT_REVENUE_SHARE as SETTLEMENT_REVENUE_SHARE,
-)
-from oskill.social_publish import (
-    GenericHttpAdapter as GenericHttpAdapter,
-)
-from oskill.social_publish import (
-    PlatformAdapter as PlatformAdapter,
-)
-from oskill.social_publish import (
-    PlatformCapabilities as PlatformCapabilities,
-)
-from oskill.social_publish import (
-    PlatformCredential as PlatformCredential,
-)
-from oskill.social_publish import (
-    PublishResult as PublishResult,
-)
-from oskill.social_publish import (
-    SocialTask as SocialTask,
-)
-from oskill.social_publish import (
-    WechatAdapter as WechatAdapter,
-)
-from oskill.social_publish import (
-    batch_draft as batch_draft,
-)
-from oskill.social_publish import (
-    content_limits as content_limits,
-)
-from oskill.social_publish import (
-    get_platform as get_platform,
-)
-from oskill.social_publish import (
-    list_platforms as list_platforms,
-)
-from oskill.social_publish import (
-    mark_settled as mark_settled,
-)
-from oskill.social_publish import (
-    publish_to as publish_to,
-)
-from oskill.social_publish import (
-    register_platform as register_platform,
-)
-from oskill.social_publish import (
-    settle as settle,
-)
-from oskill.socratic_guide_v2 import SocraticStateV2 as SocraticStateV2
-from oskill.socratic_guide_v2 import socratic_guide_v2 as socratic_guide_v2
-
-# 可执行 Spec 技能 (spec-kit 内化) + ECC 领域分派基础
-from oskill.spec_execute import (  # noqa: E402
-    PRESETS as PRESETS,
-)
-from oskill.spec_execute import (
-    SpecExecutor as SpecExecutor,
-)
-from oskill.spec_execute import (
-    render_preset as render_preset,
-)
-from oskill.spec_execute import (
-    spec_executor as spec_executor,
-)
-from oskill.svg_craft import (
-    LEVEL_NAMES as LEVEL_NAMES,
-)
-from oskill.svg_craft import (  # noqa: E402
-    GateVerdict as GateVerdict,
-)
-from oskill.svg_craft import (
-    LadderDecision as LadderDecision,
-)
-from oskill.svg_craft import (
-    PathAudit as PathAudit,
-)
-from oskill.svg_craft import (
-    PathSegment as PathSegment,
-)
-from oskill.svg_craft import (
-    complexity_ladder as complexity_ladder,
-)
-from oskill.svg_craft import (
-    iou_score as iou_score,
-)
-from oskill.svg_craft import (
-    parse_path as parse_path,
-)
-from oskill.svg_craft import (
-    smoothness_gate as smoothness_gate,
-)
-from oskill.svg_craft import (
-    svg_path_audit as svg_path_audit,
-)
-from oskill.svg_path_tools import (  # noqa: E402
-    fit_smooth_cubic as fit_smooth_cubic,
-)
-from oskill.svg_path_tools import (
-    path_bbox as path_bbox,
-)
-from oskill.svg_path_tools import (
-    path_center as path_center,
-)
-from oskill.svg_path_tools import (
-    render_cubic_path as render_cubic_path,
-)
-from oskill.svg_path_tools import (
-    simplify_line as simplify_line,
-)
-from oskill.template_engine import (  # noqa: E402
-    extract_variables as extract_variables,
-)
-from oskill.template_engine import (
-    render_template as render_template,
-)
-from oskill.test_report import (  # noqa: E402
-    TestCaseResult as TestCaseResult,
-)
-from oskill.test_report import (
-    TestRunReport as TestRunReport,
-)
-from oskill.test_report import (
-    collect_test_run as collect_test_run,
-)
-from oskill.test_stability import (  # noqa: E402
-    ACTIONABLE_ANIMATION_STABLE as ACTIONABLE_ANIMATION_STABLE,
-)
-from oskill.test_stability import (
-    ACTIONABLE_CHECKS as ACTIONABLE_CHECKS,
-)
-from oskill.test_stability import (
-    ACTIONABLE_CLICKABLE as ACTIONABLE_CLICKABLE,
-)
-from oskill.test_stability import (
-    ACTIONABLE_NOT_COVERED as ACTIONABLE_NOT_COVERED,
-)
-from oskill.test_stability import (
-    ACTIONABLE_VISIBLE as ACTIONABLE_VISIBLE,
-)
-from oskill.test_stability import (
-    RunResult as RunResult,
-)
-from oskill.test_stability import (
-    expect_eventually as expect_eventually,
-)
-from oskill.test_stability import (
-    retry_until as retry_until,
-)
-from oskill.test_stability import (
-    wait_actionable as wait_actionable,
-)
-from oskill.triage_flow import (  # noqa: E402
-    STATUS_NEEDS_INFO as STATUS_NEEDS_INFO,
-)
-from oskill.triage_flow import (
-    STATUS_NEEDS_TRIAGE as STATUS_NEEDS_TRIAGE,
-)
-from oskill.triage_flow import (
-    STATUS_READY_AGENT as STATUS_READY_AGENT,
-)
-from oskill.triage_flow import (
-    STATUS_READY_HUMAN as STATUS_READY_HUMAN,
-)
-from oskill.triage_flow import (
-    STATUS_WONTFIX as STATUS_WONTFIX,
-)
-from oskill.triage_flow import (
-    TriageFlow as TriageFlow,
-)
-from oskill.triage_flow import (
-    TriageIssue as TriageIssue,
-)
-
-# Typst 撰写技能 (typst-author SKILL 内化)
-from oskill.typst_author import (  # noqa: E402
-    TYPST_GUIDE as TYPST_GUIDE,
-)
-from oskill.typst_author import (
-    typst_compile as typst_compile,
-)
-from oskill.typst_author import (
-    typst_format_check as typst_format_check,
-)
-from oskill.typst_author import (
-    typst_minimal_doc as typst_minimal_doc,
-)
-from oskill.typst_author import (
-    typst_probe as typst_probe,
-)
-from oskill.variant_for_review import variant_for_review as variant_for_review
-
-# 论文验收与一致性检查 (6verity SKILL 内化)
-from oskill.verity_check import (  # noqa: E402
-    PLACEHOLDER_RE as PLACEHOLDER_RE,
-)
-from oskill.verity_check import (
-    VerityConfig as VerityConfig,
-)
-from oskill.verity_check import (
-    VerityItem as VerityItem,
-)
-from oskill.verity_check import (
-    VerityReport as VerityReport,
-)
-from oskill.verity_check import (
-    compile_paper as compile_paper,
-)
-from oskill.verity_check import (
-    pdf_pages as pdf_pages,
-)
-from oskill.verity_check import (
-    resolve_config as resolve_config,
-)
-from oskill.verity_check import (
-    run_text_gate as run_text_gate,
-)
-from oskill.verity_check import (
-    run_verity as run_verity,
-)
-from oskill.voice_pipeline import (
-    FULL_DUPLEX_MODE as FULL_DUPLEX_MODE,
-)
-from oskill.voice_pipeline import (  # noqa: E402
-    PIPE_MODE as PIPE_MODE,
-)
-from oskill.voice_pipeline import (
-    STREAM_MODE as STREAM_MODE,
-)
-from oskill.voice_pipeline import (
-    VoiceTurn as VoiceTurn,
-)
-from oskill.voice_pipeline import (
-    interrupt_turn as interrupt_turn,
-)
-from oskill.voice_pipeline import (
-    run_voice_pipeline as run_voice_pipeline,
-)
-from oskill.wechat_publish import (  # noqa: E402
-    Article as Article,
-)
-from oskill.wechat_publish import (
-    ArticleStore as ArticleStore,
-)
-from oskill.wechat_publish import (
-    WechatAccount as WechatAccount,
-)
-from oskill.wechat_publish import (
-    WechatAccountRegistry as WechatAccountRegistry,
-)
-from oskill.wechat_publish import (
-    create_image_post as create_image_post,
-)
-from oskill.wechat_publish import (
-    inspect_article as inspect_article,
-)
-from oskill.wechat_publish import (
-    md_to_wechat_html as md_to_wechat_html,
-)
-from oskill.wechat_publish import (
-    produce_article as produce_article,
-)
-from oskill.wechat_publish import (
-    publish_draft as publish_draft,
-)
-from oskill.wechat_publish import (
-    upload_image as upload_image,
-)
-from oskill.wechat_resources import (  # noqa: E402
-    catalog_summary as catalog_summary,
-)
-from oskill.wechat_resources import (
-    register_wechat_resources as register_wechat_resources,
-)
-from oskill.wechat_resources import (
-    wechat_catalog as wechat_catalog,
-)
-from oskill.wechat_review_loop import (  # noqa: E402
-    FULL_REWRITE_CRITERIA as FULL_REWRITE_CRITERIA,
-)
-from oskill.wechat_review_loop import (
-    ReviewIssue as ReviewIssue,
-)
-from oskill.wechat_review_loop import (
-    ReviewRound as ReviewRound,
-)
-from oskill.wechat_review_loop import (
-    WechatReviewLoop as WechatReviewLoop,
-)
-from oskill.wechat_review_loop import (
-    merge_revision as merge_revision,
-)
-from oskill.wechat_review_loop import (
-    needs_full_rewrite as needs_full_rewrite,
-)
-from oskill.wechat_review_loop import (
-    parse_verdict as parse_verdict,
-)
-from oskill.wechat_theme import (  # noqa: E402
-    LayoutBlock as LayoutBlock,
-)
-from oskill.wechat_theme import (
-    WechatTheme as WechatTheme,
-)
-from oskill.wechat_theme import (
-    apply_theme as apply_theme,
-)
-from oskill.wechat_theme import (
-    get_theme as get_theme,
-)
-from oskill.wechat_theme import (
-    layout_modules as layout_modules,
-)
-from oskill.wechat_theme import (
-    list_themes as list_themes,
-)
-from oskill.wechat_theme import (
-    parse_layout_blocks as parse_layout_blocks,
-)
-from oskill.wechat_theme import (
-    register_layout_module as register_layout_module,
-)
-from oskill.wechat_theme import (
-    register_theme as register_theme,
-)
-from oskill.wechat_theme import (
-    render_layout_block as render_layout_block,
-)
-from oskill.wechat_theme import (
-    render_markdown_with_layout as render_markdown_with_layout,
-)
-from oskill.wechat_writing import (  # noqa: E402
-    ComplianceHit as ComplianceHit,
-)
-from oskill.wechat_writing import (
-    advise_prompt as advise_prompt,
-)
-from oskill.wechat_writing import (
-    compliance_report as compliance_report,
-)
-from oskill.wechat_writing import (
-    cover_prompt as cover_prompt,
-)
-from oskill.wechat_writing import (
-    humanize_prompt as humanize_prompt,
-)
-from oskill.wechat_writing import (
-    infographic_prompt as infographic_prompt,
-)
-from oskill.wechat_writing import (
-    reviewer_prompt as reviewer_prompt,
-)
-from oskill.wechat_writing import (
-    reviser_prompt as reviser_prompt,
-)
-from oskill.wechat_writing import (
-    scan_compliance as scan_compliance,
-)
-from oskill.wechat_writing import (
-    title_prompt as title_prompt,
-)
-from oskill.wechat_writing import (
-    write_prompt as write_prompt,
-)
-from oskill.workflow_dsl import (  # noqa: E402
-    NODE_CONDITION as NODE_CONDITION,
-)
-from oskill.workflow_dsl import (
-    NODE_END as NODE_END,
-)
-from oskill.workflow_dsl import (
-    NODE_ITERATION as NODE_ITERATION,
-)
-from oskill.workflow_dsl import (
-    NODE_KNOWLEDGE as NODE_KNOWLEDGE,
-)
-from oskill.workflow_dsl import (
-    NODE_LLM as NODE_LLM,
-)
-from oskill.workflow_dsl import (
-    NODE_START as NODE_START,
-)
-from oskill.workflow_dsl import (
-    NODE_TOOL as NODE_TOOL,
-)
-from oskill.workflow_dsl import (
-    NODE_VARIABLE as NODE_VARIABLE,
-)
-from oskill.workflow_dsl import (
-    WorkflowDAG as WorkflowDAG,
-)
-from oskill.workflow_dsl import (
-    WorkflowNode as WorkflowNode,
-)
-from oskill.workflow_dsl import (
-    parse_dsl as parse_dsl,
-)
-from oskill.workflow_dsl import (
-    parse_dsl_json as parse_dsl_json,
-)
-from oskill.workflow_dsl import (
-    topological_execute as topological_execute,
-)
-from oskill.workflow_dsl import (
-    validate_dsl as validate_dsl,
-)
-from oskill.workflow_pipeline import (  # noqa: E402
-    TICKET_BLOCKED as TICKET_BLOCKED,
-)
-from oskill.workflow_pipeline import (
-    TICKET_DONE as TICKET_DONE,
-)
-from oskill.workflow_pipeline import (
-    TICKET_OPEN as TICKET_OPEN,
-)
-from oskill.workflow_pipeline import (
-    PipelineAction as PipelineAction,
-)
-from oskill.workflow_pipeline import (
-    Ticket as Ticket,
-)
-from oskill.workflow_pipeline import (
-    WorkflowState as WorkflowState,
-)
-from oskill.workflow_pipeline import (
-    pipeline_next_action as pipeline_next_action,
-)
-from oskill.workflow_pipeline import (
-    pipeline_transition as pipeline_transition,
-)
-from oskill.workflow_pipeline import (
-    ticket_set_status as ticket_set_status,
-)
-from oskill.workflow_pipeline import (
-    tickets_check_cycles as tickets_check_cycles,
-)
-from oskill.workflow_pipeline import (
-    tickets_next_runnable as tickets_next_runnable,
-)
-from oskill.workflow_pipeline import (
-    workflow_from_dict as workflow_from_dict,
-)
-from oskill.workflow_pipeline import (
-    workflow_to_dict as workflow_to_dict,
-)
-
-# ── Phase 2: 贝叶斯 ToM 信念更新 ───────────────────────────────────
-from ._bayesian_belief_update import (  # noqa: F401
-    DEFAULT_HYPOTHESES,
-    BayesianBeliefUpdater,
-    _bayesian_belief_update,
-    sequential_update,
-)
-
-# ── Phase 3: 在线因果参数更新 (CPD, Dirichlet/EMA) ──────────────────
-from ._online_cpd_update import (  # noqa: F401
-    CategoricalCPD,
-    config_key,
-    dirichlet_update,
-    ema_update,
-    split_config,
-    update_cpd,
-)
-
-# ── Phase 4: 长期策略演化 ────────────────────────────────────────────
-from ._strategy_evolve import (  # noqa: F401
-    STRATEGY_NAMES,
-    STRATEGY_PARAMS,
-    StrategyEvolver,
-)
-
-# AutoAgent capability imports
-from .agent_form_synthesize import agent_form_synthesize  # noqa: F401
-from .dag_visual_layout import dag_visual_layout  # noqa: F401
-from .deep_research_tree import deep_research_tree  # noqa: F401
-from .leader_worker_dispatch import leader_worker_dispatch  # noqa: F401
-from .meta_self_develop_loop import meta_self_develop_loop  # noqa: F401
-from .recurring_scheduler import RecurringScheduler  # noqa: F401
-from .scheduler_attempt_lifecycle import (  # noqa: F401
-    monthly_clamp,
-    pre_run_knowledge_hook,
-    retry_execute,
-    transition_attempt,
-)
-from .skill_teach import skill_export, skill_import_, skill_list, skill_teach  # noqa: F401
-from .skills_dynamic_inject import skills_dynamic_inject  # noqa: F401
-from .soul_self_evolution import soul_self_evolution  # noqa: F401
-from .team_plan_gen import team_plan_gen  # noqa: F401
-from .worktree_conflict_resolve import worktree_conflict_resolve  # noqa: F401
+# ── repo3o intake elements ──────────────────────────────────────────────────
+from oskill._highlight_detection_algorithm import highlight_detection_algorithm
+from oskill._query_expansion import query_expansion
+from oskill._search_synthesize_loop import search_synthesize_loop
+from oskill._dialogue_script_generation import dialogue_script_generation
+from oskill._multi_speaker_tts_merge import multi_speaker_tts_merge
+from oskill._video_subtitle_align import video_subtitle_align
+from oskill._template_scene_compose import template_scene_compose
+from oskill._multimodal_index_pipeline import multimodal_index_pipeline
