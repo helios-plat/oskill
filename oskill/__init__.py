@@ -168,3 +168,13 @@ from oskill._compute_tax_lines import compute_tax_lines
 from oskill._compute_line_item_totals import compute_line_item_totals
 from oskill._select_region_currency import select_region_currency
 from oskill._evaluate_tax_inclusive_pricing import evaluate_tax_inclusive_pricing
+
+# ── repo3o intake elements ──────────────────────────────────────────────────
+from oskill._highlight_detection_algorithm import highlight_detection_algorithm
+from oskill._query_expansion import query_expansion
+from oskill._search_synthesize_loop import search_synthesize_loop
+from oskill._dialogue_script_generation import dialogue_script_generation
+from oskill._multi_speaker_tts_merge import multi_speaker_tts_merge
+from oskill._video_subtitle_align import video_subtitle_align
+from oskill._template_scene_compose import template_scene_compose
+from oskill._multimodal_index_pipeline import multimodal_index_pipeline
