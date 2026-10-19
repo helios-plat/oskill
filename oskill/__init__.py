@@ -727,3 +727,14 @@ from oskill._multi_speaker_tts_merge import multi_speaker_tts_merge
 from oskill._video_subtitle_align import video_subtitle_align
 from oskill._template_scene_compose import template_scene_compose
 from oskill._multimodal_index_pipeline import multimodal_index_pipeline
+
+# Public functions whose implementation module has the same name as the
+# function. Keep these bound after submodule imports so ``from oskill import
+# name`` always yields the callable, not the module object.
+from oskill.dag_visual_layout import dag_visual_layout as dag_visual_layout
+from oskill.deep_research_tree import deep_research_tree as deep_research_tree
+from oskill.leader_worker_dispatch import leader_worker_dispatch as leader_worker_dispatch
+from oskill.soul_self_evolution import soul_self_evolution as soul_self_evolution
+from oskill.worktree_conflict_resolve import (
+    worktree_conflict_resolve as worktree_conflict_resolve,
+)
