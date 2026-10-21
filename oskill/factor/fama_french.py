@@ -7,7 +7,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-
 _FF5_FACTORS = ["MKT", "SMB", "HML", "RMW", "CMA"]
 
 

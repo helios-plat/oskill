@@ -17,7 +17,6 @@ import pytest
 
 from oskill.behavioral.cpt_analytical import cpt_portfolio_analytical
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

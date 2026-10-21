@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from oprim._animation_types import AnimationResult
+
 from oskill._generate_animation import generate_animation
 
 

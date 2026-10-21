@@ -6,7 +6,6 @@ import pytest
 
 from oskill.signals.ensemble import signal_ensemble
 
-
 # ── Happy path ──────────────────────────────────────────────────────────────
 
 

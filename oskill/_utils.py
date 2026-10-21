@@ -1,6 +1,7 @@
 import re
 from typing import Any
 
+
 def extract_confidence(content: Any) -> float:
     """Helper to extract confidence score from text."""
     text = str(content).lower()

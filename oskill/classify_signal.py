@@ -6,7 +6,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-
 SignalClass = Literal["infrastructure", "application", "business", "security", "unknown"]
 
 

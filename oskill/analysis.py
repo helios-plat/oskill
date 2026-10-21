@@ -12,22 +12,26 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import sys
-import os
 from pathlib import Path
 from typing import Any
 
 from ._types import (
-    Chunk, EditBlock, RepoFile, RepoMap, Symbol,
+    Chunk,
+    EditBlock,
+    RepoFile,
+    RepoMap,
+    Symbol,
 )
 from .edit import apply_edit_block
 
 # oprim 函数（批次A已完成）
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'oprim'))
 try:
-    from oprim.fs import file_read, glob_match, dir_list
-    from oprim.text import detect_language, count_tokens
+    from oprim.fs import dir_list, file_read, glob_match
+    from oprim.text import count_tokens, detect_language
 except ImportError:  # pragma: no cover
     # fallback stubs for isolated testing  # pragma: no cover
     def file_read(path, **kw): return Path(path).read_text(errors='replace')  # type: ignore  # pragma: no cover

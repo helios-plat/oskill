@@ -4,11 +4,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 
-import pytest
-
 from oskill._theorem_verify_3way import theorem_verify_3way
-from oprim._aii_graph_types import TheoremVerifyResult
-
 
 # ---------------------------------------------------------------------------
 # Stub types mirroring MathlibLookupResult / MathlibHit

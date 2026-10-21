@@ -51,12 +51,12 @@ def test_as_higher_vol_wider_spread():
 
 def test_as_inventory_limit_pause():
     r = avellaneda_stoikov_quotes(100.0, 10, volatility=0.01, time_to_horizon=1.0, inventory_limit=5)
-    assert r["should_pause_quoting"] == True
+    assert r["should_pause_quoting"]
 
 
 def test_as_no_inventory_limit_no_pause():
     r = avellaneda_stoikov_quotes(100.0, 10, volatility=0.01, time_to_horizon=1.0, inventory_limit=None)
-    assert r["should_pause_quoting"] == False
+    assert not r["should_pause_quoting"]
 
 
 def test_as_invalid_mid_raises():

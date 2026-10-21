@@ -10,8 +10,7 @@ ohlcv keys: 'high', 'low', 'close', 'volume' (np.ndarray, same length).
 from __future__ import annotations
 
 import numpy as np
-
-from oprim.technical import bollinger_bands, rsi_normalized, stochastic_oscillator, vwap
+from oprim.technical import bollinger_bands, rsi_normalized, stochastic_oscillator
 
 
 def mean_reversion_compose(

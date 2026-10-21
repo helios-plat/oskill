@@ -2,6 +2,7 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+
 ## [4.39.0] — 2026-10-22
 
 ### Added (upstreaming consumer patches — 3O 主库成为唯一来源)
@@ -36,6 +37,302 @@
 - 全套：`3743 passed`，**新增失败 0**；另修复了 33 个此前因
   `oskill.performance` 不是 package 而报 `ModuleNotFoundError` 的既有失败
   （基线 413 项 → 380 项，差值均为本次消除）
+
+## [4.38.0] — 2026-08-16
+
+### Added (md2wechat 能力面补全 — 公众号创作增强 3O 内化)
+- feat: `wechat_theme` — 主题 + 布局模块系统: WechatTheme 数据驱动主题表
+  (内置 8 个: default/clean/news/tech/elegant/spring/ocean/bold-red, 可
+  register_theme 扩展) / apply_theme 内联样式注入 (微信要求内联, 幂等) /
+  `:::` 布局块解析器 (3/4 冒号围栏, opener 字段 + 方括号 caption + rows/
+  plain 正文) + 10 个内置模块渲染器 (hero/card/tip/warning/danger/quote/
+  divider/table/list/steps) / render_markdown_with_layout 端到端 (md+布局
+  → 主题化微信 HTML); 未知主题/模块报错附可用列表 (do not guess)。
+- feat: `wechat_writing` — 创作增强 prompt 工厂 (LLM 注入分离, 零模型调
+  用): write_prompt (钩子/小节/配图 brief, JSON 契约) / title_prompt
+  (hook-level 1-3 参数化) / humanize_prompt (去 AI 味规则) /
+  cover_prompt + infographic_prompt (生图 plan 模式) / advise_prompt
+  (inspect 报告注入) + 确定性合规扫描 scan_compliance/compliance_report
+  (绝对化/医疗功效/金融承诺/夸大宣传/诱导分享 5 类违禁词规则表, 命中+
+  上下文 snippet, 可测可解释 — md2wechat inspect 只查元数据不查违禁词)。
+- feat: `wechat_publish` 增强 — upload_image (material/add_material 永久
+  素材, multipart) / create_image_post (图文/多图消息组装, 默认先上传再
+  组 draft payload) / WechatAccountRegistry (多账号表, 只存 secret_hint
+  永不输出 secret) / inspect_article (完整发布前检查: 元数据 readiness +
+  标题 ≤64 字 + 违禁用语扫描 + 图片数)。
+- feat: `wechat_review_loop` — 写手↔审核↔打回闭环状态机 (主链路
+  produce_wechat_article 机制 3O 内化; md2wechat 无此能力): writer/
+  reviewer/reviser/resolve_image 全部调用方注入 (async), 状态机纯逻辑;
+  整体性问题→全文重写带约束, 章节问题→定向 patch, 超限 best-effort 不
+  假装通过; 每轮 action_log 可审计 (passed/full_rewrite/patch/
+  patch_failed/capped)。
+
+## [4.37.0] — 2026-08-08
+
+### Added (hello-agents 11/5-6章 — Agentic-RL + 框架适配 3O 内化)
+- feat: `agentic_rl` — Agentic-RL 训练管线机制: 确定性奖励规则 (exact/
+  contains/format/length) / GRPO 组内相对优势 (baseline 归一化) / SFT→RM→
+  RL→EVAL 阶段机 (评估门: 未达阈值不推进)。
+- feat: `agent_frameworks` — 多框架适配: AutoGen/AgentScope/LangGraph/n8n
+  注册表 (能力查询) + WorkflowDAG DSL → AutoGen/LangGraph 代码骨架生成。
+
+## [4.36.0] — 2026-08-08
+
+### Added (hello-agents — Reflection/上下文工程/A2A 3O 内化)
+- feat: `reflection_agent` — Reflection 范式: 生成 → 自我反思 → 修正循环,
+  通过/无改善/超轮次三种停止条件 (补 fc/react/plan 之外的第四范式)。
+- feat: `context_engineering` — 上下文工程: 消息优先级/预算/裁剪 (必须保留
+  role + 低优先级摘要化 + 超限丢弃/截断)。
+- feat: `agent_messaging` — A2A 协议: AgentMessage (from/to/task/status/
+  payload/reply_to) + AgentBus (注册/能力路由/派发/回传)。
+
+## [4.35.0] — 2026-08-08
+
+### Added (第七批 — computerd/embedding/browser/加密存储)
+- feat: `daemon_runtime` (cloudflare computerd) — 守护进程生命周期
+  (start/stop/health/重启) + 目录变更监听 (哈希指纹 → added/changed/removed)
+  + SyncSession push/pull 同步括号 (FUSE 挂载属 OS 层, 机制层提供同步语义)。
+- feat: `embedding_service` (Dify) — embedding 提供者注册 + 缓存 + 批处理
+  (openai-compatible 工厂)。
+- feat: `browser_runner` (Cypress) — 浏览器 E2E 命令执行器 (visit/click/type/
+  assert/screenshot, playwright 可选驱动, 缺失结构化降级)。
+- feat: `secure_store` (freellmapi) — API key 加密存储: AES-GCM (cryptography
+  可选, 缺失标准库 HMAC fallback) + PBKDF2 主密钥派生 + 访问审计。
+
+## [4.34.0] — 2026-08-08
+
+### Added (第六批 — 六项机制补全)
+- feat: `runtime_backends` (cloudflare) — 执行后端能力注册: 声明 (kind/
+  capabilities) / 注册/能力查询/按需求选择 / 懒连接执行器。
+- feat: `doc_extractors` (Dify 数据源) — 真实文档提取: txt/md/csv/json/
+  docx/xlsx (纯 Python zip+xml) / pdf (pymupdf 可选) / URL 拉取 + HTML strip。
+- feat: `memory_system` (Auto-Deep-Research) — 多类型记忆: tool/rag/paper/
+  codetree 分类存储 + 检索 + ToolMemory 场景→工具推荐。
+- feat: `test_report` (Cypress) — 测试结果契约: 用例结果/运行汇总/命令
+  轨迹/收集器 (异常→failed)。
+- feat: `provider_clients` (freellmapi) — 真实 provider HTTP 客户端:
+  13 家端点注册表 + OpenAI-compatible/Anthropic 双格式 + 流式 SSE 解析。
+- feat: `md_to_wechat_html` 增强 (md2wechat) — 表格/任务列表/嵌套列表/
+  代码块语言标注。
+
+## [4.33.0] — 2026-08-08
+
+### Added (剩余价值批次 — 六项目机制补全)
+- feat: `rag_pipeline` (Dify) — 知识库数据源管线: 加载/清洗 (空行折叠/重复
+  段落去重)/切分 (段落边界 + overlap)/RagIndex (BM25 + 向量注入检索)。
+- feat: `content_moderation` (Dify) — 内容审核: keyword/length/repeat 规则
+  (block/replace) + LLM 双层审核。
+- feat: `conversation_vars` (Dify) — 会话变量生命周期: 读写/版本/TTL/作用域
+  (session/project) 快照。
+- feat: `code_graph_builder` (Graft/Graphify) — 语义图构建管线: 两遍全量 +
+  指纹增量 (未变文件复用) + 知识图谱导出。
+- feat: `triage_flow` (mattpocock) — Issue 分流状态机: needs-triage →
+  needs-info → ready-for-agent/human → wontfix, 非法迁移拒绝, agent_ready
+  判定。
+- feat: `health_probe` (freellmapi) — 服务健康探测: 探测/状态机/冷却跳过/
+  多目标监控汇总 (healthy/rate_limited/invalid/error)。
+
+## [4.32.0] — 2026-08-08
+
+### Added (深挖批次 2-8 — 七项目机制补全)
+- feat: `flow_orchestrator` (Auto-Deep-Research) — 流程注册/分发/步骤执行:
+  顺序/错误策略 (fail/skip/retry)/跳转/动态插入步骤。
+- feat: `bandit_router` (freellmapi) — Thompson sampling 路由: Beta 分布
+  采样选 provider, 观测更新, epsilon 探索, 与 model_routing 组合。
+- feat: `memory_offload` (TencentDB) — L1.5 任务边界判断 + L3 token 压缩
+  光标 (预算超限触发摘要压缩)。
+- feat: `pentest_squad` (Strix) — 多 agent 渗透编排: recon/exploit 并行
+  视角/verify 验证门/汇总报告。
+- feat: `code_parse` (Graft/Graphify) — 代码解析管线: Python 标准库 ast
+  精确符号/import/调用边 (顺序遍历) + 其他语言行级 fallback。
+- feat: `marketplace` (AiToEarn) — 任务市场闭环: 发布/领取/交付/结算 状态机。
+- feat: `svg_path_tools` (Pixel2Motion) — 路径生成辅助: bbox/中心/折线简化
+  (Douglas-Peucker)/Catmull-Rom 平滑三次贝塞尔 (G1 连续)。
+
+## [4.31.0] — 2026-08-08
+
+### Added (Dify Agent 三模式 — 工具循环编排 3O 内化)
+- feat: `agent_orchestrator` — Agent 三模式编排 (Dify fc/cot/plan runner):
+  function-calling (tool_calls 循环, max_iteration 防死循环) / react
+  (Thought/Action/Observation 循环, 适用不支持原生工具调用模型) / plan
+  (计划→逐步执行→汇总); 统一 AgentResult (回答/工具轨迹/迭代/错误),
+  工具错误不终止循环。
+
+## [4.30.0] — 2026-08-08
+
+### Added (Dify — 工作流 DSL + 模板引擎 + 插件注册表 3O 内化)
+- feat: `workflow_dsl` — 工作流 DSL + DAG 节点图执行: 类型化节点
+  (start/end/llm/tool/condition/iteration/knowledge/variable) / to_dsl/
+  parse_dsl (JSON 可分享版本化) / validate_dsl (循环检测/未知节点/悬空边)
+  / topological_execute (拓扑排序, 并行分支 + 条件门控 + 变量传播)。
+- feat: `template_engine` — Prompt 变量注入: {{var}}/嵌套 a.b.c/默认值
+  {{var|d}}/转义 {{var!e}}/必填校验/未用警告。
+- feat: `plugin_registry` — 插件市场: PluginDecl 声明 + 依赖拓扑解析
+  (循环拒绝) + 按能力查找 + 启用禁用级联。
+
+## [4.29.0] — 2026-08-08
+
+### Added (Auto-Deep-Research — 非函数调用 LLM 适配 3O 内化)
+- feat: `fn_call_adapter` — 让不支持 function calling 的模型也能用于工具
+  调用 agent: tools_to_prompt (工具描述, AutoAgent 格式) / wrap_tools (注入
+  system prompt + <function> 标签格式指令) / parse_function_tags (<function=…>/
+  <parameter=…> 解析) / convert_to_tool_calls (标签 → OpenAI tool_calls, JSON
+  参数结构化) / adapt_call (与 model_routing 组合: 标记 provider 后自动适配)。
+  与 rescue_tool_calls (```json 块) 互补。
+
+## [4.28.0] — 2026-08-08
+
+### Added (FDE 书 2/7章 — MVD + 打法手册 + 产品化四问 3O 内化)
+- feat: `mvd` — 最小可行部署 (第2章): 三军规合规检查 (真实数据/缩小范围
+  不缩价值/周级期限) + 五步流水线阶段机 (Day0 筹备→Day1 接入→Day2-3 构建
+  →Day4-5 演示拍板, 五天封顶)。
+- feat: `playbook` — 场景打法手册 (第7章): 场景七件套数据模型 (痛点/尽调/
+  雷区/指标/角色/计价/复盘) + 生命周期 (负责人/版本自增/折旧/半年检修) +
+  复盘强制更新 (嵌入流程硬关卡)。
+- feat: `productization_gate` — 产品化四问 (第7章): 个性 vs 共性 (3 客户
+  信号) / 泛化代价 vs 收益 / 非代码人可用 / 现场空间 → productize/
+  components/keep_field 决策。
+
+## [4.27.0] — 2026-08-08
+
+### Added (Pixel2Motion — SVG 拟合工艺 3O 内化)
+- feat: `svg_craft` — SVG 拟合工艺四机制:
+  iou_score (像素重合度, 纯 Python) / svg_path_audit (解析 path d: 切线
+  跳跃/交替小段/像素阶梯/噪点句柄) / smoothness_gate (Smoothness Gate 硬门槛:
+  阶梯/抖动/网格正交运行即失败, 即使 IoU 高) / complexity_ladder (5 级复杂度
+  阶梯决策: primitives→composites→few-curve→smoothed→trace + 升级条件表)。
+
+## [4.26.0] — 2026-08-08
+
+### Added (AiToEarn — 多平台发布 + 变现 3O 内化)
+- feat: `social_publish` — 多平台内容发布 + 变现结算:
+  PlatformAdapter 可插拔注册表 (Discovery-First) + PlatformCapabilities
+  平台能力路由 (视频/图文/限制表: xhs 18 图/yt 12h 视频) + 内置 WechatAdapter
+  (复用 wechat_publish) + GenericHttpAdapter (小红书/抖音/TikTok/YouTube 注入)
+  + batch_draft 多平台批量草稿 (平台限制内裁剪) + cn/intl 环境分离校验
+  + SocialTask/settle 变现结算 (fixed/按量/分成)。
+
+## [4.25.0] — 2026-08-08
+
+### Added (FDE 书 — 四层健康分 + 预警干预 3O 内化)
+- feat: `health_score` — 客户健康分系统 (第5章/附录A): 四层指标
+  (delivery/customer/business/org) 加权归一化 → 综合健康分 0-100 → 分档
+  (healthy/at_risk/critical) → 阈值预警 + 干预建议 → `watchdog` 周期性评估
+  触发干预 (可接 notification_center)。
+
+## [4.24.0] — 2026-08-08
+
+### Added (Cypress — 测试稳定性三机制 3O 内化)
+- feat: `test_stability` — 测试稳定性: `retry_until` (命令自动重试直到成功
+  或超时, 默认 4s, Cypress retry-ability) / `wait_actionable` (Actionability
+  等待: 可见/可点/不遮挡/动画稳定, 检查器注入) / `expect_eventually`
+  (断言轮询收敛, TDD 语义); 统一 RunResult (重试轨迹/超时判定/耗时可审计)。
+
+## [4.23.0] — 2026-08-08
+
+### Added (TencentDB Agent Memory — 分层记忆/混合检索/资产负载 3O 内化)
+- feat: `rrf_retrieval` — RRF 混合检索: BM25 打分 (纯 Python) / rrf_merge
+  (Σ 1/(k+rank+1), RRF_K=60, 源自 TencentDB) / RetrievalBudget (条目/字符/
+  超时上限防上下文淹没) / hybrid_search (稀疏+稠密融合截断)。
+- feat: `memory_layers` — L0-L3 分层蒸馏: L0 原始 → L1 原子 (事实/偏好/约束/
+  事件 + 可替代性 score) → L2 场景 → L3 人格; 确定性触发阈值 (pending>=N
+  强制蒸馏, 未归属>=N 构建场景); 检索双层 (L2/L3 快速 + L1 回退)。
+- feat: `memory_assets` — 记忆资产注册 + ACL + loadout: private/team/restricted
+  三可见性, User/Role/Agent ACL, Fixed Binding 装配按 ACL 过滤, 版本自增。
+
+## [4.22.0] — 2026-08-08
+
+### Added (Graphify + Strix — 图遍历查询 + 渗透闭环 3O 内化)
+- feat: `knowledge_graph_query` — 可查询知识图谱: GraphNode/GraphEdge 带
+  **EXTRACTED/INFERRED 信任分级** (可审计) / 图遍历 (neighbors 按信任过滤 /
+  shortest_path BFS / trace 带边证据 / communities label propagation) /
+  export_json (graph.json) / `semantic_to_graph` (Graft 节点 → 图, 显式链接
+  标 EXTRACTED, 共享来源共现标 INFERRED)。
+- feat: `pentest_loop` — 自主渗透闭环: RECON→EXPLOIT→VERIFY→REPORT 阶段机 /
+  **PoC 验证门** (verify_finding: 通过→confirmed 防误报, 失败→rejected) /
+  产物契约 (markdown 报告 / SARIF 2.1.0 / to_dict), 仅授权目标。
+
+## [4.21.0] — 2026-08-08
+
+### Added (Graft — 语义节点图 + 多 agent 接线 3O 内化)
+- feat: `code_graph_semantic` — 语义节点图: 两遍构建 (文件摘要→分组节点,
+  LLM 注入) / SemanticNode (Summary+Crux+Sources(内容哈希)+Links+Notes) /
+  指纹刷新 (build_fingerprint/ stale_nodes/ incremental_refresh, $0 无 LLM,
+  只重建变更) / 类型化 wikilinks (depends_on/part_of/uses/implements/produces)
+  / render_node_markdown (Graft 节点文件格式, [[wikilinks]] 可跟随)。
+- feat: `agent_wiring` — 多 agent 指令集成: 写 AGENTS.md/GEMINI.md/copilot/
+  .claude/skills/.cursor/rules/.windsurf/.kiro/.adal; 共享文件 marker-fenced
+  原位更新不碰用户内容, owned file 完全拥有, dry-run 预览。
+
+## [4.20.0] — 2026-08-08
+
+### Added (md2wechat — Discovery-First + 公众号生产发布 3O 内化)
+- feat: `agent_discovery` — Discovery-First 资源目录 (ResourceCatalog: 注册/
+  discover/show/capabilities) + Anti-Noise 决策验证器 (5 条检查: 可观察/
+  确定性/可解释/无副作用/防真实错误, 源自 md2wechat AGENTS.md)。
+- feat: `wechat_publish` — 公众号内容生产管道: md_to_wechat_html (确定性
+  Markdown→微信 HTML, 纯函数) / produce_article (Article 组装) /
+  ArticleStore (本地草稿 + readiness 检查) / publish_draft (微信草稿 API,
+  HTTP 注入)。
+
+## [4.19.0] — 2026-08-08
+
+### Added (Agent Book — ai-agent-book 四能力 3O 内化)
+- feat: `eval_suite` — 评估套件 + 统计显著性 (第6章): EvalCase/run_suite 声明式
+  跑分 + 配对 t 检验 / Wilcoxon 符号秩 / Cohen's d (无 scipy 依赖, 纯 Python
+  数值近似) + compare_runs 双跑对比 (candidate_wins 判定)。
+- feat: `failure_learning` — 从失败中学习 (第8章): FailureRecord → ExperienceStore
+  (按类型聚合/教训去重/occurrences 计数/JSON 持久化) → 按任务 bigram 检索 →
+  format_experiences 注入护栏。
+- feat: `agent_context_pool` — 多 Agent 上下文共享/隔离 (第10章): shared/
+  isolated/derived 三可见性, projected() 按 agent 投影 (私有覆盖同键共享),
+  isolation_check 隔离守卫。
+- feat: `voice_pipeline` — 语音三范式 (第9章): pipe (整段) / stream (分块半双工)
+  / full_duplex (可打断), ASR/LLM/TTS 处理函数注入, 兼容同步/异步。
+
+## [4.18.0] — 2026-08-08
+
+### Added (Rulebooks — agent-rules-books 3O 内化)
+- feat: `rulebooks` — 经典软件工程书规则库: 14 本 (Ousterhout/Martin/Fowler/
+  Evans/Nygard/Hunt-Thomas/Feathers...) **每本仅打包 full 最完整版** (共 14 个
+  markdown 数据文件, MIT), 解决"LLM 不知道该选谁"问题: `select_rulebooks`
+  按任务关键词+书名加权选书 (refactor→legacy+refactoring, 数据→DDIA,
+  可靠性→release-it, DDD→domain-driven-design); `get_rulebook` 读全文,
+  `rules_sections` 通用分段, `standards_rules` 拼装审查规则基线。
+- feat: `review_diff(standards_rules=...)` — Standards 轴可携带书规则基线
+  供 LLM 深度判断 (确定性扫描不变)。
+- docs/INDEX Group 8 追加; _version → 4.18.0。
+
+## [4.17.0] — 2026-08-08
+
+### Added (Engineering Workflow — mattpocock skills 3O 内化)
+- feat: `requirements_interview` — 需求对齐访谈原语 (grilling): 设计树状态机,
+  依赖声明的分轮前沿 (frontier) 推进, 环境事实派 sub-agent (调用方注入), 每题
+  确定性推荐答案, 前沿空 = 达成共享理解。
+- feat: `review_double_axis` — 双轴代码审查 (code-review): Standards 轴确定性
+  坏味道扫描 (debug/TODO/硬编码密钥= fail/注释代码/空 except) + Spec 轴改动
+  文件范围比对 (越界= fail), 两轴独立合并, LLM 深度判断由调用方注入。
+- feat: `shared_language` — 共享语言 (CONTEXT.md + ADR): 术语表幂等读写
+  (列表/表格两种格式), ADR 三门槛门控 (难逆转/无上下文难懂/真权衡), 编号落盘。
+- feat: `workflow_pipeline` — idea→ship 编排状态机 (grill→spec→tickets→
+  implement→review→DONE): 票携带 blocked_by 阻塞边 + 环检测 + 可运行集解算,
+  阶段迁移事件驱动, 纯投影不绑存储 (可接 veya_loop GoalKernel)。
+
+## [4.16.0] — 2026-08-07
+
+### Added (MathModelAgent SKILL 3O 内化 — General Purpose 中通用度两件套)
+- feat: `drawio_diagram` — DrawIO 非数据图示绘制技能: 节点/边 spec (`drawio_node` / `drawio_edge`) → `drawio_doc` 生成 mxfile XML (ElementTree 保证转义) → `export_drawio` (自动探测 drawio/draw.io 二进制, CLI 导出 PDF) → `validate_drawio` 自检 (XML 良构/节点边计数/悬空边) → `render_drawio` 一站式。不预设任何建模专属图型。
+- feat: `verity_check` — 论文验收与一致性检查技能 (6verity SKILL 的 writing_check.sh Python 化): `resolve_config` 路径推断 → `run_text_gate` (引擎探测 / include 结构顺序 / 标题 / 占位符 / 内部词泄露 / 图片引用 / caption / 引用 / 指标与 JSON 数值一致性) → `compile_paper` (typst / xelatex×2) → `pdf_pages` (pdftoppm/mutool/magick 栅格化) → `run_verity` 总入口。领域规则参数化 (internal_terms / placeholder_pattern / problem_section_hint), 不内置工作流假设。
+- chore: `_manifest.py` ELEMENTS/CATEGORIES/STABILITY (experimental) 登记 + docs/INDEX Group 6 追加。
+
+## [4.15.0] — 2026-08-07
+
+### Added (MathModelAgent SKILL 3O 内化 — General Purpose 三件套)
+- feat: `typst_author` — Typst 文档撰写技能: minimal doc 生成 / typstyle 格式化检查循环 (check→diff→apply) / 无文件 probe (`metadata`+`typst query`) / `typst compile` 验证, 附 `TYPST_GUIDE` 结构化知识包 (关键区分、# 用法、set vs show、常见错误、排障)。subprocess 走 oprim `_bash_exec`。
+- feat: `env_doctor` — 环境检查与安装向导: `DepSpec` 声明式依赖清单 (cmd/pkg) + `detect_platform` (mac/linux/windows + distro + 包管理器) + `check_dependencies` + `install_commands` (linux-<distro> → tag → all 回退) + `run_doctor` (可选 auto_install 必须项并复检)。内置 `DEFAULT_SPECS` 仅作通用科学计算栈示例, 不绑定领域。
+- feat: `figure_templates` — 科研绘图模板渲染: 11 套 matplotlib 模板脚本 (raincloud / SHAP 组合 / 交叉验证 ROC / 泰勒图 / 配对云雨 / 环形热图 / Nature 和弦图等, 确定性模拟数据) 打包于 `oskill/_figure_templates/templates/`, 渲染时复制到工作区执行, 输出 png/pdf/svg。支持 id / 别名 / 中文关键词解析。
+- chore: `__init__.py` 元素扫描新增 `_SKIP_SCAN_DIRS`, 跳过 `_figure_templates` 数据资产目录, 防止模板脚本公共函数污染顶层命名空间。
+
 
 ## [4.4.0] — 2026-07-03
 

@@ -271,7 +271,6 @@ def _sample_from_scm(
         elif model["type"] == "linear":
             intercept = model["intercept"]
             coef = model["coefficients"]
-            parents = model["parents"]
             y_hat = np.full(n_samples, intercept)
             for p, c in coef.items():
                 if p in samples:

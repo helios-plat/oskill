@@ -10,7 +10,6 @@ from oskill.distribution import (
     distribution_shift_test,
 )
 
-
 # ============================================================
 # distribution_shift_test tests
 # ============================================================
@@ -168,7 +167,7 @@ class TestDetectOutliersRobust:
         """[1,2,3,4,5,100] → last is outlier."""
         data = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 100.0])
         result = detect_outliers_robust(data)
-        assert result["outlier_mask"][-1] is True or result["outlier_mask"][-1] == True
+        assert result["outlier_mask"][-1] is True or result["outlier_mask"][-1]
 
     def test_no_outliers(self):
         """Normal data → few/no outliers."""

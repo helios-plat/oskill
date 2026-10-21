@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import inspect
 from collections import deque
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from oprim._aii_graph_types import GraphRetrievalResult
 

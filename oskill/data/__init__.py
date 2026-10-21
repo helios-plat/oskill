@@ -6,7 +6,9 @@ from datetime import timedelta
 
 import pandas as pd
 
-from oskill.data.calendar_surprise_detect import calendar_surprise_detect
+from oskill.data.calendar_surprise_detect import (
+    calendar_surprise_detect as calendar_surprise_detect,
+)
 
 
 def point_in_time_join(

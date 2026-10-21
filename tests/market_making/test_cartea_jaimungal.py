@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from oskill.market_making.cartea_jaimungal import cartea_jaimungal_optimal_quotes

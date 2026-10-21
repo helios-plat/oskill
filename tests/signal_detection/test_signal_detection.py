@@ -7,7 +7,6 @@ import pytest
 
 from oskill.signal_detection import adx, cusum_detector, platt_calibration
 
-
 # ─── ADX tests ───────────────────────────────────────────────────────────────
 
 def _make_ohlc(n: int = 30, trend: float = 0.0, rng_seed: int = 42):

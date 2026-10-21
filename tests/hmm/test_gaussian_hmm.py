@@ -7,7 +7,6 @@ import pytest
 
 from oskill.hmm import gaussian_hmm
 
-
 # ─── fixtures ────────────────────────────────────────────────────────────────
 
 @pytest.fixture

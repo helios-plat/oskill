@@ -1,13 +1,17 @@
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 sys.modules["docker"] = MagicMock()
 sys.modules["docker.errors"] = MagicMock()
 
-import pytest
-import json
-from oskill.agentic_investigate_loop import agentic_investigate_loop, InvestigationOutcome, InvestigationStep
+
+from obase.tool_registry import ToolRegistry
+
 from oskill._signal import Signal
-from obase.tool_registry import ToolRegistry, register_tool
+from oskill.agentic_investigate_loop import (
+    agentic_investigate_loop,
+)
+
 
 def test_agentic_investigate_loop_confidence_stop():
     """Test stopping when confidence threshold is reached."""
@@ -24,7 +28,7 @@ def test_agentic_investigate_loop_confidence_stop():
             "tool_calls": []
         }
     ]
-    
+
     def mock_logs(*, container_id: str):
         return {"logs": "out of memory"}
     mock_logs.__name__ = "docker_container_logs"
@@ -40,7 +44,7 @@ def test_agentic_investigate_loop_confidence_stop():
         llm=mock_llm,
         confidence_threshold=0.8
     )
-    
+
     assert result.stopped_reason == "llm_decided_stop"
     assert result.steps_taken == 1
     assert result.final_conclusion["confidence"] == 0.9
@@ -54,7 +58,7 @@ def test_agentic_investigate_loop_max_steps():
         "stop_reason": "tool_use",
         "tool_calls": [{"id": "1", "name": "oprim__dummy_tool", "input": {}}]
     }
-    
+
     def dummy_tool():
         return {}
     dummy_tool.__name__ = "dummy_tool"
@@ -70,21 +74,21 @@ def test_agentic_investigate_loop_max_steps():
         llm=mock_llm,
         max_steps=3
     )
-    
+
     assert result.stopped_reason == "max_steps"
     assert result.steps_taken == 3
 
 def test_agentic_investigate_loop_llm_error():
     """Test LLM call error."""
     mock_llm = MagicMock(side_effect=Exception("API Error"))
-    
+
     signal = Signal(source="test", severity="warning")
     result = agentic_investigate_loop(
         signal=signal,
         available_tool_names=[],
         llm=mock_llm
     )
-    
+
     assert result.stopped_reason == "error"
     assert "API Error" in result.final_conclusion["error"]
 
@@ -96,7 +100,7 @@ def test_agentic_investigate_loop_tool_not_found():
         "stop_reason": "tool_use",
         "tool_calls": [{"id": "1", "name": "missing_tool", "input": {}}]
     }
-    
+
     signal = Signal(source="test", severity="warning")
     result = agentic_investigate_loop(
         signal=signal,
@@ -104,7 +108,7 @@ def test_agentic_investigate_loop_tool_not_found():
         llm=mock_llm,
         max_steps=1
     )
-    
+
     assert result.steps[0].tool_output["error"] == "Tool missing_tool not found"
 
 def test_agentic_investigate_loop_tool_exception():
@@ -115,7 +119,7 @@ def test_agentic_investigate_loop_tool_exception():
         "stop_reason": "tool_use",
         "tool_calls": [{"id": "1", "name": "oprim__fail_tool", "input": {}}]
     }
-    
+
     def fail_tool():
         raise ValueError("Tool crash")
     fail_tool.__name__ = "fail_tool"
@@ -131,7 +135,7 @@ def test_agentic_investigate_loop_tool_exception():
         llm=mock_llm,
         max_steps=1
     )
-    
+
     assert result.steps[0].tool_output["error"] == "Tool crash"
 
 def test_agentic_investigate_loop_on_step_callback():
@@ -149,7 +153,7 @@ def test_agentic_investigate_loop_on_step_callback():
             "tool_calls": []
         }
     ]
-    
+
     def t1():
         return {"ok": True}
     t1.__name__ = "t1"
@@ -169,7 +173,7 @@ def test_agentic_investigate_loop_on_step_callback():
         llm=mock_llm,
         on_step=on_step
     )
-    
+
     assert len(callback_steps) == 1
     assert callback_steps[0]["tool_called"] == "oprim.t1"
 
@@ -197,7 +201,7 @@ def test_agentic_investigate_loop_no_available_tools():
         "stop_reason": "end_turn",
         "tool_calls": []
     }
-    
+
     signal = Signal(source="test", severity="warning")
     result = agentic_investigate_loop(
         signal=signal,

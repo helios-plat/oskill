@@ -6,14 +6,14 @@ import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
+import oprim.meta_db
 import pytest
-
 from oprim.meta_db.duckdb import open_meta_db
-from oprim.storage.protocol import StorageFile, UploadResult
+from oprim.storage.protocol import UploadResult
 
-_MIGRATIONS_DIR = (
-    Path(__file__).parent.parent.parent.parent / "oprim" / "oprim" / "meta_db" / "migrations"
-)
+# Resolve from the installed oprim package (works for editable, wheel and git installs)
+# instead of assuming a sibling ../oprim checkout.
+_MIGRATIONS_DIR = Path(oprim.meta_db.__file__).parent / "migrations"
 
 _SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS substrates (

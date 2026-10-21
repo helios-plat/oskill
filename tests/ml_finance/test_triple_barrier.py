@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.ml_finance.triple_barrier import triple_barrier_label
 

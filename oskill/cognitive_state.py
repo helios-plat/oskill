@@ -9,16 +9,14 @@
 """
 
 from __future__ import annotations
-from datetime import datetime, timezone
-from pydantic import BaseModel
+
+from datetime import UTC, datetime
 
 from obase.cognitive_types import KCState
 from oprim.bkt import bkt_update, classify_error
-from oprim.fsrs_engine import (
-    fsrs_retrievability, 
-    fsrs_review, 
-    fsrs_map_rating
-)
+from oprim.fsrs_engine import fsrs_map_rating, fsrs_retrievability, fsrs_review
+from pydantic import BaseModel
+
 
 class CognitiveUpdateInput(BaseModel):
     """认知更新输入。"""
@@ -50,18 +48,18 @@ def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
     - oprim.classify_error       (粗心/不会判定)
     - oprim.fsrs_review          (FSRS 卡片更新)
     - oprim.fsrs_map_rating      (表现→Rating)
-    
+
     更新顺序（MUST，与 CLAUDE.md 红线一致）：
     1. 用旧卡片算 R
     2. forgetting-aware BKT 更新（R 衰减先验）
     3. 答错则 classify_error
     4. FSRS review
     """
-    now = input.now or datetime.now(timezone.utc)
-    
+    now = input.now or datetime.now(UTC)
+
     # 1. 算 R (遗忘因子)
     R = fsrs_retrievability(card_dict=input.card_dict, now=now)
-    
+
     # 2. BKT 更新 (forgetting-aware + 难度感知)
     bkt_update(state=input.state, is_correct=input.is_correct, retrievability=R, difficulty=input.difficulty)
 
@@ -69,22 +67,22 @@ def cognitive_update(*, input: CognitiveUpdateInput) -> CognitiveUpdateResult:
     error_type = None
     if not input.is_correct:
         error_type = classify_error(state=input.state, difficulty=input.difficulty)
-        
+
     # 4. FSRS 更新
     rating = fsrs_map_rating(
-        is_correct=input.is_correct, 
+        is_correct=input.is_correct,
         used_answer=input.used_answer,
-        struggled=input.struggled, 
+        struggled=input.struggled,
         effortless=input.effortless
     )
     new_card = fsrs_review(card_dict=input.card_dict, rating=rating, now=now)
-    
+
     # TODO: 5. Recognition 更新 (等 12.1 实现)
-    
+
     input.state.last_interaction_ts = now.timestamp()
-    
+
     eff = (input.state.long_term_mastery or input.state.current()) * R
-    
+
     return CognitiveUpdateResult(
         state=input.state,
         card_dict=new_card,

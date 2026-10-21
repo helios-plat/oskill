@@ -12,7 +12,7 @@ Added: oskill v3.25.12
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 

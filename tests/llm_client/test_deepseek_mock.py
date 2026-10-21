@@ -1,7 +1,6 @@
 """Unit tests for oskill.llm_client.deepseek — mocked HTTP, no real API calls."""
 from __future__ import annotations
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -11,9 +10,7 @@ from oskill.llm_client.exceptions import (
     LLMAPIError,
     LLMRateLimit,
     LLMTimeout,
-    LLMUnavailable,
 )
-
 
 # ── mock helpers ──────────────────────────────────────────────────────────────
 
@@ -120,7 +117,7 @@ async def test_400_error():
 async def test_timeout_raises_llm_timeout():
     """asyncio.TimeoutError → LLMTimeout after retries exhausted."""
     mock_resp_cm = AsyncMock()
-    mock_resp_cm.__aenter__ = AsyncMock(side_effect=asyncio.TimeoutError("timed out"))
+    mock_resp_cm.__aenter__ = AsyncMock(side_effect=TimeoutError("timed out"))
     mock_resp_cm.__aexit__ = AsyncMock(return_value=False)
 
     mock_session = AsyncMock()

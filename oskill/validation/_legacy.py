@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import warnings
+from collections.abc import Callable
 from itertools import combinations
-from typing import Callable, Literal
 
 import numpy as np
-import pandas as pd
-
 import oprim
+import pandas as pd
 
 
 def walk_forward_optimization(
@@ -360,7 +358,6 @@ def regime_aware_rolling(
 
     # Process each regime
     data_df = pd.DataFrame({"value": data})
-    last_value = np.nan
 
     if reset_on_regime_change:
         # For each contiguous regime block, compute rolling independently

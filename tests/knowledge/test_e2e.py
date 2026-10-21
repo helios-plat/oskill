@@ -1,12 +1,11 @@
 """End-to-end test: file → ingest_substrate → hybrid_search."""
 
 from __future__ import annotations
-from pathlib import Path
-from unittest.mock import patch
-import pytest
 
-from oskill.ingest_substrate import ingest_substrate
+from unittest.mock import patch
+
 from oskill.hybrid_search import hybrid_search
+from oskill.ingest_substrate import ingest_substrate
 
 
 class TestEndToEnd:

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 import warnings
-from datetime import datetime, timezone
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 from oprim import canonical_json, sha256_hash
 
@@ -137,7 +138,7 @@ def deterministic_llm_call(
         "stop_reason": client_result.get("stop_reason"),
     }
 
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
 
     return {
         "response": response,

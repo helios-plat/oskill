@@ -42,7 +42,6 @@ def _rhat(x: np.ndarray, n_chains: int) -> float:
     chain_means = np.array([c.mean() for c in chains])
     chain_vars = np.array([np.var(c, ddof=1) if len(c) > 1 else 0.0 for c in chains])
     W = float(chain_vars.mean())
-    grand_mean = float(chain_means.mean())
     B = float(chain_len * np.var(chain_means, ddof=1)) if n_chains > 1 else 0.0
     if W < 1e-14:
         return 1.0

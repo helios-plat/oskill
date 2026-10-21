@@ -5,7 +5,10 @@ from oskill.knowledge.generate_audio_narration import AudioNarrationResult, gene
 from oskill.knowledge.generate_derivative import generate_derivative
 from oskill.knowledge.generate_illustration import IllustrationResult, generate_illustration
 from oskill.knowledge.lint import LintIssue, lint
-from oskill.knowledge.transcribe_audio_substrate import TranscriptionResult, transcribe_audio_substrate
+from oskill.knowledge.transcribe_audio_substrate import (
+    TranscriptionResult,
+    transcribe_audio_substrate,
+)
 from oskill.knowledge.web_search_augmented import WebSearchResponse, web_search_augmented
 
 __all__ = [

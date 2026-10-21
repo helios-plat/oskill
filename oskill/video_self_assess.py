@@ -76,7 +76,7 @@ async def video_self_assess(
         raise VideoSelfAssessError("sample_frames_count must be >= 1")
 
     # Step 1: Technical metrics
-    from oprim.video_quality_metrics import VideoQualityError, video_quality_metrics
+    from oprim._video_quality_metrics import VideoQualityError, video_quality_metrics
 
     try:
         metrics = await video_quality_metrics(video_path=video_path)

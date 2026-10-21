@@ -5,10 +5,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd
 import oprim
-
-from oskill.conformal.split_cp import conformal_prediction_interval
+import pandas as pd
 
 
 def conformal_with_change_points(

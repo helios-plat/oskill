@@ -10,10 +10,10 @@ Example:
 """
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
-from obase.workflow_engine import CycleError, WorkflowEngine, WorkflowExecutionError
-
+from obase.workflow_engine import WorkflowEngine, WorkflowExecutionError
 from oprim._hevi_types import CanvasEdge, CanvasNode
 from oprim.canvas_node_execute import CanvasNodeResult, canvas_node_execute
 

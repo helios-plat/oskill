@@ -5,9 +5,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from oskill.trend_compose import trend_signal_compose
 from oskill.mean_reversion_compose import mean_reversion_compose
-
+from oskill.trend_compose import trend_signal_compose
 
 # ──────────────────── Fixtures ────────────────────
 

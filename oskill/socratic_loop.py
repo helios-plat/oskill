@@ -91,7 +91,7 @@ async def process_socratic_turn(
     -------
     SocraticTurnOutput
     """
-    from oprim.socratic_turn import socratic_turn, SocraticTurnInput
+    from oprim.socratic_turn import SocraticTurnInput, socratic_turn
 
     state.messages.append({"role": "user", "content": student_message})
     state.turn_count += 1

@@ -1,7 +1,6 @@
 """Tests for kalman_filter_pipeline and kalman_smoother."""
 
 import numpy as np
-import pytest
 
 from oskill.state_space.kalman import kalman_filter_pipeline, kalman_smoother
 
@@ -125,6 +124,7 @@ class TestKalmanSmoother:
         """H1 compliance: kalman_smoother must not import kalman_filter_pipeline."""
         import ast
         import inspect
+
         from oskill.state_space import kalman
         src = inspect.getsource(kalman.kalman_smoother)
         tree = ast.parse(src)

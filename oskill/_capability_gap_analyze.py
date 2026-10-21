@@ -7,6 +7,7 @@ No LLM. Every gap fact is reproducible from the input data.
 from __future__ import annotations
 
 from oprim._aii_types import GapReport
+
 from oskill._query_cluster import query_cluster
 
 

@@ -27,7 +27,6 @@ from oskill.lint_substrate_graph import (
 from oskill.merge_platform_user_results import SearchResult, merge_platform_user_results
 from oskill.resolve_conflict import resolve_conflict
 
-
 # ---------------------------------------------------------------------------
 # resolve_conflict — ≥8 tests
 # ---------------------------------------------------------------------------

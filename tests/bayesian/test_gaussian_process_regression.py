@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from oskill.bayesian.gp_regression import gaussian_process_regression
 
@@ -65,7 +64,7 @@ def test_gpr_rational_quadratic_basic():
 
 
 def test_gpr_posterior_mean_close_to_truth():
-    rng = np.random.default_rng(42)
+    np.random.default_rng(42)
     # Very low noise so GP should interpolate well
     X_tr = np.linspace(0, 2 * np.pi, 15).reshape(-1, 1)
     y_tr = np.sin(X_tr[:, 0])

@@ -11,9 +11,9 @@ semantic_search 的向量检索经 VectorStoreHandle Protocol 注入。
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
-import os
 from typing import Any, Protocol, runtime_checkable
 
 from ._types import Chunk, LLMOskillError, OskillError, RepoMap, SubTask

@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-
 
 # ─────────────────────────── hmm_regime_detect ────────────────────────────
 
@@ -38,6 +37,7 @@ class TestHmmRegimeDetect:
 
     def test_pretrained_model_skips_fit(self):
         from oprim.hmm_baum_welch import hmm_baum_welch
+
         from oskill.hmm_regime_detect import hmm_regime_detect
         obs = self._obs()
         model = hmm_baum_welch(obs, n_states=2)
@@ -68,7 +68,6 @@ class TestHmmRegimeDetect:
 
 class TestCointegrationPairs:
     def _coint_series(self, n=80):
-        import numpy as np
         rng = numpy = __import__("numpy")
         rng = numpy.random.default_rng(42)
         x = numpy.cumsum(rng.normal(0, 1, n))
@@ -239,8 +238,9 @@ class TestMarketImpactSigmoid:
         assert result["participation"] == pytest.approx(0.1)
 
     def test_sigmoid_not_sqrt(self):
-        from oskill.market_impact_sigmoid import market_impact_sigmoid
         import math
+
+        from oskill.market_impact_sigmoid import market_impact_sigmoid
         r = market_impact_sigmoid(500_000, adv=5_000_000, params=self._params)
         participation = 500_000 / 5_000_000
         expected = 50.0 / (1.0 + math.exp(-5.0 * (participation - 0.1)))
@@ -407,11 +407,11 @@ class TestLlmFactorDebate:
 
     @pytest.mark.asyncio
     async def test_concurrent_calls_via_gather(self):
-        from oskill.llm_factor_debate import llm_factor_debate
         import time
+
+        from oskill.llm_factor_debate import llm_factor_debate
         delays = []
         async def slow_caller(messages, *, system="", max_tokens=512):
-            import asyncio
             start = time.monotonic()
             await asyncio.sleep(0.05)
             delays.append(time.monotonic() - start)

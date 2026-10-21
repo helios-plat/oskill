@@ -13,8 +13,8 @@ from __future__ import annotations
 import json
 import re
 
-from oprim._ku_conflict_detect import ku_conflict_detect
 from oprim._aii_graph_types import ConflictPair
+from oprim._ku_conflict_detect import ku_conflict_detect
 
 _SYSTEM = (
     "You are a knowledge consistency expert. Analyze whether two statements conflict. "

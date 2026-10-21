@@ -1,6 +1,6 @@
 import hashlib
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal, cast
 
 from pydantic import BaseModel
@@ -54,7 +54,7 @@ def structured_log_anomaly_cluster(
         )
 
     # Filter by time window if requested
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     filtered_lines = []
     for line in log_lines:
         if time_window_sec is not None:
@@ -75,12 +75,12 @@ def structured_log_anomaly_cluster(
         message = str(message_val)
         if not message:
             continue
-            
+
         pattern = _extract_pattern_naive(message)
         pattern_hash = hashlib.sha256(pattern.encode("utf-8")).hexdigest()[:12]
-        
+
         timestamp = cast(str, line.get("timestamp") or now.isoformat())
-        
+
         if pattern_hash not in clusters_data:
             clusters_data[pattern_hash] = {
                 "pattern": pattern,
@@ -90,10 +90,10 @@ def structured_log_anomaly_cluster(
                 "last_seen": timestamp,
                 "examples": []
             }
-        
+
         data = clusters_data[pattern_hash]
         data["count"] += 1
-        data["last_seen"] = timestamp 
+        data["last_seen"] = timestamp
         if len(data["examples"]) < 5:
             data["examples"].append(message)
 
@@ -112,7 +112,7 @@ def structured_log_anomaly_cluster(
 
     total_lines = len(filtered_lines)
     unique_patterns = len(clusters_data)
-    
+
     # Anomaly score: higher ratio of unique patterns / total lines might indicate anomalies
     anomaly_score = unique_patterns / total_lines if total_lines > 0 else 0.0
 

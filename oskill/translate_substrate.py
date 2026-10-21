@@ -3,12 +3,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import oprim.meta_db as _oprim_meta_db_mod
-from ulid import ULID
-
 from oprim._logging import log
 from oprim.embedding import embed_text
 from oprim.errors import StratumError
@@ -16,6 +14,7 @@ from oprim.meta_db import open_meta_db
 from oprim.translate import TerminologyGlossary, TranslationResult, translate_document_async
 from oprim.vector_db import open_vector_db
 from oprim.vector_db.lancedb import VectorRecord
+from ulid import ULID
 
 from oskill.knowledge._context import lancedb_path, meta_db_path
 
@@ -170,7 +169,7 @@ async def translate_substrate(
     total_cost = sum(r.cost_usd for r in chunk_results)
 
     derivative_id = str(ULID())
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     meta = json.dumps({
         "source_lang": effective_source,
         "target_lang": target_lang,

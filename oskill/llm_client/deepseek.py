@@ -12,9 +12,9 @@ import json
 import time
 
 import aiohttp
-
 from oprim.crypto import sha256_hash
 from oprim.serialization import canonical_json
+
 from oskill.llm_client.exceptions import (
     LLMAPIError,
     LLMRateLimit,
@@ -162,7 +162,7 @@ async def _do_call(
                 except (aiohttp.ContentTypeError, json.JSONDecodeError) as exc:
                     raise LLMAPIError(f"deepseek response not JSON: {exc}") from exc
 
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         raise LLMTimeout(f"deepseek timeout after {timeout_sec}s") from exc
     except aiohttp.ClientError as exc:
         raise LLMUnavailable(f"deepseek client error: {exc}") from exc

@@ -63,7 +63,7 @@ def test_hrp_more_diversified_than_mv():
     result = hierarchical_risk_parity_v2(returns, use_rie_cleaning=False)
     w_hrp = result["weights"]
     cov = result["cov_used"]
-    stds = np.sqrt(np.diag(cov))
+    np.sqrt(np.diag(cov))
     n = len(w_hrp)
 
     # HRP risk contributions

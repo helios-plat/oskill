@@ -27,10 +27,10 @@ import json
 import re
 
 from oprim._aii_graph_types import (
-    OntologyExtractResult,
-    VALID_RELATION_TYPES,
     VALID_KNOWLEDGE_TYPES,
+    VALID_RELATION_TYPES,
     VALID_SUB_TYPES,
+    OntologyExtractResult,
 )
 
 

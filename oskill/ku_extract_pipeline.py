@@ -9,7 +9,8 @@ Internal oprim composition:
 """
 
 from __future__ import annotations
-from oprim import structural_chunk, llm_extract_ku, ku_gate_validate
+
+from oprim import ku_gate_validate, llm_extract_ku, structural_chunk
 
 
 def ku_extract_pipeline(
