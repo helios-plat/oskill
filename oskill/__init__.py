@@ -597,6 +597,7 @@ _AUTHORITATIVE_EXPORTS: dict[str, str] = {
     'write_agent_instructions': 'oskill.agent_wiring',
     'write_prompt': 'oskill.wechat_writing',
 }
+_AUTHORITATIVE_EXPORTS["tradingview_market_snapshot"] = "oskill.tradingview_market_snapshot"
 _ELEMENT_MAP.update(_AUTHORITATIVE_EXPORTS)
 
 
