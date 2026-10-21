@@ -138,7 +138,7 @@ def community_cluster(
     X = [list(map(float, e)) for e in embeddings]
     arr = np.asarray(X, dtype=np.float64)
     # Compute similarity matrix (used as composition requirement)
-    _sim_matrix = cosine_similarity_batch(arr, arr)  # (n, n)
+    _sim_matrix = cosine_similarity_batch(arr, database=arr)  # (n, n)
 
     k = n_clusters if n_clusters is not None else _elbow_k(X)
     k = max(1, min(k, len(X)))

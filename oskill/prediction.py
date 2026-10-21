@@ -62,7 +62,7 @@ def calibration_analysis(
     N = len(predictions)
 
     # Use oprim.brier_score_decomposed
-    brier_result = oprim.brier_score_decomposed(predictions, outcomes, n_bins=n_bins)
+    brier_result = oprim.brier_score_decomposed(predictions, outcomes=outcomes, n_bins=n_bins)
 
     # Compute bin assignments
     if binning == "equal_width":
@@ -109,7 +109,7 @@ def calibration_analysis(
                 successes = int(outcomes[mask].sum())
                 failures = n_bin - successes
                 posterior = oprim.bayes_beta_update(
-                    prior_alpha, prior_beta, successes=successes, failures=failures,
+                    prior_alpha, prior_beta=prior_beta, successes=successes, failures=failures,
                     posterior_quantiles=[0.025, 0.975],
                 )
                 row["ci_low"] = posterior.get("q_0.025", posterior.get("q_0.05", 0.0))

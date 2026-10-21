@@ -127,7 +127,7 @@ def ddpm_synthetic_path_generator(
     # ---- 5. Wasserstein distance to historical ----
     flat_synthetic = synthetic_paths.ravel()
     if distributional_distance is not None:
-        w1 = distributional_distance(flat_synthetic, hist, metric="wasserstein_1")
+        w1 = distributional_distance(flat_synthetic, sample_b=hist, metric="wasserstein_1")
     else:
         # Fallback: sort-based approximation
         n_min = min(len(flat_synthetic), len(hist))

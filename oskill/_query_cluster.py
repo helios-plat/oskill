@@ -107,7 +107,7 @@ def _refine_with_embeddings(
 
     for i in range(n):
         for j in range(i + 1, n):
-            sim_raw = cosine_similarity_batch(rep_emb[i], rep_emb[j : j + 1])
+            sim_raw = cosine_similarity_batch(rep_emb[i], database=rep_emb[j : j + 1])
             sim_val = float(np.asarray(sim_raw).ravel()[0])
             if sim_val >= threshold:
                 union(i, j)

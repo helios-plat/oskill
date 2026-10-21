@@ -72,12 +72,12 @@ def historical_analogy_search(
 
         if method == "dtw":
             for i, h in enumerate(db_list):
-                result = oprim.dtw_distance(query, h, window=sakoe_chiba_band)
+                result = oprim.dtw_distance(query, y=h, window=sakoe_chiba_band)
                 dists[i] = result["distance"]
 
         elif method == "wasserstein":
             for i, h in enumerate(db_list):
-                dists[i] = oprim.wasserstein_distance(query, h)
+                dists[i] = oprim.wasserstein_distance(query, v=h)
 
         elif method == "cosine":
             # Cosine requires same length
@@ -96,7 +96,7 @@ def historical_analogy_search(
                 )
             if same_len:
                 db_matrix = np.array([db_list[i] for i in same_len])
-                sims = oprim.cosine_similarity_batch(query, db_matrix)
+                sims = oprim.cosine_similarity_batch(query, database=db_matrix)
                 for j, idx in enumerate(same_len):
                     dists[idx] = 1.0 - sims[j]  # Convert similarity to distance
 
@@ -113,7 +113,7 @@ def historical_analogy_search(
             if same_len:
                 db_matrix = np.array([db_list[i] for i in same_len])
                 dist_matrix = oprim.euclidean_distance_matrix(
-                    query.reshape(1, -1), db_matrix
+                    query.reshape(1, -1), y=db_matrix
                 )
                 for j, idx in enumerate(same_len):
                     dists[idx] = dist_matrix[0, j]
@@ -234,7 +234,7 @@ def regime_transition_analysis(
         data_df = pd.DataFrame({"value": data_per_regime})
         data_summary = {}
         for regime in unique_regimes:
-            filtered = oprim.regime_filter_data(data_df, regime_labels, regime)
+            filtered = oprim.regime_filter_data(data_df, regime_labels=regime_labels, target_regime=regime)
             if len(filtered) > 0:
                 data_summary[regime] = oprim.distribution_summary(filtered["value"].values)
 
@@ -532,12 +532,12 @@ def forward_outcome_distribution(
         n = len(rets)
         by_period[period] = {
             "mean_return": sum(rets) / n,
-            "median_return": oprim.percentile_value(rets_sorted, 0.5),
+            "median_return": oprim.percentile_value(rets_sorted, q=0.5),
             "win_rate": sum(1 for r in rets if r > 0) / n,
-            "p25": oprim.percentile_value(rets_sorted, 0.25),
-            "p75": oprim.percentile_value(rets_sorted, 0.75),
-            "p10": oprim.percentile_value(rets_sorted, 0.10),
-            "p90": oprim.percentile_value(rets_sorted, 0.90),
+            "p25": oprim.percentile_value(rets_sorted, q=0.25),
+            "p75": oprim.percentile_value(rets_sorted, q=0.75),
+            "p10": oprim.percentile_value(rets_sorted, q=0.10),
+            "p90": oprim.percentile_value(rets_sorted, q=0.90),
         }
 
     return {
