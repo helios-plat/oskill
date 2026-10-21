@@ -2,6 +2,41 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+## [4.39.0] — 2026-10-22
+
+### Added (upstreaming consumer patches — 3O 主库成为唯一来源)
+
+合回 helios 使用方线上「上游已删除但仍在用」的两个 oskill 元素。
+详见 `/data/soffy/projects/ext/3o_upstream_report.md`。
+
+- feat: `monte_carlo_trade_permutation` (`oskill/performance.py`) —— 交易序列
+  置换检验：打乱 PnL 顺序 n 次，对比实际 Sharpe / 最大回撤与随机路径分布，
+  给出 `p_value_sharpe` / `p_value_max_dd`。helios 的回测可信度报告需要它，
+  上游某次清理时被删除。纯计算、stateless，符合 oskill 归属。
+- feat: `cognitive_update` (`oskill/cognitive.py`) —— forgetting-aware
+  BKT + FSRS 统一认知更新的 **dict 返回适配器**。
+
+### Changed — 单源收敛 (SPEC §1.4)
+
+`oskill.cognitive` 此前是 `oskill.cognitive_state` 的**手抄副本**（同一更新顺序、
+同一 oprim 组合，只是返回 dict 而非 Pydantic 模型）。两份实现就是「改一份漏一份」
+的漂移源。现改为**纯委托适配器**：构造 `CognitiveUpdateInput` → 调
+`cognitive_state.cognitive_update` → 把结果重塑成 helios 消费的 dict 契约。
+算法与更新顺序只有一处：`oskill/cognitive_state.py`。
+
+- `tests/test_cognitive.py::test_module_has_no_duplicated_algorithm_body` ——
+  AST 守卫：本模块不得再直接调用 `fsrs_retrievability` / `bkt_update` /
+  `bkt_classify_error` / `fsrs_review` / `fsrs_map_rating`
+- `tests/test_cognitive.py::test_delegates_to_canonical_implementation` ——
+  逐组合断言适配器输出与 canonical 实现逐位一致
+
+### Tests
+- 新增 `tests/performance/test_monte_carlo_trade_permutation.py` (13 项)、
+  `tests/test_cognitive.py` (18 项)
+- 全套：`3743 passed`，**新增失败 0**；另修复了 33 个此前因
+  `oskill.performance` 不是 package 而报 `ModuleNotFoundError` 的既有失败
+  （基线 413 项 → 380 项，差值均为本次消除）
+
 ## [4.4.0] — 2026-07-03
 
 ### Fixed
