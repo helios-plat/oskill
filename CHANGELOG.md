@@ -2,6 +2,56 @@
 
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
+
+## [4.39.1] — 2026-10-22
+
+### Changed
+
+- 与 `origin/main` 合并（v4.39.0 之后 main 前进 59 个提交，含 4.15.0–4.38.0
+  全部能力：md2wechat / wechat_theme / wechat_writing 等）。冲突只在
+  `oskill/_version.py`（保留 4.39.0）与 `CHANGELOG.md`（保留双方，历史连续）。
+
+### Tests
+- `252 failed, 3949 passed, 3 skipped`。同一命令在 `origin/main` worktree 上是
+  `252 failed, 3918 passed` —— 失败集合完全一致（既有红灯，集中在
+  `test_validation.py::TestRegimeAwareRolling` 等），多出的 31 项通过是 v4.39.0
+  新增的 `cognitive` / `monte_carlo_trade_permutation` 测试。
+
+## [4.39.0] — 2026-10-22
+
+### Added (upstreaming consumer patches — 3O 主库成为唯一来源)
+
+合回 helios 使用方线上「上游已删除但仍在用」的两个 oskill 元素。
+详见 `/data/soffy/projects/ext/3o_upstream_report.md`。
+
+- feat: `monte_carlo_trade_permutation` (`oskill/performance.py`) —— 交易序列
+  置换检验：打乱 PnL 顺序 n 次，对比实际 Sharpe / 最大回撤与随机路径分布，
+  给出 `p_value_sharpe` / `p_value_max_dd`。helios 的回测可信度报告需要它，
+  上游某次清理时被删除。纯计算、stateless，符合 oskill 归属。
+- feat: `cognitive_update` (`oskill/cognitive.py`) —— forgetting-aware
+  BKT + FSRS 统一认知更新的 **dict 返回适配器**。
+
+### Changed — 单源收敛 (SPEC §1.4)
+
+`oskill.cognitive` 此前是 `oskill.cognitive_state` 的**手抄副本**（同一更新顺序、
+同一 oprim 组合，只是返回 dict 而非 Pydantic 模型）。两份实现就是「改一份漏一份」
+的漂移源。现改为**纯委托适配器**：构造 `CognitiveUpdateInput` → 调
+`cognitive_state.cognitive_update` → 把结果重塑成 helios 消费的 dict 契约。
+算法与更新顺序只有一处：`oskill/cognitive_state.py`。
+
+- `tests/test_cognitive.py::test_module_has_no_duplicated_algorithm_body` ——
+  AST 守卫：本模块不得再直接调用 `fsrs_retrievability` / `bkt_update` /
+  `bkt_classify_error` / `fsrs_review` / `fsrs_map_rating`
+- `tests/test_cognitive.py::test_delegates_to_canonical_implementation` ——
+  逐组合断言适配器输出与 canonical 实现逐位一致
+
+### Tests
+- 新增 `tests/performance/test_monte_carlo_trade_permutation.py` (13 项)、
+  `tests/test_cognitive.py` (18 项)
+- 全套：`3743 passed`，**新增失败 0**；另修复了 33 个此前因
+  `oskill.performance` 不是 package 而报 `ModuleNotFoundError` 的既有失败
+  （基线 413 项 → 380 项，差值均为本次消除）
+
 ## [4.38.0] — 2026-08-16
 
 ### Added (md2wechat 能力面补全 — 公众号创作增强 3O 内化)
@@ -296,6 +346,7 @@
 - feat: `env_doctor` — 环境检查与安装向导: `DepSpec` 声明式依赖清单 (cmd/pkg) + `detect_platform` (mac/linux/windows + distro + 包管理器) + `check_dependencies` + `install_commands` (linux-<distro> → tag → all 回退) + `run_doctor` (可选 auto_install 必须项并复检)。内置 `DEFAULT_SPECS` 仅作通用科学计算栈示例, 不绑定领域。
 - feat: `figure_templates` — 科研绘图模板渲染: 11 套 matplotlib 模板脚本 (raincloud / SHAP 组合 / 交叉验证 ROC / 泰勒图 / 配对云雨 / 环形热图 / Nature 和弦图等, 确定性模拟数据) 打包于 `oskill/_figure_templates/templates/`, 渲染时复制到工作区执行, 输出 png/pdf/svg。支持 id / 别名 / 中文关键词解析。
 - chore: `__init__.py` 元素扫描新增 `_SKIP_SCAN_DIRS`, 跳过 `_figure_templates` 数据资产目录, 防止模板脚本公共函数污染顶层命名空间。
+
 
 ## [4.4.0] — 2026-07-03
 

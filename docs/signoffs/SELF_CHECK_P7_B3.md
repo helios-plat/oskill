@@ -127,6 +127,7 @@ Full invocation:
 
 ```python
 from oskill.character_three_view import character_three_view
+
 result = await character_three_view(
     portrait_image=Path("face.png"),
     image_provider="demo_flux",
@@ -144,15 +145,24 @@ New P7-B3 imports added to `oskill/oskill/__init__.py`:
 
 ```python
 # P7-B3 — Visual Generation Workflows
-from oskill.character_three_view import CharacterThreeViewError, ThreeViewResult, character_three_view
+from oskill.character_three_view import (
+    CharacterThreeViewError,
+    ThreeViewResult,
+    character_three_view,
+)
 from oskill.storyboard_grid import StoryboardGridError, storyboard_grid
 from oskill.multi_angle_9 import MultiAngleError, multi_angle_9
 from oskill.comic_to_animation_workflow import ComicToAnimationError, comic_to_animation_workflow
 from oskill.character_consistency_workflow import (
-    CharacterConsistencyError, CharacterConsistencyResult, character_consistency_workflow,
+    CharacterConsistencyError,
+    CharacterConsistencyResult,
+    character_consistency_workflow,
 )
 from oskill.multi_shot_storyboard_workflow import (
-    MultiShotStoryboard, MultiShotStoryboardError, SubjectRef, multi_shot_storyboard_workflow,
+    MultiShotStoryboard,
+    MultiShotStoryboardError,
+    SubjectRef,
+    multi_shot_storyboard_workflow,
 )
 ```
 

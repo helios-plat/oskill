@@ -794,3 +794,104 @@ def subject_forward_winrate(
     n_valid = wins + losses
     winrate = wins / n_valid if n_valid > 0 else None
     return {"winrate": winrate, "n_events_total": len(events), "n_events_valid": n_valid, "wins": wins, "losses": losses}
+
+
+def monte_carlo_trade_permutation(
+    trades: list[dict] | np.ndarray,
+    *,
+    initial_capital: float = 100000.0,
+    n_simulations: int = 1000,
+    seed: int = 42,
+    bars_per_year: int = 252,
+) -> dict:
+    """Shuffle trade PnL order to test path significance.
+
+    Null hypothesis: observed Sharpe and Max Drawdown are no better than
+    a random permutation of the same trades.
+
+    Args:
+        trades: list of trade dicts (each having 'pnl' or 'realized_pnl_usd' key)
+                or 1D array of trade PnL values.
+        initial_capital: Starting capital for equity curve calculation.
+        n_simulations: Number of random permutations (default 1000).
+        seed: Random seed for reproducibility.
+        bars_per_year: Annualization factor (e.g. 252 for daily, 365 for crypto).
+
+    Returns:
+        dict with actual_sharpe, actual_max_dd, p_value_sharpe, p_value_max_dd,
+        simulated_sharpe_mean, simulated_sharpe_std, simulated_sharpe_p5,
+        simulated_sharpe_p95, n_simulations, n_trades.
+    """
+    if isinstance(trades, (list, tuple)):
+        pnls_list = []
+        for t in trades:
+            if isinstance(t, dict):
+                p = t.get("pnl", t.get("realized_pnl_usd", t.get("profit", 0.0)))
+                pnls_list.append(float(p) if p is not None else 0.0)
+            elif isinstance(t, (int, float, np.number)):
+                pnls_list.append(float(t))
+        pnls = np.asarray(pnls_list, dtype=np.float64)
+    else:
+        pnls = np.asarray(trades, dtype=np.float64).flatten()
+
+    n_trades = len(pnls)
+    if n_trades < 3:
+        return {
+            "actual_sharpe": 0.0,
+            "actual_max_dd": 0.0,
+            "p_value_sharpe": 1.0,
+            "p_value_max_dd": 1.0,
+            "simulated_sharpe_mean": 0.0,
+            "simulated_sharpe_std": 0.0,
+            "simulated_sharpe_p5": 0.0,
+            "simulated_sharpe_p95": 0.0,
+            "n_simulations": n_simulations,
+            "n_trades": n_trades,
+            "warning": "insufficient trades (<3)",
+        }
+
+    def _calc_path_metrics(p_seq: np.ndarray) -> tuple[float, float]:
+        cum_eq = initial_capital + np.cumsum(p_seq)
+        prev_eq = np.insert(cum_eq[:-1], 0, initial_capital)
+        rets = np.where(prev_eq > 0, p_seq / prev_eq, 0.0)
+        mean_r = float(np.mean(rets)) if len(rets) > 0 else 0.0
+        std_r = float(np.std(rets, ddof=1)) if len(rets) > 1 else 0.0
+        sr = (mean_r / std_r * np.sqrt(bars_per_year)) if std_r > 1e-12 else 0.0
+
+        eq_series = np.insert(cum_eq, 0, initial_capital)
+        peaks = np.maximum.accumulate(eq_series)
+        drawdowns = np.where(peaks > 0, (eq_series - peaks) / peaks, 0.0)
+        max_dd = float(np.min(drawdowns))
+        return sr, max_dd
+
+    actual_sr, actual_mdd = _calc_path_metrics(pnls)
+
+    rng = np.random.default_rng(seed)
+    sim_sharpes: list[float] = []
+    sharpe_better = 0
+    dd_better = 0
+
+    for _ in range(n_simulations):
+        shuffled = rng.permutation(pnls)
+        sim_sr, sim_mdd = _calc_path_metrics(shuffled)
+        sim_sharpes.append(sim_sr)
+        if sim_sr >= actual_sr:
+            sharpe_better += 1
+        if sim_mdd >= actual_mdd:
+            dd_better += 1
+
+    sim_arr = np.asarray(sim_sharpes, dtype=np.float64)
+    return {
+        "actual_sharpe": round(float(actual_sr), 4),
+        "actual_max_dd": round(float(actual_mdd), 4),
+        "p_value_sharpe": round(float(sharpe_better / n_simulations), 4),
+        "p_value_max_dd": round(float(dd_better / n_simulations), 4),
+        "simulated_sharpe_mean": round(float(np.mean(sim_arr)), 4),
+        "simulated_sharpe_std": (
+            round(float(np.std(sim_arr, ddof=1)), 4) if len(sim_arr) > 1 else 0.0
+        ),
+        "simulated_sharpe_p5": round(float(np.percentile(sim_arr, 5)), 4),
+        "simulated_sharpe_p95": round(float(np.percentile(sim_arr, 95)), 4),
+        "n_simulations": n_simulations,
+        "n_trades": n_trades,
+    }
