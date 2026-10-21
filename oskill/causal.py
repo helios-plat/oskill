@@ -58,7 +58,7 @@ def symbolic_transfer_entropy(
         rng = np.random.default_rng(random_state)
         surr_tes = []
         for _ in range(n_surrogates):
-            surr_source = phase_randomize(source, rng)
+            surr_source = phase_randomize(source, rng=rng)
             surr_sx = ordinal_pattern(surr_source, d=d)
             surr_te = _compute_ste(surr_sx, sy, d, lag)
             surr_tes.append(surr_te)
