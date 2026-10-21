@@ -3,6 +3,20 @@
 <!-- Governance: see RELEASE_POLICY.md. main = release branch; feat branches deleted after merge; oprim → oskill → omodul merge order required; container bind-mount means git checkout is a live operation. -->
 
 
+## [4.39.1] — 2026-10-22
+
+### Changed
+
+- 与 `origin/main` 合并（v4.39.0 之后 main 前进 59 个提交，含 4.15.0–4.38.0
+  全部能力：md2wechat / wechat_theme / wechat_writing 等）。冲突只在
+  `oskill/_version.py`（保留 4.39.0）与 `CHANGELOG.md`（保留双方，历史连续）。
+
+### Tests
+- `252 failed, 3949 passed, 3 skipped`。同一命令在 `origin/main` worktree 上是
+  `252 failed, 3918 passed` —— 失败集合完全一致（既有红灯，集中在
+  `test_validation.py::TestRegimeAwareRolling` 等），多出的 31 项通过是 v4.39.0
+  新增的 `cognitive` / `monte_carlo_trade_permutation` 测试。
+
 ## [4.39.0] — 2026-10-22
 
 ### Added (upstreaming consumer patches — 3O 主库成为唯一来源)
