@@ -3,6 +3,8 @@
 from __future__ import annotations
 import ast
 import importlib
+import sys as _sys
+import types as _module_types
 from pathlib import Path
 from typing import Any
 from oskill._version import __version__
@@ -739,3 +741,43 @@ from oskill.soul_self_evolution import soul_self_evolution as soul_self_evolutio
 from oskill.worktree_conflict_resolve import (
     worktree_conflict_resolve as worktree_conflict_resolve,
 )
+
+
+class _OskillPackage(_module_types.ModuleType):
+    """Keep public callable exports stable when a same-named submodule loads."""
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if (
+            isinstance(value, _module_types.ModuleType)
+            and value.__name__ == f"{self.__name__}.{name}"
+            and name in _ELEMENT_MAP
+        ):
+            if _ELEMENT_MAP[name] != value.__name__:
+                return
+            exported = getattr(value, name, None)
+            if exported is not None and not isinstance(exported, _module_types.ModuleType):
+                value = exported
+        super().__setattr__(name, value)
+
+
+_sys.modules[__name__].__class__ = _OskillPackage
+
+
+class _OskillPackage(_module_types.ModuleType):
+    """Keep public callable exports stable when a same-named submodule loads."""
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if (
+            isinstance(value, _module_types.ModuleType)
+            and value.__name__ == f"{self.__name__}.{name}"
+            and name in _ELEMENT_MAP
+        ):
+            if _ELEMENT_MAP[name] != value.__name__:
+                return
+            exported = getattr(value, name, None)
+            if exported is not None and not isinstance(exported, _module_types.ModuleType):
+                value = exported
+        super().__setattr__(name, value)
+
+
+_sys.modules[__name__].__class__ = _OskillPackage
