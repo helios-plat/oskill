@@ -46,7 +46,8 @@ def intraday_scalper_signal(
     ValueError
         If fewer than ``2*adx_period + 1`` bars are supplied.
     """
-    from oprim import adx, bollinger_bands, rsi_normalized
+    from oprim import bollinger_bands, rsi_normalized
+    from oprim.technical.trend import adx_series
 
     c = np.asarray(closes, dtype=float)
     h = np.asarray(highs, dtype=float)
@@ -55,7 +56,8 @@ def intraday_scalper_signal(
     if len(c) < need:
         raise ValueError(f"need >= {need} bars, got {len(c)}")
 
-    adx_val = adx(h, lo, c, period=adx_period)
+    adx_values = np.asarray(adx_series(h, lo, c, period=adx_period)["adx"], dtype=float)
+    adx_val = float(adx_values[-1]) if len(adx_values) and np.isfinite(adx_values[-1]) else 0.0
     bb = bollinger_bands(c, window=bb_window)
     upper = float(np.asarray(bb["upper"])[-1])
     lower = float(np.asarray(bb["lower"])[-1])

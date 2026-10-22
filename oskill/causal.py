@@ -47,8 +47,8 @@ def symbolic_transfer_entropy(
     .. [2] Staniek, M. & Lehnertz, K. (2008). Symbolic transfer entropy.
     .. [3] Extraction source: Selene project, sel_v2/offline/transfer_entropy.py:symbolic_te
     """
-    sx = ordinal_pattern(source, d)
-    sy = ordinal_pattern(target, d)
+    sx = ordinal_pattern(source, d=d)
+    sy = ordinal_pattern(target, d=d)
 
     te = _compute_ste(sx, sy, d, lag)
 
@@ -58,8 +58,8 @@ def symbolic_transfer_entropy(
         rng = np.random.default_rng(random_state)
         surr_tes = []
         for _ in range(n_surrogates):
-            surr_source = phase_randomize(source, rng)
-            surr_sx = ordinal_pattern(surr_source, d)
+            surr_source = phase_randomize(source, rng=rng)
+            surr_sx = ordinal_pattern(surr_source, d=d)
             surr_te = _compute_ste(surr_sx, sy, d, lag)
             surr_tes.append(surr_te)
         p_value = float(np.mean(np.array(surr_tes) >= te))

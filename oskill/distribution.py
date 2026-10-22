@@ -62,7 +62,7 @@ def distribution_shift_test(
 
     for method in methods:
         if method == "ks":
-            ks_result = oprim.kolmogorov_smirnov_test(sample_a, sample_b)
+            ks_result = oprim.kolmogorov_smirnov_test(sample_a, sample_b=sample_b)
             detected = ks_result["p_value"] < alpha
             votes["ks"] = detected
             individual_tests["ks"] = {
@@ -71,7 +71,7 @@ def distribution_shift_test(
                 "detected": detected,
             }
         elif method == "wasserstein":
-            w_dist = oprim.wasserstein_distance(sample_a, sample_b)
+            w_dist = oprim.wasserstein_distance(sample_a, v=sample_b)
             threshold = wasserstein_threshold_ratio * max(np.std(sample_a), np.std(sample_b))
             detected = w_dist > threshold
             votes["wasserstein"] = detected
@@ -95,7 +95,7 @@ def distribution_shift_test(
             hist_a = hist_a / hist_a.sum()
             hist_b = hist_b / hist_b.sum()
             # Let oprim handle epsilon internally
-            jsd_val = oprim.symmetric_kl_divergence(hist_a, hist_b, mode="js")
+            jsd_val = oprim.symmetric_kl_divergence(hist_a, q=hist_b, mode="js")
             detected = jsd_val > jsd_threshold
             votes["jsd"] = detected
             individual_tests["jsd"] = {

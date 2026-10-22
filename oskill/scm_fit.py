@@ -153,7 +153,7 @@ def structural_causal_model_fit(
             intv = intervention_samples.get(var, np.array([]))
             if len(nat) > 0 and len(intv) > 0:
                 if distributional_distance is not None:
-                    d = distributional_distance(nat, intv, metric="wasserstein_1")
+                    d = distributional_distance(nat, sample_b=intv, metric="wasserstein_1")
                 else:
                     d = float(np.mean(np.abs(np.sort(nat) - np.sort(intv))))
                 intervention_effect_size[var] = float(d)

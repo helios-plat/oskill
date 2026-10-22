@@ -69,8 +69,8 @@ def ta_multi_indicator_signal(
 
     votes: dict[str, float] = {}
 
-    ef = np.asarray(ema(c, ema_fast))
-    es = np.asarray(ema(c, ema_slow))
+    ef = np.asarray(ema(c, window=ema_fast))
+    es = np.asarray(ema(c, window=ema_slow))
     votes["trend"] = 1.0 if ef[-1] > es[-1] else -1.0
 
     hist = np.asarray(macd(c)["histogram"])

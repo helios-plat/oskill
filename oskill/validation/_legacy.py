@@ -386,7 +386,7 @@ def regime_aware_rolling(
 
             # Also use oprim.regime_filter_data to validate regime membership
             regime_val = regime_labels.loc[block_indices].iloc[0]
-            oprim.regime_filter_data(data_df, regime_labels, regime_val)
+            oprim.regime_filter_data(data=data_df, regime_labels=regime_labels, target_regime=regime_val)
     else:
         # Carry-over mode: compute rolling across all data, but use regime info
         # Forward-fill last valid value across regime boundaries
@@ -400,6 +400,6 @@ def regime_aware_rolling(
 
         # Call oprim.regime_filter_data for each regime (Layer 2 discipline)
         for regime in regimes:
-            oprim.regime_filter_data(data_df, regime_labels, regime)
+            oprim.regime_filter_data(data=data_df, regime_labels=regime_labels, target_regime=regime)
 
     return result

@@ -139,7 +139,7 @@ def mean_reversion_compose(
         oversold   = float(st_cfg.get("oversold",   0.2))
         overbought = float(st_cfg.get("overbought", 0.8))
         stoch = stochastic_oscillator(
-            highs, lows, closes,
+            highs, lows=lows, closes=closes,
             k_period=int(st_cfg.get("k_period", 14)),
             d_period=int(st_cfg.get("d_period", 3)),
             smooth_k=int(st_cfg.get("smooth_k", 3)),

@@ -277,7 +277,7 @@ def factor_attribution(
     use_hac = standard_errors == "newey_west"
     ols_result = oprim.beta_alpha_ols(
         asset_clean,
-        factors_clean,
+        market_returns=factors_clean,
         use_hac=use_hac,
         hac_lags=nw_lags,
     )
@@ -325,7 +325,7 @@ def factor_attribution(
             boot_idx = rng.integers(0, n_samples, size=n_samples)
             r = oprim.beta_alpha_ols(
                 pd.Series(joint[boot_idx, 0]),
-                pd.DataFrame(joint[boot_idx, 1:], columns=factor_names),
+                market_returns=pd.DataFrame(joint[boot_idx, 1:], columns=factor_names),
             )
             return r["alpha"]
 
@@ -343,7 +343,7 @@ def factor_attribution(
             boot_idx = rng2.integers(0, n_samples, size=n_samples)
             r = oprim.beta_alpha_ols(
                 pd.Series(joint[boot_idx, 0]),
-                pd.DataFrame(joint[boot_idx, 1:], columns=factor_names),
+                market_returns=pd.DataFrame(joint[boot_idx, 1:], columns=factor_names),
             )
             b = r["beta"]
             if isinstance(b, dict):
@@ -457,7 +457,7 @@ def regime_aware_performance(
     # Per-regime computation
     returns_df = pd.DataFrame({"returns": returns})
     for regime in regimes:
-        filtered = oprim.regime_filter_data(returns_df, regime_labels, regime)
+        filtered = oprim.regime_filter_data(returns_df, regime_labels=regime_labels, target_regime=regime)
         ret_s = filtered["returns"]
         results[regime] = _compute_metrics(ret_s, regime)
 
