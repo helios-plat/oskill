@@ -1,0 +1,14 @@
+{
+  "name": "gloom3o.oskill",
+  "version": "1.0.0",
+  "description": "Gloom 3O natural-language command router",
+  "entrypoint": "oskill.gloom3o_router",
+  "dependencies": [
+    "gloom3o.obase>=1.0.0",
+    "gloom3o.oprim>=1.0.0"
+  ],
+  "capabilities": [
+    "command-routing",
+    "deterministic-fallback"
+  ]
+}
