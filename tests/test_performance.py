@@ -512,7 +512,7 @@ class TestRegimeAwarePerformance:
 
         mock_sr = mocker.patch("oskill.performance.oprim.sharpe_ratio", return_value=1.0)
         mocker.patch("oskill.performance.oprim.regime_filter_data",
-                     side_effect=lambda data, rl, tr: data[rl == tr])
+                     side_effect=lambda data, *, regime_labels, target_regime: data[regime_labels == target_regime])
         regime_aware_performance(returns, labels, metrics=["sharpe"], include_overall=False)
         assert mock_sr.call_count == 2
 

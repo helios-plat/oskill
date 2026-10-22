@@ -11,7 +11,7 @@ except ImportError:
 
     def epstein_zin_aggregator(  # type: ignore[misc]
         C: np.ndarray,
-        CE: np.ndarray,
+        continuation_value: np.ndarray,
         *,
         discount: float,
         risk_aversion: float,
@@ -19,7 +19,7 @@ except ImportError:
     ) -> np.ndarray:
         rho = 1.0 - 1.0 / ies
         C = np.asarray(C, dtype=float)
-        CE = np.asarray(CE, dtype=float)
+        CE = np.asarray(continuation_value, dtype=float)
         if abs(rho) < 1e-12:
             return C ** (1.0 - discount) * CE**discount
         inner = (1.0 - discount) * C**rho + discount * CE**rho
@@ -149,7 +149,7 @@ def epstein_zin_solver(
             C_i = C_grid[i]
             v_new_i = epstein_zin_aggregator(
                 np.array([C_i]),
-                np.array([max(ce, 1e-30)]),
+                continuation_value=np.array([max(ce, 1e-30)]),
                 discount=discount,
                 risk_aversion=gamma,
                 ies=ies,

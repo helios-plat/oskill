@@ -68,11 +68,11 @@ def aggregate_signal_returns(
 
         rets_sorted = sorted(rets)
         mean_ret = sum(rets) / len(rets)
-        median_ret = oprim.percentile_value(rets_sorted, 0.5)
+        median_ret = oprim.percentile_value(rets_sorted, q=0.5)
         std_ret = statistics.stdev(rets) if len(rets) > 1 else 0.0
         win_rate = sum(1 for r in rets if r > 0) / len(rets)
-        p25 = oprim.percentile_value(rets_sorted, 0.25)
-        p75 = oprim.percentile_value(rets_sorted, 0.75)
+        p25 = oprim.percentile_value(rets_sorted, q=0.25)
+        p75 = oprim.percentile_value(rets_sorted, q=0.75)
 
         # Max drawdown of cumulative event returns (ordered as they appear)
         cum_rets = []

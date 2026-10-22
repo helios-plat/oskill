@@ -155,7 +155,7 @@ class WorkspaceRAGSkill:
         query_vec = vector_encode(texts=[" ".join(code_tokens(query))])[0]
         matrix = np.vstack(list(self._vectors.values()))
         ids = list(self._vectors.keys())
-        scores, indices = cosine_similarity_batch(query_vec[None, :], matrix, top_k=top_k)
+        scores, indices = cosine_similarity_batch(query_vec[None, :], database=matrix, top_k=top_k)
         if scores.ndim == 2:
             scores, indices = scores[0], indices[0]
 

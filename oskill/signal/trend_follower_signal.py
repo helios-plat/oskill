@@ -48,7 +48,8 @@ def trend_follower_signal(
     ValueError
         If fewer than ``2*adx_period + 1`` bars are supplied.
     """
-    from oprim import adx, chandelier_exit, donchian_channel
+    from oprim import chandelier_exit, donchian_channel
+    from oprim.technical.trend import adx_series
 
     h = np.asarray(highs, dtype=float)
     lo = np.asarray(lows, dtype=float)
@@ -57,11 +58,12 @@ def trend_follower_signal(
     if len(c) < need:
         raise ValueError(f"need >= {need} bars, got {len(c)}")
 
-    dc = donchian_channel(h, lo, window=donchian_window)
+    dc = donchian_channel(h, lows=lo, window=donchian_window)
     upper = np.asarray(dc["upper"])
     lower = np.asarray(dc["lower"])
-    adx_val = adx(h, lo, c, period=adx_period)
-    ce = chandelier_exit(h, lo, c, period=chandelier_period, multiplier=chandelier_mult)
+    adx_values = np.asarray(adx_series(h, lo, c, period=adx_period)["adx"], dtype=float)
+    adx_val = float(adx_values[-1]) if len(adx_values) and np.isfinite(adx_values[-1]) else 0.0
+    ce = chandelier_exit(h, lows=lo, closes=c, period=chandelier_period, multiplier=chandelier_mult)
 
     # prior-bar bands (breakout confirmed on close crossing the PRIOR channel)
     prior_upper = float(upper[-2])

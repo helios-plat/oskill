@@ -357,7 +357,7 @@ def _chunk_semantic(
         emb_b = embeddings[i + 1]
         # Use oprim.vector_similarity: query=emb_a, corpus=emb_b.reshape(1,-1)
         corpus = emb_b.reshape(1, -1)
-        sim_arr = vector_similarity(emb_a, corpus, metric="cosine")
+        sim_arr = vector_similarity(emb_a, corpus=corpus, metric="cosine")
         sim = float(sim_arr[0])
         if sim < threshold:
             split_points.add(i + 1)

@@ -100,7 +100,7 @@ def engine_consensus(
         + nudge_weight * onchain_bias
         + nudge_weight * macro_bias
     )
-    consensus_score = float(clip_with_warning(nudged, -1.0, 1.0))
+    consensus_score = float(clip_with_warning(nudged, lower=-1.0, upper=1.0))
 
     # divergence among live (promoted) engines
     live = [c for c in contributions if c["promoted"] and c["eff_weight"] > 0]

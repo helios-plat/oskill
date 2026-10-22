@@ -104,7 +104,7 @@ def salience_asset_pricing(
         payoff_n = asset_payoffs[n]  # (S,)
 
         # 1. Compute salience scores
-        sigma_n = salience_function(payoff_n, market_payoffs, theta=theta)  # (S,)
+        sigma_n = salience_function(payoff_n, reference=market_payoffs, theta=theta)  # (S,)
         salience_scores[n] = sigma_n
 
         # 2. Rank-order weights from salience
